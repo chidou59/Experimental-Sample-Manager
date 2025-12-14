@@ -259,7 +259,7 @@ class SampleDetailView(QWidget):
         icon_lbl.setAlignment(Qt.AlignCenter)
         icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji'; background: transparent;")
 
-        title_lbl = QLabel("欢迎使用试样记录管理中心")
+        title_lbl = QLabel("欢迎使用试样数据管理平台")
         title_lbl.setAlignment(Qt.AlignCenter)
         title_lbl.setStyleSheet(
             "font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; background: transparent;")

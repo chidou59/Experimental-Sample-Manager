@@ -1,4 +1,5 @@
-# Laboratory Sample Records Management System | 实验试样记录管理中心
+# 试样数据管理平台
+### Sample Records Management System
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![PySide6](https://img.shields.io/badge/GUI-PySide6-green)
@@ -7,10 +8,11 @@
 
 ## 📖 项目简介 (Introduction)
 
-**实验试样记录管理中心** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
+**试样数据管理平台** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
 本软件旨在提供一个**结构化、可视化、交互式**的平台，帮助科研人员将繁杂的excel等各种文件集中管理。
 <div align="center">
-  <img src="fig\fig1.png" width="800" />
+  <img src="fig\fig2.png" width="800" />
+  <br> <p>图 1：主操作界面</p>
 </div>
 
 ## ✨ 核心功能 (Key Features)
@@ -20,10 +22,10 @@
 * 详细记录试样元数据（尺寸、形状、各阶段日期等）。
 * 支持复制参数快速新建，避免重复编辑。
 <div align="center">
-  <img src="fig\fig2.png" width="300" />
-  <br> <p>图 2：快速修改试样信息</p>
-  <img src="fig\fig3.png" width="400" />
-  <br> <p>图 3：复制参数快速新建</p>
+  <img src="fig\fig1.png" width="200" />
+  <br> <p>图 2：树状管理、快速新建</p>
+  <img src="fig\fig3.png" width="300" />
+  <br> <p>图 3：试样参数输入</p>
 </div>
 
 **📊 质量变化追踪**
@@ -33,7 +35,7 @@
 * **批量操作**：支持将某一试样的质量记录批量应用/覆盖到其他同批次试样。
 <div align="center">
   <img src="fig\fig5.png" width="300" />
-  <br> <p>图 4：复制参数快速新建</p>
+  <br> <p>图 4：输入质量自动绘图</p>
 </div>
 
 **📈 应力应变分析**
@@ -43,7 +45,7 @@
 * 支持一键导出数据、高清图像。
 <div align="center">
   <img src="fig\fig4.png" width="300" />
-  <br> <p>图 5：应力应变模块</p>
+  <br> <p>图 5：导入数据自动绘图</p>
 </div>
 
 **🖼️ 附件画廊**
@@ -52,7 +54,7 @@
 * 支持**拖拽上传**，双击预览或打开文件位置。
 <div align="center">
   <img src="fig\fig6.png" width="600" />
-  <br> <p>图 6：应力应变模块</p>
+  <br> <p>图 6：附件画廊清晰管理</p>
 </div>
 
 **💾 数据持久化**

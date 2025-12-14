@@ -50,7 +50,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.file_manager = FileManager()
 
-        self.setWindowTitle(" 试样记录管理中心 v.1.2.0")
+        self.setWindowTitle(" 试样数据管理平台 v1.2.1")
 
         # --- 屏幕自适应 ---
         screen = QGuiApplication.primaryScreen()

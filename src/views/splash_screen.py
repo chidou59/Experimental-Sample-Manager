@@ -32,13 +32,13 @@ class ModernSplashScreen(QSplashScreen):
         # 绘制主标题
         font_title = QFont("Microsoft YaHei", 24, QFont.Bold)
         painter.setFont(font_title)
-        painter.drawText(QRect(0, 160, 600, 50), Qt.AlignCenter, "试样记录管理中心")
+        painter.drawText(QRect(0, 160, 600, 50), Qt.AlignCenter, "试样数据管理平台")
 
         # 绘制副标题/版本号
         font_sub = QFont("Microsoft YaHei", 12)
         painter.setFont(font_sub)
         painter.setPen(QColor("#ecf0f1"))
-        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.0")
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.1")
 
         painter.end()
 

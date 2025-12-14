@@ -353,7 +353,7 @@ if __name__ == "__main__":
 ====================
 File: README.md
 ====================
-# Laboratory Sample Records Management System | 实验试样记录管理中心
+# Laboratory Sample Records Management System | 实验试样数据管理平台
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![PySide6](https://img.shields.io/badge/GUI-PySide6-green)
@@ -362,7 +362,7 @@ File: README.md
 
 ## 📖 项目简介 (Introduction)
 
-**实验试样记录管理中心** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
+**实验试样数据管理平台** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
 本软件旨在提供一个**结构化、可视化、交互式**的平台，帮助科研人员将繁杂的excel等各种文件集中管理。
 <div align="center">
   <img src="fig\fig1.png" width="800" />
@@ -372,7 +372,7 @@ File: README.md
 
 **🗂️ 项目与试样管理**
 * 清晰的树状结构，管理多个实验项目及下属试样。
-* 详细记录试样元数据（尺寸、形状、各阶段日期等）。
+* 详细记录试样信息（尺寸、形状、各阶段日期等）。
 * 支持复制参数快速新建，避免重复编辑。
 <div align="center">
   <img src="fig\fig2.png" width="300" />
@@ -2061,7 +2061,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.file_manager = FileManager()
 
-        self.setWindowTitle(" 试样记录管理中心 v.1.2.0")
+        self.setWindowTitle(" 试样数据管理平台 v.1.2.0")
 
         # --- 修复 2：屏幕自适应代码 (防止屏幕小导致显示不全) ---
         # 方案：启动即最大化 (推荐)
@@ -2595,7 +2595,7 @@ class SampleDetailView(QWidget):
         icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji';")
 
         # 2. 欢迎标题
-        title_lbl = QLabel("欢迎使用试样记录管理中心")
+        title_lbl = QLabel("欢迎使用试样数据管理平台")
         title_lbl.setAlignment(Qt.AlignCenter)
         title_lbl.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei';")
 
@@ -3112,13 +3112,13 @@ class ModernSplashScreen(QSplashScreen):
         # 绘制主标题
         font_title = QFont("Microsoft YaHei", 24, QFont.Bold)
         painter.setFont(font_title)
-        painter.drawText(QRect(0, 160, 600, 50), Qt.AlignCenter, "试样记录管理中心")
+        painter.drawText(QRect(0, 160, 600, 50), Qt.AlignCenter, "试样数据管理平台")
 
         # 绘制副标题/版本号
         font_sub = QFont("Microsoft YaHei", 12)
         painter.setFont(font_sub)
         painter.setPen(QColor("#ecf0f1"))
-        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.0")
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.1")
 
         painter.end()
 
