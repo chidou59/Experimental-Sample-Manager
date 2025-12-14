@@ -32,6 +32,11 @@ BTN_STYLE = """
     }
 """
 
+# === 自定义画布类：忽略滚轮事件 ===
+class SilentCanvas(FigureCanvasQTAgg):
+    def wheelEvent(self, event):
+        # 强制忽略滚轮事件，让它传递给父控件(QScrollArea)
+        event.ignore()
 
 class MassTrendChart(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -49,7 +54,8 @@ class MassTrendChart(QWidget):
         # 调整边距，保证标签显示完整
         self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
 
-        self.canvas = FigureCanvasQTAgg(self.fig)
+        # 使用自定义的 SilentCanvas
+        self.canvas = SilentCanvas(self.fig)
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas)
 
@@ -77,7 +83,7 @@ class MassTrendChart(QWidget):
         self.apply_style()
 
     def wheelEvent(self, event):
-        event.ignore()  # 防止滚动穿透
+        event.ignore()  # 再次确保自身也忽略
 
     def apply_style(self):
         """应用统一的图表样式"""

@@ -1,2 +1,19 @@
-# Auto detect text files and perform LF normalization
+# 1. 自动处理文本文件
 * text=auto
+
+# 2. Python 代码强制使用 LF 换行 (解决 Windows/Mac 兼容性)
+*.py text eol=lf
+
+# 3. 关键：将图片和图标标记为二进制文件 (防止损坏)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# 4. 如果你有 UI 文件，视为文本
+*.ui text eol=lf
+
+# 5. Windows 批处理脚本保留 CRLF
+*.bat text eol=crlf

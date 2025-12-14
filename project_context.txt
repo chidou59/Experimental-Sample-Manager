@@ -1,0 +1,3463 @@
+这是我目前的 Python PySide6 项目代码。
+项目结构如下，随后是具体文件内容：
+
+
+====================
+File: config.py
+====================
+import os
+import json
+import sys
+
+# 1. 基础路径 (智能判断是 源代码环境 还是 EXE环境)
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# -------------------------------------------------------------
+# 【核心修改】将配置文件的存储位置改为“用户主目录”，而不是EXE旁边
+# 这样无论 EXE 搬到哪里，配置都不会丢！
+# Windows 路径示例: C:\Users\YourName\.sample_manager_config\app_settings.json
+# -------------------------------------------------------------
+USER_HOME = os.path.expanduser("~")
+CONFIG_DIR = os.path.join(USER_HOME, ".sample_manager_config")
+
+# 如果这个配置文件夹不存在，就创建一个
+if not os.path.exists(CONFIG_DIR):
+    os.makedirs(CONFIG_DIR)
+
+SETTINGS_FILE = os.path.join(CONFIG_DIR, "app_settings.json")
+
+# 3. 全局数据路径
+DATA_ROOT = None
+
+
+def load_settings():
+    """
+    尝试从 JSON 文件加载用户的设置
+    """
+    global DATA_ROOT
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+                path = settings.get("data_root")
+                if path and os.path.exists(path):
+                    DATA_ROOT = path
+                    return True
+        except Exception as e:
+            print(f"读取配置失败: {e}")
+    return False
+
+
+def save_settings(path):
+    """
+    保存用户选择的路径到 JSON 文件
+    """
+    global DATA_ROOT
+    DATA_ROOT = path
+
+    settings = {"data_root": path}
+    try:
+        with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(settings, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        print(f"保存配置失败: {e}")
+        return False
+
+
+# 模块加载时，自动尝试读取一次
+load_settings()
+
+====================
+File: debug_test.py
+====================
+import os
+import sys
+import tkinter as tk
+from tkinter import filedialog
+import config
+from src.controllers.file_manager import FileManager
+
+print("--- 1. 模拟用户首次打开软件 ---")
+
+# 检查当前配置中是否有路径
+if config.DATA_ROOT is None:
+    print("系统提示：当前未设置存储路径。")
+    print(">>> 正在打开文件夹选择窗口，请选择您想存放数据的文件夹...")
+
+    # 创建一个隐藏的 tkinter 根窗口，否则会多出一个空白的小框框
+    root = tk.Tk()
+    root.withdraw()
+
+    # 弹出系统原生的文件夹选择框
+    user_selected_path = filedialog.askdirectory(title="请选择实验数据存储位置 (例如 D盘/My_Experiments)")
+
+    # 检查用户是否真的选了，还是点了取消
+    if user_selected_path:
+        print(f"用户选择了路径: {user_selected_path}")
+
+        # 将用户选的路径保存到 settings 中
+        config.save_settings(user_selected_path)
+    else:
+        print("警告：用户取消了选择，无法继续测试。")
+        sys.exit()  # 退出程序
+
+else:
+    print(f"欢迎回来！已加载存储路径: {config.DATA_ROOT}")
+    print("如果要重置路径，请手动删除根目录下的 app_settings.json 文件。")
+
+print("\n--- 2. 启动文件管理器 ---")
+# 只有在 config.DATA_ROOT 有值之后，才能启动 Manager
+try:
+    manager = FileManager()
+
+    print("\n--- 3. 创建测试数据 ---")
+    # 创建一个测试项目
+    manager.create_project("Interactive_Test_Project", "测试交互式路径选择功能")
+    # 创建一个测试试样
+    manager.create_sample("Interactive_Test_Project", "Sample_Tk_01", {"note": "这是手动选择路径后创建的"})
+
+    print("\n--- 测试结束 ---")
+    print(f"快去你刚才选择的文件夹 [{config.DATA_ROOT}] 看看，有没有生成新的数据？")
+
+except Exception as e:
+    print(f"发生错误: {e}")
+
+====================
+File: import_tool.py
+====================
+import os
+
+# 定义需要忽略的文件夹（这些不需要发给AI）
+IGNORE_DIRS = {'.venv', '.idea', '__pycache__', '.git', 'assets', 'My_Experiments_Data'}
+# 定义需要读取的文件后缀
+INCLUDE_EXTS = {'.py', '.txt', '.md', '.json'}
+
+
+def export_project():
+    output_file = "project_context.txt"
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    print(f"正在扫描项目: {current_dir} ...")
+
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        # 写入一个头部说明，告诉新的AI这是什么
+        outfile.write("这是我目前的 Python PySide6 项目代码。\n")
+        outfile.write("项目结构如下，随后是具体文件内容：\n\n")
+
+        # 1. 遍历文件
+        for root, dirs, files in os.walk(current_dir):
+            # 修改 dirs 列表以跳过忽略的目录
+            dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
+
+            for file in files:
+                # 只处理指定后缀的文件
+                if os.path.splitext(file)[1] not in INCLUDE_EXTS:
+                    continue
+
+                # 排除这个脚本自己和生成的文本文件
+                if file in ['export_for_ai.py', 'project_context.txt', 'app_settings.json']:
+                    continue
+
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, current_dir)
+
+                print(f"读取: {rel_path}")
+
+                # 写入文件分隔符和路径
+                outfile.write(f"\n{'=' * 20}\n")
+                outfile.write(f"File: {rel_path}\n")
+                outfile.write(f"{'=' * 20}\n")
+
+                # 写入代码内容
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as infile:
+                        content = infile.read()
+                        outfile.write(content + "\n")
+                except Exception as e:
+                    outfile.write(f"# 读取错误: {e}\n")
+
+    print(f"\n✅ 成功！所有代码已导出到: {output_file}")
+    print("请打开这个 txt 文件，全选复制，发送给新的对话窗口。")
+
+
+if __name__ == "__main__":
+    export_project()
+
+====================
+File: main.py
+====================
+import sys
+import os
+import time
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication, QMessageBox, QFileDialog
+from PySide6.QtCore import Qt
+
+import config
+from src.views.main_window import MainWindow
+from src.views.splash_screen import ModernSplashScreen
+
+# === 全局样式表 (QSS) ===
+GLOBAL_STYLES = """
+/* 全局字体与背景 */
+QWidget {
+    font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+/* 主窗口背景 */
+QMainWindow {
+    background-color: #f4f6f9; /* 浅灰背景，护眼 */
+}
+
+/* 按钮通用样式 */
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 6px;
+    padding: 6px 16px;
+    color: #606266;
+    font-weight: 500;
+}
+QPushButton:hover {
+    background-color: #ecf5ff;
+    color: #409eff;
+    border-color: #c6e2ff;
+}
+QPushButton:pressed {
+    background-color: #d9ecff;
+}
+
+/* 蓝色主按钮 (Primary Button) */
+QPushButton[class="primary"] {
+    background-color: #3498db; /* 实验室蓝 */
+    color: white;
+    border: none;
+}
+QPushButton[class="primary"]:hover {
+    background-color: #2980b9;
+}
+
+/* 输入框样式 */
+QLineEdit, QTextEdit, QDoubleSpinBox, QDateEdit, QDateTimeEdit {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 5px;
+    background: white;
+    selection-background-color: #3498db;
+}
+QLineEdit:focus, QTextEdit:focus {
+    border: 1px solid #3498db;
+}
+
+/* 表格样式 */
+QTableWidget {
+    background-color: white;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    gridline-color: #ebeef5;
+    selection-background-color: #ecf5ff;
+    selection-color: #606266;
+}
+QHeaderView::section {
+    background-color: #f5f7fa;
+    padding: 8px;
+    border: none;
+    border-bottom: 1px solid #ebeef5;
+    font-weight: bold;
+    color: #909399;
+}
+
+/* 滚动条美化 */
+QScrollBar:vertical {
+    border: none;
+    background: #f4f6f9;
+    width: 8px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: #c0c4cc;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #909399;
+}
+"""
+
+
+def main():
+    # 高分屏适配
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+    os.environ["QT_SCALE_FACTOR"] = "1"
+
+    app = QApplication(sys.argv)
+
+    # 1. 设置全局字体
+    font = QFont("Microsoft YaHei", 10)
+    app.setFont(font)
+    app.setStyleSheet(GLOBAL_STYLES)
+
+    # === 2. 显示启动动画 ===
+    splash = ModernSplashScreen()
+    splash.show()
+
+    # 模拟加载过程
+    loading_steps = [
+        (10, "正在初始化核心组件..."),
+        (30, "加载用户配置文件..."),
+        (60, "校验数据完整性..."),
+        (80, "准备用户界面..."),
+        (100, "启动完成")
+    ]
+
+    for progress, msg in loading_steps:
+        splash.update_progress(progress)
+        splash.showMessage(f"\n\n\n\n\n\n\n\n\n\n{msg}", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
+        t_end = time.time() + 0.3
+        while time.time() < t_end:
+            app.processEvents()
+
+    # === 3. 路径检查逻辑 ===
+    if config.DATA_ROOT is None:
+        splash.hide()
+        QMessageBox.information(None, "欢迎", "欢迎使用试样管理器！\n请先选择一个文件夹作为您的数据仓库。")
+        selected_path = QFileDialog.getExistingDirectory(None, "选择数据存储根目录")
+
+        if selected_path:
+            config.save_settings(selected_path)
+            splash.show()
+        else:
+            sys.exit(0)
+
+    # === 4. 启动主窗口 ===
+    window = MainWindow()
+
+    # 动画结束，切换到主窗口
+    splash.finish(window)
+    # 根据 main_window.py 中的设置，这里可以直接 show
+    # (如果 main_window.py 中用了 showMaximized，这里也生效)
+    window.show()
+
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
+
+====================
+File: README.md
+====================
+# Laboratory Sample Records Management System | 实验试样记录管理中心
+
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![PySide6](https://img.shields.io/badge/GUI-PySide6-green)
+![Matplotlib](https://img.shields.io/badge/Plotting-Matplotlib-orange)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+
+## 📖 项目简介 (Introduction)
+
+**实验试样记录管理中心** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
+本软件旨在提供一个**结构化、可视化、交互式**的平台，帮助科研人员将繁杂的excel等各种文件集中管理。
+<div align="center">
+  <img src="fig\fig1.png" width="800" />
+</div>
+
+## ✨ 核心功能 (Key Features)
+
+**🗂️ 项目与试样管理**
+* 清晰的树状结构，管理多个实验项目及下属试样。
+* 详细记录试样元数据（尺寸、形状、各阶段日期等）。
+* 支持复制参数快速新建，避免重复编辑。
+<div align="center">
+  <img src="fig\fig2.png" width="300" />
+  <br> <p>图 2：快速修改试样信息</p>
+  <img src="fig\fig3.png" width="400" />
+  <br> <p>图 3：复制参数快速新建</p>
+</div>
+
+**📊 质量变化追踪**
+* 根据质量数据自动计算质量变化率（%）。
+* 自动绘制质量变化图、质量变化率图。
+* 支持一键导出数据、高清图像。
+* **批量操作**：支持将某一试样的质量记录批量应用/覆盖到其他同批次试样。
+<div align="center">
+  <img src="fig\fig5.png" width="300" />
+  <br> <p>图 4：复制参数快速新建</p>
+</div>
+
+**📈 应力应变分析**
+* 支持上传 **Excel/CSV** 文件智能导入数据。
+* 自动绘制应力应变曲线，自动标记峰值强度与对应应变。
+* 数据点右键随时编辑/删除，图表实时更新。
+* 支持一键导出数据、高清图像。
+<div align="center">
+  <img src="fig\fig4.png" width="300" />
+  <br> <p>图 5：应力应变模块</p>
+</div>
+
+**🖼️ 附件画廊**
+* 为每个试样建立独立的附件库。
+* 支持图片（自动生成缩略图）及文档（PDF, Excel, Txt）管理。
+* 支持**拖拽上传**，双击预览或打开文件位置。
+<div align="center">
+  <img src="fig\fig6.png" width="600" />
+  <br> <p>图 6：应力应变模块</p>
+</div>
+
+**💾 数据持久化**
+* 所有数据以 JSON 格式存储在本地，无需配置数据库，方便迁移与备份。
+* 完全离线运行，保障科研数据安全。
+
+## 🛠️ 安装与运行 (Installation)
+
+
+### 1. 环境要求
+* Python 3.8 或更高版本
+
+### 2. 克隆项目
+```bash
+git clone [https://github.com/YourUsername/YourProjectName.git](https://github.com/YourUsername/YourProjectName.git)
+cd YourProjectName
+```
+
+### 3. 安装依赖
+建议使用虚拟环境运行本项目。
+
+**如果你有 requirements.txt 文件：**
+```bash
+pip install -r requirements.txt
+```
+
+**如果没有，请手动安装以下核心库：**
+```bash
+pip install PySide6 matplotlib pandas openpyxl pillow
+```
+
+### 4. 启动软件
+```bash
+python main.py
+```
+
+## 📂 项目结构 (Project Structure)
+
+```text
+Experimental_Manager/
+├── config.py               # 全局配置及路径管理
+├── main.py                 # 程序入口
+├── src/
+│   ├── controllers/        # 控制器层 (业务逻辑)
+│   │   └── file_manager.py # 核心文件管理逻辑 (CRUD)
+│   ├── views/              # 视图层 (UI 界面)
+│   │   ├── main_window.py  # 主窗口框架
+│   │   ├── sample_view.py  # 试样详情页 (仪表盘布局)
+│   │   ├── chart_widget.py # 质量趋势图组件
+│   │   ├── stress_chart.py # 应力应变图组件
+│   │   └── dialogs.py      # 各类弹窗 (新建、编辑、录入)
+│   └── utils/              # 工具类
+│       ├── data_importer.py# 数据导入解析 (Pandas)
+│       └── image_helper.py # 图像处理工具
+└── README.md
+```
+
+## 🖥️ 使用指南 (Usage)
+
+1.  **首次运行**：软件会提示选择一个文件夹作为**数据仓库**（Data Root）。所有的实验数据将保存在该文件夹下的 JSON 文件中。
+2.  **创建项目**：点击工具栏的“新建项目”，输入实验名称。
+3.  **录入试样**：在项目下新建试样，选择形状（圆柱/立方体等），输入初始质量。
+4.  **数据记录**：
+    * 在“质量监控”卡片点击“记录”添加不同天数的质量。
+    * 在“应力应变”卡片点击“导入”，选择实验机导出的 CSV/Excel 文件。
+5.  **导出结果**：在任意图表右下角点击导出按钮，获取高清图表用于论文撰写。
+
+## 🤝 贡献 (Contribution)
+
+欢迎提交 Issue 或 Pull Request 来改进这个项目！
+
+## 📄 许可证 (License)
+
+本项目采用 MIT 许可证。
+
+====================
+File: requirements.txt
+====================
+# 读取错误: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+====================
+File: src\__init__.py
+====================
+
+
+====================
+File: src\controllers\file_manager.py
+====================
+import os
+import json
+import shutil
+import copy
+from datetime import datetime
+import config
+from src.utils.image_helper import ImageHelper
+
+
+class FileManager:
+    def __init__(self):
+        if not config.DATA_ROOT:
+            raise ValueError("错误：未设置数据存储路径！")
+        os.makedirs(config.DATA_ROOT, exist_ok=True)
+        self.root_meta_path = os.path.join(config.DATA_ROOT, "root_meta.json")
+        if not os.path.exists(self.root_meta_path):
+            self._save_root_meta({"projects_order": []})
+
+    def _load_root_meta(self):
+        try:
+            with open(self.root_meta_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return {"projects_order": []}
+
+    def _save_root_meta(self, data):
+        try:
+            with open(self.root_meta_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"保存元数据失败: {e}")
+
+    # === 原有 Project/Sample 基础 CRUD 方法保持不变 (create_project, create_sample...) ===
+    # 为节省篇幅，这里假设原有 create_project, create_sample, update_sample_info 等依然存在
+    # 请务必保留原文件中的这些代码，仅添加下方的新方法。
+
+    def create_project(self, project_name, description=""):
+        # ... (保留原代码) ...
+        project_path = os.path.join(config.DATA_ROOT, project_name)
+        try:
+            if os.path.exists(project_path): return False
+            os.makedirs(project_path)
+            project_info = {
+                "name": project_name,
+                "description": description,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "type": "project",
+                "samples_order": []
+            }
+            with open(os.path.join(project_path, "project_info.json"), 'w', encoding='utf-8') as f:
+                json.dump(project_info, f, ensure_ascii=False, indent=4)
+
+            meta = self._load_root_meta()
+            if project_name not in meta["projects_order"]:
+                meta["projects_order"].append(project_name)
+                self._save_root_meta(meta)
+            return True
+        except Exception as e:
+            print(f"Error: {e}");
+            return False
+
+    def create_sample(self, project_name, sample_id, sample_data):
+        # ... (保留原代码) ...
+        project_path = os.path.join(config.DATA_ROOT, project_name)
+        sample_path = os.path.join(project_path, sample_id)
+        try:
+            if not os.path.exists(project_path): return False
+            if os.path.exists(sample_path): return False
+            os.makedirs(sample_path)
+            os.makedirs(os.path.join(sample_path, "images"))
+            os.makedirs(os.path.join(sample_path, "images", "thumbnails"))
+
+            data_to_save = sample_data.copy()
+            if "icon_path" in data_to_save: del data_to_save["icon_path"]
+
+            sample_full_info = {
+                "id": sample_id,
+                "parent_project": project_name,
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "weight_records": [],
+                **data_to_save
+            }
+            with open(os.path.join(sample_path, "sample_info.json"), 'w', encoding='utf-8') as f:
+                json.dump(sample_full_info, f, ensure_ascii=False, indent=4)
+
+            p_json_path = os.path.join(project_path, "project_info.json")
+            if os.path.exists(p_json_path):
+                with open(p_json_path, 'r', encoding='utf-8') as f:
+                    p_data = json.load(f)
+                if "samples_order" not in p_data: p_data["samples_order"] = []
+                if sample_id not in p_data["samples_order"]: p_data["samples_order"].append(sample_id)
+                with open(p_json_path, 'w', encoding='utf-8') as f:
+                    json.dump(p_data, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            print(f"Error creating sample: {e}");
+            return False
+
+    def update_sample_info(self, project_name, sample_id, new_data):
+        # ... (保留原代码) ...
+        try:
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
+            if not os.path.exists(json_path): return False
+
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            editable_fields = [
+                "description", "date_prep", "date_complete", "date_demold", "date_test", "initial_mass",
+                "shape", "radius", "height", "side_length", "length", "width", "icon_emoji"
+            ]
+
+            for field in editable_fields:
+                if field in new_data:
+                    data[field] = new_data[field]
+
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+            return True
+        except Exception as e:
+            print(f"更新试样信息失败: {e}")
+            return False
+
+    def get_project_structure(self):
+        # ... (保留原代码) ...
+        structure = {}
+        if not os.path.exists(config.DATA_ROOT): return structure
+        meta = self._load_root_meta()
+        saved_order = meta.get("projects_order", [])
+        existing_projects = []
+        try:
+            items = os.listdir(config.DATA_ROOT)
+            for item in items:
+                p_path = os.path.join(config.DATA_ROOT, item)
+                if os.path.isdir(p_path) and os.path.exists(os.path.join(p_path, "project_info.json")):
+                    existing_projects.append(item)
+        except:
+            pass
+
+        final_projects = []
+        for p in saved_order:
+            if p in existing_projects: final_projects.append(p)
+        for p in existing_projects:
+            if p not in final_projects: final_projects.append(p)
+
+        for project_name in final_projects:
+            structure[project_name] = []
+            project_path = os.path.join(config.DATA_ROOT, project_name)
+            p_info_path = os.path.join(project_path, "project_info.json")
+            saved_sample_order = []
+            try:
+                with open(p_info_path, 'r', encoding='utf-8') as f:
+                    saved_sample_order = json.load(f).get("samples_order", [])
+            except:
+                pass
+
+            existing_samples = []
+            try:
+                sub_items = os.listdir(project_path)
+                for sub in sub_items:
+                    s_path = os.path.join(project_path, sub)
+                    if os.path.isdir(s_path) and os.path.exists(os.path.join(s_path, "sample_info.json")):
+                        existing_samples.append(sub)
+            except:
+                pass
+
+            final_samples = []
+            for s in saved_sample_order:
+                if s in existing_samples: final_samples.append(s)
+            for s in existing_samples:
+                if s not in final_samples: final_samples.append(s)
+
+            structure[project_name] = final_samples
+        return structure
+
+    def update_structure_order(self, new_structure_dict):
+        # ... (保留原代码) ...
+        new_projects_order = list(new_structure_dict.keys())
+        self._save_root_meta({"projects_order": new_projects_order})
+        for project_name, samples_list in new_structure_dict.items():
+            p_info_path = os.path.join(config.DATA_ROOT, project_name, "project_info.json")
+            if os.path.exists(p_info_path):
+                try:
+                    with open(p_info_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    data["samples_order"] = samples_list
+                    with open(p_info_path, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, ensure_ascii=False, indent=4)
+                except Exception as e:
+                    print(f"保存试样顺序失败 {project_name}: {e}")
+
+    def rename_project(self, old_name, new_name):
+        # ... (保留原代码) ...
+        old_path = os.path.join(config.DATA_ROOT, old_name)
+        new_path = os.path.join(config.DATA_ROOT, new_name)
+        if not os.path.exists(old_path) or os.path.exists(new_path): return False
+        try:
+            os.rename(old_path, new_path)
+            json_path = os.path.join(new_path, "project_info.json")
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f: data = json.load(f)
+                data['name'] = new_name
+                with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+            meta = self._load_root_meta()
+            if old_name in meta["projects_order"]:
+                idx = meta["projects_order"].index(old_name)
+                meta["projects_order"][idx] = new_name
+                self._save_root_meta(meta)
+            return True
+        except Exception as e:
+            print(f"重命名项目失败: {e}");
+            return False
+
+    def rename_sample(self, project_name, old_id, new_id):
+        # ... (保留原代码) ...
+        base_path = os.path.join(config.DATA_ROOT, project_name)
+        old_path = os.path.join(base_path, old_id)
+        new_path = os.path.join(base_path, new_id)
+        if not os.path.exists(old_path) or os.path.exists(new_path): return False
+        try:
+            os.rename(old_path, new_path)
+            json_path = os.path.join(new_path, "sample_info.json")
+            if os.path.exists(json_path):
+                with open(json_path, 'r', encoding='utf-8') as f: data = json.load(f)
+                data['id'] = new_id
+                with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+            p_info_path = os.path.join(base_path, "project_info.json")
+            if os.path.exists(p_info_path):
+                with open(p_info_path, 'r', encoding='utf-8') as f:
+                    p_data = json.load(f)
+                if "samples_order" in p_data and old_id in p_data["samples_order"]:
+                    idx = p_data["samples_order"].index(old_id)
+                    p_data["samples_order"][idx] = new_id
+                    with open(p_info_path, 'w', encoding='utf-8') as f: json.dump(p_data, f, ensure_ascii=False,
+                                                                                  indent=4)
+            return True
+        except Exception as e:
+            print(f"重命名试样失败: {e}");
+            return False
+
+    def delete_project(self, project_name):
+        # ... (保留原代码) ...
+        path = os.path.join(config.DATA_ROOT, project_name)
+        try:
+            shutil.rmtree(path)
+            meta = self._load_root_meta()
+            if project_name in meta["projects_order"]:
+                meta["projects_order"].remove(project_name)
+                self._save_root_meta(meta)
+            return True
+        except Exception as e:
+            print(f"删除项目失败: {e}");
+            return False
+
+    def delete_sample(self, project_name, sample_id):
+        # ... (保留原代码) ...
+        path = os.path.join(config.DATA_ROOT, project_name, sample_id)
+        try:
+            shutil.rmtree(path)
+            p_info_path = os.path.join(config.DATA_ROOT, project_name, "project_info.json")
+            if os.path.exists(p_info_path):
+                with open(p_info_path, 'r', encoding='utf-8') as f:
+                    p_data = json.load(f)
+                if "samples_order" in p_data and sample_id in p_data["samples_order"]:
+                    p_data["samples_order"].remove(sample_id)
+                    with open(p_info_path, 'w', encoding='utf-8') as f: json.dump(p_data, f, ensure_ascii=False,
+                                                                                  indent=4)
+            return True
+        except Exception as e:
+            print(f"删除试样失败: {e}");
+            return False
+
+    def get_sample_info(self, project_name, sample_id):
+        # ... (保留原代码) ...
+        try:
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
+            with open(json_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return None
+
+    def add_file_to_sample(self, project_name, sample_id, source_path):
+        # ... (保留原代码) ...
+        try:
+            base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
+            thumb_dir = os.path.join(base_dir, "thumbnails")
+            os.makedirs(thumb_dir, exist_ok=True)
+            filename = os.path.basename(source_path)
+            target_path = os.path.join(base_dir, filename)
+            shutil.copy(source_path, target_path)
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp']:
+                thumb_path = os.path.join(thumb_dir, filename)
+                ImageHelper.generate_thumbnail(target_path, thumb_path)
+            return target_path
+        except:
+            return None
+
+    def get_sample_files(self, project_name, sample_id):
+        # ... (保留原代码) ...
+        try:
+            base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
+            thumb_dir = os.path.join(base_dir, "thumbnails")
+            if not os.path.exists(base_dir): return []
+            files_list = []
+            valid_exts = ['.png', '.jpg', '.jpeg', '.tif', '.bmp', '.pdf', '.xls', '.xlsx', '.csv', '.txt']
+            for f in os.listdir(base_dir):
+                if os.path.isdir(os.path.join(base_dir, f)): continue
+                ext = os.path.splitext(f)[1].lower()
+                if ext in valid_exts:
+                    file_info = {
+                        "name": f,
+                        "path": os.path.join(base_dir, f),
+                        "type": "image" if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp'] else "file",
+                        "ext": ext
+                    }
+                    if file_info["type"] == "image":
+                        thumb_path = os.path.join(thumb_dir, f)
+                        file_info["thumb"] = thumb_path if os.path.exists(thumb_path) else file_info["path"]
+                    files_list.append(file_info)
+            return files_list
+        except:
+            return []
+
+    def delete_file(self, file_path):
+        # ... (保留原代码) ...
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                directory = os.path.dirname(file_path)
+                filename = os.path.basename(file_path)
+                thumb_path = os.path.join(directory, "thumbnails", filename)
+                if os.path.exists(thumb_path): os.remove(thumb_path)
+                return True
+            return False
+        except:
+            return False
+
+    def add_weight_record(self, project_name, sample_id, record):
+        # ... (保留原代码) ...
+        try:
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
+            if not os.path.exists(json_path): return False
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if "weight_records" not in data: data["weight_records"] = []
+            data["weight_records"].append(record)
+            data["weight_records"].sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+            return True
+        except:
+            return False
+
+    def update_weight_record(self, project_name, sample_id, index, new_record):
+        # ... (保留原代码) ...
+        try:
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
+            if not os.path.exists(json_path): return False
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            records = data.get("weight_records", [])
+            if 0 <= index < len(records):
+                records[index] = new_record
+                records.sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
+                data["weight_records"] = records
+                with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+                return True
+            return False
+        except:
+            return False
+
+    def delete_weight_record(self, project_name, sample_id, index):
+        # ... (保留原代码) ...
+        try:
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
+            if not os.path.exists(json_path): return False
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            records = data.get("weight_records", [])
+            if 0 <= index < len(records):
+                del records[index]
+                data["weight_records"] = records
+                with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+                return True
+            return False
+        except:
+            return False
+
+    def batch_copy_weights(self, project_name, source_id, target_ids, overwrite=False):
+        # ... (保留原代码) ...
+        source_info = self.get_sample_info(project_name, source_id)
+        if not source_info: return False
+
+        source_records = source_info.get("weight_records", [])
+        if not source_records: return True  # 源没有记录，没必要复制，但也不算失败
+
+        success_count = 0
+        for tid in target_ids:
+            if tid == source_id: continue  # 跳过自己
+
+            try:
+                json_path = os.path.join(config.DATA_ROOT, project_name, tid, "sample_info.json")
+                if not os.path.exists(json_path): continue
+
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    t_info = json.load(f)
+
+                new_records = copy.deepcopy(source_records)
+
+                if overwrite:
+                    t_info["weight_records"] = new_records
+                else:
+                    current_records = t_info.get("weight_records", [])
+                    existing_dates = set()
+                    for r in current_records:
+                        if "date" in r: existing_dates.add(r["date"])
+
+                    for rec in new_records:
+                        if rec.get("date") not in existing_dates:
+                            current_records.append(rec)
+
+                    current_records.sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
+                    t_info["weight_records"] = current_records
+
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(t_info, f, ensure_ascii=False, indent=4)
+
+                success_count += 1
+            except Exception as e:
+                print(f"复制到 {tid} 失败: {e}")
+
+        return success_count
+
+    # === 【新增】应力应变数据管理方法 ===
+    def save_stress_data(self, project_name, sample_id, data_points):
+        """
+        保存应力应变数据到单独的 JSON 文件 (避免主文件过大)
+        :param data_points: list of dict [{"strain": x, "stress": y}, ...]
+        """
+        try:
+            # 存放在 sample 文件夹下的 stress_data.json
+            path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(data_points, f, ensure_ascii=False)  # 不缩进，减小体积
+            return True
+        except Exception as e:
+            print(f"保存应力数据失败: {e}")
+            return False
+
+    def get_stress_data(self, project_name, sample_id):
+        """读取应力应变数据"""
+        try:
+            path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            return []
+        except:
+            return []
+
+====================
+File: src\controllers\__init__.py
+====================
+
+
+====================
+File: src\models\projects.py
+====================
+
+
+====================
+File: src\models\samples.py
+====================
+
+
+====================
+File: src\models\__init__.py
+====================
+
+
+====================
+File: src\utils\data_importer.py
+====================
+import pandas as pd
+import os
+
+
+class DataImporter:
+    @staticmethod
+    def load_stress_strain_data(file_path):
+        """
+        读取 CSV 或 Excel 文件，智能寻找应力应变列。
+        返回格式: ([{"strain": 0.1, "stress": 20}, ...], "成功导入信息")
+        """
+        try:
+            ext = os.path.splitext(file_path)[1].lower()
+
+            # 1. 读取文件到 DataFrame
+            if ext == '.csv':
+                # 尝试不同的编码，防止中文乱码
+                try:
+                    df = pd.read_csv(file_path, encoding='utf-8')
+                except:
+                    try:
+                        df = pd.read_csv(file_path, encoding='gbk')
+                    except:
+                        return None, "CSV读取失败，请检查编码"
+            elif ext in ['.xls', '.xlsx']:
+                df = pd.read_excel(file_path)
+            else:
+                return None, "不支持的文件格式"
+
+            # 2. 智能清洗数据
+            df = df.dropna()
+
+            # 3. 寻找列名
+            columns = df.columns.astype(str).tolist()
+
+            stress_col = None
+            strain_col = None
+
+            for col in columns:
+                c_lower = col.lower()
+                if 'stress' in c_lower or '应力' in c_lower or 'kpa' in c_lower or 'mpa' in c_lower:
+                    if not stress_col: stress_col = col
+                if 'strain' in c_lower or '应变' in c_lower or '%' in c_lower:
+                    if not strain_col: strain_col = col
+
+            # 如果没自动找到，就默认取前两列（第一列应变，第二列应力，这是通常的机器输出格式）
+            if not stress_col or not strain_col:
+                if len(columns) >= 2:
+                    strain_col = columns[0]  # 假设第一列是位移/应变
+                    stress_col = columns[1]  # 假设第二列是力/应力
+                else:
+                    return None, "无法识别数据列，请确保文件至少有两列数据"
+
+            # 4. 提取数据并转换为标准格式
+            result = []
+            for index, row in df.iterrows():
+                try:
+                    s_val = float(row[stress_col])
+                    e_val = float(row[strain_col])
+                    result.append({"strain": e_val, "stress": s_val})
+                except:
+                    continue  # 跳过无法转为数字的行
+
+            # 按照应变排序，确保画图不乱
+            result.sort(key=lambda x: x["strain"])
+
+            return result, f"成功导入 {len(result)} 条数据"
+
+        except Exception as e:
+            return None, f"读取失败: {str(e)}"
+
+====================
+File: src\utils\image_helper.py
+====================
+import os
+from PIL import Image
+
+
+class ImageHelper:
+    @staticmethod
+    def generate_thumbnail(original_path, thumbnail_path, size=(200, 200)):
+        """
+        生成缩略图
+        :param original_path: 原图路径
+        :param thumbnail_path: 缩略图保存路径
+        :param size: 最大尺寸 (宽, 高)
+        """
+        try:
+            with Image.open(original_path) as img:
+                # 转换为 RGB 模式 (防止 PNG 透明背景导致报错)
+                if img.mode in ('RGBA', 'P'):
+                    img = img.convert('RGB')
+
+                # copy() 创建副本，thumbnail() 会直接修改副本
+                img_copy = img.copy()
+                img_copy.thumbnail(size)
+
+                # 保存为 JPG 格式，质量 85
+                img_copy.save(thumbnail_path, "JPEG", quality=85)
+                return True
+        except Exception as e:
+            print(f"缩略图生成失败: {e}")
+            return False
+
+====================
+File: src\utils\__init__.py
+====================
+
+
+====================
+File: src\views\chart_widget.py
+====================
+import csv
+import os
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+                               QFileDialog, QMessageBox, QSpacerItem, QSizePolicy)
+from PySide6.QtCore import Qt
+import matplotlib
+
+matplotlib.use('QtAgg')
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib import rcParams
+
+# 统一配置字体与负号
+rcParams['font.family'] = 'Microsoft YaHei'
+rcParams['axes.unicode_minus'] = False
+rcParams['font.size'] = 9
+
+# 小按钮样式
+BTN_STYLE = """
+    QPushButton {
+        background-color: white;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #606266;
+    }
+    QPushButton:hover {
+        border-color: #409eff;
+        color: #409eff;
+        background-color: #ecf5ff;
+    }
+"""
+
+
+class MassTrendChart(QWidget):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        super().__init__(parent)
+        self.current_data_export = []  # 用于存储待导出的数据
+        self.current_mode = "mass"  # 当前显示模式
+
+        # 1. 主布局
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0.5)
+
+        # 2. 图表层
+        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
+        # 调整边距，保证标签显示完整
+        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
+
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        self.ax = self.fig.add_subplot(111)
+        layout.addWidget(self.canvas)
+
+        # 3. 按钮工具栏 (右下角)
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 5, 10, 5)  # 上右下左
+        btn_layout.addStretch()  # 把按钮顶到右边
+
+        self.btn_export_data = QPushButton("📊 导出数据")
+        self.btn_export_data.setStyleSheet(BTN_STYLE)
+        self.btn_export_data.setCursor(Qt.PointingHandCursor)
+        self.btn_export_data.clicked.connect(self.export_data)
+
+        self.btn_export_img = QPushButton("🖼️ 导出高清图像")
+        self.btn_export_img.setStyleSheet(BTN_STYLE)
+        self.btn_export_img.setCursor(Qt.PointingHandCursor)
+        self.btn_export_img.clicked.connect(self.export_image)
+
+        btn_layout.addWidget(self.btn_export_data)
+        btn_layout.addWidget(self.btn_export_img)
+
+        layout.addLayout(btn_layout)
+
+        # 初始化样式
+        self.apply_style()
+
+    def wheelEvent(self, event):
+        event.ignore()  # 防止滚动穿透
+
+    def apply_style(self):
+        """应用统一的图表样式"""
+        self.ax.clear()
+        self.ax.set_facecolor('white')
+
+        # 极简边框
+        self.ax.spines['top'].set_visible(False)
+        self.ax.spines['right'].set_visible(False)
+        self.ax.spines['left'].set_color('#dcdfe6')
+        self.ax.spines['bottom'].set_color('#dcdfe6')
+        self.ax.spines['left'].set_linewidth(1)
+        self.ax.spines['bottom'].set_linewidth(1)
+
+        # 虚线网格
+        self.ax.grid(True, linestyle=':', alpha=0.6, color='#909399')
+
+        # 【学术化修改】刻度线朝内 (direction='in')
+        self.ax.tick_params(axis='both', which='both', direction='in',
+                            length=4, width=1, color='#606266', labelcolor='#606266')
+
+    def clear_chart(self):
+        self.apply_style()
+        self.ax.set_title("暂无数据", color='#909399', pad=10)
+        self.ax.set_xlabel("天数", color='#606266')
+        self.ax.set_ylabel("数值", color='#606266')
+        self.current_data_export = []
+        self.canvas.draw()
+
+    def update_chart(self, initial_mass, records, mode="mass"):
+        self.apply_style()
+        self.current_mode = mode
+        self.current_data_export = []  # 清空旧数据
+
+        if initial_mass <= 0: initial_mass = 1
+
+        x_data = [0]
+        y_data = []
+
+        # 颜色定义
+        color_mass = "#3498db"
+        color_rate = "#e67e22"
+
+        if mode == "mass":
+            y_data = [initial_mass]
+            y_label = "质量 (g)"
+            main_color = color_mass
+            title = "质量变化趋势"
+            # 记录初始点
+            self.current_data_export.append({"day": 0, "value": initial_mass})
+        else:
+            y_data = [0.0]
+            y_label = "变化率 (%)"
+            main_color = color_rate
+            title = "质量变化率趋势"
+            self.current_data_export.append({"day": 0, "value": 0.0})
+
+        valid_records = []
+        for r in records:
+            try:
+                d = float(r.get("days"))
+                m = float(r.get("mass"))
+                valid_records.append((d, m))
+            except:
+                continue
+        valid_records.sort(key=lambda x: x[0])
+
+        for d, m in valid_records:
+            x_data.append(d)
+            if mode == "mass":
+                y_data.append(m)
+                self.current_data_export.append({"day": d, "value": m})
+            else:
+                rate = ((m - initial_mass) / initial_mass) * 100
+                y_data.append(rate)
+                self.current_data_export.append({"day": d, "value": rate})
+
+        # 绘图
+        self.ax.set_title(title, fontsize=10, fontweight='bold', color='#303133', pad=10)
+        self.ax.set_xlabel("时间 (天)", fontsize=9, color='#606266')
+        self.ax.set_ylabel(y_label, fontsize=9, color='#606266')
+
+        # 曲线
+        self.ax.plot(x_data, y_data, color=main_color, linewidth=2,
+                     marker='o', markersize=5, markerfacecolor='white', markeredgewidth=1.5,
+                     zorder=3)
+
+        # 填充区域
+        if len(y_data) > 0:
+            fill_base = min(y_data) * 0.999 if mode == "mass" else 0
+            self.ax.fill_between(x_data, y_data, fill_base, color=main_color, alpha=0.1, zorder=2)
+
+        self.canvas.draw()
+
+    def export_data(self):
+        if not self.current_data_export:
+            QMessageBox.warning(self, "无数据", "当前图表没有可导出的数据。")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(self, "导出CSV数据", "", "CSV Files (*.csv)")
+        if file_path:
+            try:
+                with open(file_path, 'w', newline='', encoding='utf-8-sig') as f:
+                    writer = csv.writer(f)
+                    # 根据当前模式写表头
+                    unit = "(g)" if self.current_mode == "mass" else "(%)"
+                    writer.writerow(["Time (Days)", f"Value {unit}"])
+                    for row in self.current_data_export:
+                        writer.writerow([row["day"], row["value"]])
+                QMessageBox.information(self, "成功", f"数据已导出至:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"导出失败: {e}")
+
+    def export_image(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "导出图片", "", "PNG Image (*.png);;JPEG Image (*.jpg)")
+        if file_path:
+            try:
+                # 导出 300 DPI 高清图
+                self.fig.savefig(file_path, dpi=300, bbox_inches='tight')
+                QMessageBox.information(self, "成功", f"图片已保存:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"保存失败: {e}")
+
+====================
+File: src\views\dialogs.py
+====================
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout,
+                               QLineEdit, QDialogButtonBox, QTextEdit, QPushButton,
+                               QLabel, QHBoxLayout, QDoubleSpinBox, QComboBox,
+                               QStackedWidget, QWidget, QListView, QListWidget,
+                               QListWidgetItem, QCheckBox)
+from PySide6.QtCore import QTime, Qt, QDateTime
+from PySide6.QtGui import QFont
+
+# 引入刚刚拆分出去的工具
+from src.views.dialog_utils import (SAMPLE_ICONS, apply_dialog_theme, create_datetime_edit)
+
+
+class NewSampleDialog(QDialog):
+    def __init__(self, parent=None, template_data=None):
+        super().__init__(parent)
+        self.setWindowTitle("新建试样")
+        if template_data:
+            self.setWindowTitle("新建试样 (复制自 " + template_data.get('id', '') + ")")
+
+        self.resize(550, 750)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        form_layout = QFormLayout()
+        form_layout.setVerticalSpacing(15)
+        form_layout.setHorizontalSpacing(20)
+
+        self.id_input = QLineEdit()
+        self.id_input.setPlaceholderText("例如: A1-Ca0.5 (必填)")
+        form_layout.addRow("试样编号*:", self.id_input)
+
+        self.icon_combo = QComboBox()
+        self.icon_combo.setView(QListView())
+        self.icon_combo.addItems(SAMPLE_ICONS)
+        self.icon_combo.setCurrentIndex(0)
+        font = QFont()
+        font.setPointSize(16)
+        self.icon_combo.setFont(font)
+
+        form_layout.addRow("试样图标:", self.icon_combo)
+
+        self.mass_input = QDoubleSpinBox()
+        self.mass_input.setRange(0, 9999.99);
+        self.mass_input.setDecimals(2);
+        self.mass_input.setSuffix(" g")
+        form_layout.addRow("初始质量:", self.mass_input)
+
+        self.shape_combo = QComboBox()
+        self.shape_combo.setView(QListView(self.shape_combo))
+        self.shape_combo.addItems(["未指定", "圆柱体 (Cylinder)", "正方体 (Cube)", "长方体 (Cuboid)"])
+        form_layout.addRow("试样形状:", self.shape_combo)
+
+        self.dim_stack = QStackedWidget()
+        self.dim_stack.addWidget(QWidget())  # 0
+
+        # 1. 圆柱体
+        page_cyl = QWidget();
+        lay_cyl = QFormLayout(page_cyl);
+        lay_cyl.setContentsMargins(0, 0, 0, 0)
+        self.cyl_r = QDoubleSpinBox();
+        self.cyl_r.setRange(0, 9999);
+        self.cyl_r.setDecimals(0);
+        self.cyl_r.setSuffix(" mm")
+        self.cyl_h = QDoubleSpinBox();
+        self.cyl_h.setRange(0, 9999);
+        self.cyl_h.setDecimals(0);
+        self.cyl_h.setSuffix(" mm")
+        lay_cyl.addRow("半径 (r):", self.cyl_r);
+        lay_cyl.addRow("高度 (h):", self.cyl_h)
+        self.dim_stack.addWidget(page_cyl)
+
+        # 2. 正方体
+        page_cube = QWidget();
+        lay_cube = QFormLayout(page_cube);
+        lay_cube.setContentsMargins(0, 0, 0, 0)
+        self.cube_a = QDoubleSpinBox();
+        self.cube_a.setRange(0, 9999);
+        self.cube_a.setDecimals(0);
+        self.cube_a.setSuffix(" mm")
+        lay_cube.addRow("边长 (a):", self.cube_a)
+        self.dim_stack.addWidget(page_cube)
+
+        # 3. 长方体
+        page_cuboid = QWidget();
+        lay_cuboid = QFormLayout(page_cuboid);
+        lay_cuboid.setContentsMargins(0, 0, 0, 0)
+        self.cuboid_l = QDoubleSpinBox();
+        self.cuboid_l.setRange(0, 9999);
+        self.cuboid_l.setDecimals(0);
+        self.cuboid_l.setSuffix(" mm")
+        self.cuboid_w = QDoubleSpinBox();
+        self.cuboid_w.setRange(0, 9999);
+        self.cuboid_w.setDecimals(0);
+        self.cuboid_w.setSuffix(" mm")
+        self.cuboid_h = QDoubleSpinBox();
+        self.cuboid_h.setRange(0, 9999);
+        self.cuboid_h.setDecimals(0);
+        self.cuboid_h.setSuffix(" mm")
+        lay_cuboid.addRow("长度 (L):", self.cuboid_l);
+        lay_cuboid.addRow("宽度 (W):", self.cuboid_w);
+        lay_cuboid.addRow("高度 (H):", self.cuboid_h)
+        self.dim_stack.addWidget(page_cuboid)
+
+        form_layout.addRow("几何尺寸:", self.dim_stack)
+        self.shape_combo.currentIndexChanged.connect(self.dim_stack.setCurrentIndex)
+
+        self.desc_input = QTextEdit()
+        self.desc_input.setPlaceholderText("描述配比、砂土类型等...")
+        self.desc_input.setMaximumHeight(60)
+        form_layout.addRow("试样描述:", self.desc_input)
+
+        self.date_prep = create_datetime_edit()
+        self.date_complete = create_datetime_edit()
+        self.date_demold = create_datetime_edit()
+        self.date_test = create_datetime_edit()
+        form_layout.addRow("制样时间:", self.date_prep)
+        form_layout.addRow("完成时间:", self.date_complete)
+        form_layout.addRow("拆模时间:", self.date_demold)
+        form_layout.addRow("测试时间:", self.date_test)
+
+        layout.addLayout(form_layout)
+        layout.addStretch()
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept);
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+        apply_dialog_theme(self, self.buttons)
+
+        # 如果有模板数据，则自动回填
+        if template_data:
+            self.fill_from_template(template_data)
+
+    def fill_from_template(self, data):
+        """将模板数据填入表单"""
+        # 1. 自动生成一个带 _copy 后缀的编号，并全选方便用户直接修改
+        self.id_input.setText(f"{data.get('id', '')}_copy")
+        self.id_input.selectAll()
+        self.id_input.setFocus()
+
+        # 2. 复制图标
+        emoji = data.get("icon_emoji", "🧪")
+        idx = self.icon_combo.findText(emoji)
+        if idx >= 0: self.icon_combo.setCurrentIndex(idx)
+
+        # 3. 复制质量
+        self.mass_input.setValue(float(data.get("initial_mass", 0)))
+
+        # 4. 复制形状和尺寸
+        shape_str = data.get("shape", "未指定")
+        idx = self.shape_combo.findText(shape_str)
+        if idx >= 0: self.shape_combo.setCurrentIndex(idx)
+
+        self.cyl_r.setValue(float(data.get("radius", 0)))
+        self.cyl_h.setValue(float(data.get("height", 0)))
+        self.cube_a.setValue(float(data.get("side_length", 0)))
+        self.cuboid_l.setValue(float(data.get("length", 0)))
+        self.cuboid_w.setValue(float(data.get("width", 0)))
+        if "height" in data:
+            self.cuboid_h.setValue(float(data.get("height", 0)))
+
+        # 5. 复制描述
+        self.desc_input.setPlainText(data.get("description", ""))
+
+        # 6. 复制日期
+        def set_dt(widget, val):
+            if val and val != "-":
+                dt = QDateTime.fromString(val, "yyyy-MM-dd-HH:00")
+                if not dt.isValid():
+                    dt = QDateTime.fromString(val, "yyyy-MM-dd")
+                    dt.setTime(QTime(0, 0, 0))
+                if dt.isValid():
+                    widget.setDateTime(dt)
+
+        set_dt(self.date_prep, data.get("date_prep"))
+        set_dt(self.date_complete, data.get("date_complete"))
+        set_dt(self.date_demold, data.get("date_demold"))
+        set_dt(self.date_test, data.get("date_test"))
+
+    def get_data(self):
+        data = {
+            "id": self.id_input.text().strip(),
+            "initial_mass": self.mass_input.value(),
+            "description": self.desc_input.toPlainText(),
+            "icon_emoji": self.icon_combo.currentText(),
+            "date_prep": self.date_prep.text(),
+            "date_complete": self.date_complete.text(),
+            "date_demold": self.date_demold.text(),
+            "date_test": self.date_test.text(),
+            "shape": self.shape_combo.currentText()
+        }
+        shape_idx = self.shape_combo.currentIndex()
+        if shape_idx == 1:
+            data["radius"] = self.cyl_r.value()
+            data["height"] = self.cyl_h.value()
+        elif shape_idx == 2:
+            data["side_length"] = self.cube_a.value()
+        elif shape_idx == 3:
+            data["length"] = self.cuboid_l.value()
+            data["width"] = self.cuboid_w.value()
+            data["height"] = self.cuboid_h.value()
+        return data
+
+
+class EditSampleDialog(QDialog):
+    def __init__(self, current_data, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("修改信息")
+        self.resize(550, 750)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        form_layout = QFormLayout()
+        form_layout.setVerticalSpacing(15)
+        form_layout.setHorizontalSpacing(20)
+
+        self.id_input = QLineEdit(current_data.get("id", ""))
+        form_layout.addRow("试样编号:", self.id_input)
+
+        self.icon_combo = QComboBox()
+        self.icon_combo.setView(QListView())
+        self.icon_combo.addItems(SAMPLE_ICONS)
+        font = QFont();
+        font.setPointSize(16);
+        self.icon_combo.setFont(font)
+        current_emoji = current_data.get("icon_emoji", "🧪")
+        idx = self.icon_combo.findText(current_emoji)
+        if idx >= 0: self.icon_combo.setCurrentIndex(idx)
+        form_layout.addRow("试样图标:", self.icon_combo)
+
+        self.mass_input = QDoubleSpinBox()
+        self.mass_input.setRange(0, 9999.99);
+        self.mass_input.setDecimals(2);
+        self.mass_input.setSuffix(" g")
+        self.mass_input.setValue(float(current_data.get("initial_mass", 0)))
+        form_layout.addRow("初始质量:", self.mass_input)
+
+        self.shape_combo = QComboBox()
+        self.shape_combo.setView(QListView(self.shape_combo))
+        self.shape_combo.addItems(["未指定", "圆柱体 (Cylinder)", "正方体 (Cube)", "长方体 (Cuboid)"])
+        form_layout.addRow("试样形状:", self.shape_combo)
+
+        self.dim_stack = QStackedWidget()
+        self.dim_stack.addWidget(QWidget())
+
+        page_cyl = QWidget();
+        lay_cyl = QFormLayout(page_cyl);
+        lay_cyl.setContentsMargins(0, 0, 0, 0)
+        self.cyl_r = QDoubleSpinBox();
+        self.cyl_r.setRange(0, 9999);
+        self.cyl_r.setDecimals(0);
+        self.cyl_r.setSuffix(" mm")
+        self.cyl_h = QDoubleSpinBox();
+        self.cyl_h.setRange(0, 9999);
+        self.cyl_h.setDecimals(0);
+        self.cyl_h.setSuffix(" mm")
+        lay_cyl.addRow("半径 (r):", self.cyl_r);
+        lay_cyl.addRow("高度 (h):", self.cyl_h)
+        self.dim_stack.addWidget(page_cyl)
+
+        page_cube = QWidget();
+        lay_cube = QFormLayout(page_cube);
+        lay_cube.setContentsMargins(0, 0, 0, 0)
+        self.cube_a = QDoubleSpinBox();
+        self.cube_a.setRange(0, 9999);
+        self.cube_a.setDecimals(0);
+        self.cube_a.setSuffix(" mm")
+        lay_cube.addRow("边长 (a):", self.cube_a)
+        self.dim_stack.addWidget(page_cube)
+
+        page_cuboid = QWidget();
+        lay_cuboid = QFormLayout(page_cuboid);
+        lay_cuboid.setContentsMargins(0, 0, 0, 0)
+        self.cuboid_l = QDoubleSpinBox();
+        self.cuboid_l.setRange(0, 9999);
+        self.cuboid_l.setDecimals(0);
+        self.cuboid_l.setSuffix(" mm")
+        self.cuboid_w = QDoubleSpinBox();
+        self.cuboid_w.setRange(0, 9999);
+        self.cuboid_w.setDecimals(0);
+        self.cuboid_w.setSuffix(" mm")
+        self.cuboid_h = QDoubleSpinBox();
+        self.cuboid_h.setRange(0, 9999);
+        self.cuboid_h.setDecimals(0);
+        self.cuboid_h.setSuffix(" mm")
+        lay_cuboid.addRow("长度 (L):", self.cuboid_l);
+        lay_cuboid.addRow("宽度 (W):", self.cuboid_w);
+        lay_cuboid.addRow("高度 (H):", self.cuboid_h)
+        self.dim_stack.addWidget(page_cuboid)
+
+        form_layout.addRow("几何尺寸:", self.dim_stack)
+        self.shape_combo.currentIndexChanged.connect(self.dim_stack.setCurrentIndex)
+
+        shape_str = current_data.get("shape", "未指定")
+        idx = self.shape_combo.findText(shape_str)
+        if idx >= 0:
+            self.shape_combo.setCurrentIndex(idx)
+        else:
+            self.shape_combo.setCurrentIndex(0)
+
+        self.cyl_r.setValue(float(current_data.get("radius", 0)))
+        self.cyl_h.setValue(float(current_data.get("height", 0)))
+        self.cube_a.setValue(float(current_data.get("side_length", 0)))
+        self.cuboid_l.setValue(float(current_data.get("length", 0)))
+        self.cuboid_w.setValue(float(current_data.get("width", 0)))
+        if "height" in current_data and idx == 3:
+            self.cuboid_h.setValue(float(current_data.get("height", 0)))
+
+        self.desc_input = QTextEdit()
+        desc = current_data.get("description", "") or current_data.get("note", "")
+        self.desc_input.setPlainText(desc)
+        self.desc_input.setMaximumHeight(60)
+        form_layout.addRow("试样描述:", self.desc_input)
+
+        self.date_prep = create_datetime_edit(current_data.get("date_prep"))
+        self.date_complete = create_datetime_edit(current_data.get("date_complete"))
+        self.date_demold = create_datetime_edit(current_data.get("date_demold"))
+        self.date_test = create_datetime_edit(current_data.get("date_test"))
+        form_layout.addRow("制样时间:", self.date_prep)
+        form_layout.addRow("完成时间:", self.date_complete)
+        form_layout.addRow("拆模时间:", self.date_demold)
+        form_layout.addRow("测试时间:", self.date_test)
+
+        layout.addLayout(form_layout)
+        layout.addStretch()
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept);
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+        apply_dialog_theme(self, self.buttons)
+
+    def get_data(self):
+        data = {
+            "id": self.id_input.text().strip(),
+            "initial_mass": self.mass_input.value(),
+            "description": self.desc_input.toPlainText(),
+            "icon_emoji": self.icon_combo.currentText(),
+            "date_prep": self.date_prep.text(),
+            "date_complete": self.date_complete.text(),
+            "date_demold": self.date_demold.text(),
+            "date_test": self.date_test.text(),
+            "shape": self.shape_combo.currentText()
+        }
+        shape_idx = self.shape_combo.currentIndex()
+        if shape_idx == 1:
+            data["radius"] = self.cyl_r.value()
+            data["height"] = self.cyl_h.value()
+        elif shape_idx == 2:
+            data["side_length"] = self.cube_a.value()
+        elif shape_idx == 3:
+            data["length"] = self.cuboid_l.value()
+            data["width"] = self.cuboid_w.value()
+            data["height"] = self.cuboid_h.value()
+        return data
+
+
+class AddWeightDialog(QDialog):
+    def __init__(self, current_data=None, parent=None):
+        super().__init__(parent)
+        title = "修改质量记录" if current_data else "记录质量"
+        self.setWindowTitle(title)
+        self.resize(350, 220)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        form = QFormLayout()
+        form.setVerticalSpacing(15)
+        form.setHorizontalSpacing(15)
+
+        init_date = current_data.get("date") if current_data else None
+        self.date_input = create_datetime_edit(init_date)
+
+        self.mass_input = QDoubleSpinBox()
+        self.mass_input.setRange(0, 9999.99)
+        self.mass_input.setDecimals(2)
+        self.mass_input.setSuffix(" g")
+
+        if current_data:
+            self.mass_input.setValue(float(current_data.get("mass", 0)))
+
+        form.addRow("称重时间:", self.date_input)
+        form.addRow("当前质量:", self.mass_input)
+
+        layout.addLayout(form)
+        layout.addStretch()
+
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+        apply_dialog_theme(self, self.buttons)
+
+    def get_data(self):
+        return {
+            "date": self.date_input.text(),
+            "mass": self.mass_input.value()
+        }
+
+
+class NewProjectDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("新建项目")
+        self.resize(400, 250)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        form = QFormLayout()
+        form.setVerticalSpacing(15)
+
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText("例如: 2025_砂柱实验")
+
+        self.desc_input = QLineEdit()
+        self.desc_input.setPlaceholderText("简单描述实验目的...")
+
+        form.addRow("项目名称:", self.name_input)
+        form.addRow("项目描述:", self.desc_input)
+
+        layout.addLayout(form)
+        layout.addStretch()
+
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+        apply_dialog_theme(self, self.buttons)
+
+    def get_data(self):
+        return {
+            "name": self.name_input.text().strip(),
+            "description": self.desc_input.text().strip()
+        }
+
+
+class BatchCopyWeightDialog(QDialog):
+    def __init__(self, source_id, all_samples, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"批量应用质量记录 - 源: {source_id}")
+        self.resize(450, 600)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(15)
+
+        # 提示
+        lbl = QLabel(f"请选择要将 [{source_id}] 的质量记录应用到哪些试样？")
+        lbl.setWordWrap(True)
+        layout.addWidget(lbl)
+
+        # 列表
+        self.list_widget = QListWidget()
+        self.list_widget.setStyleSheet("""
+            QListWidget { border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
+            QListWidget::item { padding: 5px; }
+            QListWidget::item:hover { background: #f0f2f5; }
+        """)
+        for s_id in all_samples:
+            if s_id == source_id: continue  # 跳过自己
+            item = QListWidgetItem(s_id)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.list_widget.addItem(item)
+
+        layout.addWidget(self.list_widget)
+
+        # 全选按钮
+        btn_layout = QHBoxLayout()
+        self.btn_all = QPushButton("全选")
+        self.btn_none = QPushButton("全不选")
+
+        # 按钮样式微调 (小一点)
+        mini_btn_style = "QPushButton { padding: 4px 10px; font-size: 12px; background: #eee; border: none; border-radius: 3px; } QPushButton:hover { background: #ddd; }"
+        self.btn_all.setStyleSheet(mini_btn_style)
+        self.btn_none.setStyleSheet(mini_btn_style)
+
+        self.btn_all.clicked.connect(lambda: self.set_all_checked(True))
+        self.btn_none.clicked.connect(lambda: self.set_all_checked(False))
+
+        btn_layout.addWidget(self.btn_all)
+        btn_layout.addWidget(self.btn_none)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
+
+        # 选项：覆盖模式
+        self.overwrite_cb = QCheckBox("⚠️ 完全覆盖 (清空目标原有的记录，完全替换为源记录)")
+        self.overwrite_cb.setStyleSheet("color: #e74c3c; font-weight: bold;")
+        self.overwrite_cb.setToolTip("如果不勾选，则为【合并模式】：保留目标已有记录，仅追加新日期的记录。")
+        layout.addWidget(self.overwrite_cb)
+
+        layout.addStretch()
+
+        # 底部按钮
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+        apply_dialog_theme(self, self.buttons)
+
+    def set_all_checked(self, checked):
+        state = Qt.Checked if checked else Qt.Unchecked
+        for i in range(self.list_widget.count()):
+            self.list_widget.item(i).setCheckState(state)
+
+    def get_data(self):
+        selected_ids = []
+        for i in range(self.list_widget.count()):
+            item = self.list_widget.item(i)
+            if item.checkState() == Qt.Checked:
+                selected_ids.append(item.text())
+
+        return {
+            "target_ids": selected_ids,
+            "overwrite": self.overwrite_cb.isChecked()
+        }
+
+
+# === 手动添加应力应变数据对话框 ===
+class AddStressDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("记录应力应变点")
+        self.resize(350, 200)
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        form = QFormLayout()
+        form.setVerticalSpacing(15)
+
+        # 应变输入 (Strain)
+        self.strain_input = QDoubleSpinBox()
+        self.strain_input.setRange(0, 9999.99)  # 允许较大的应变范围
+        self.strain_input.setDecimals(3)  # 保留3位小数
+        self.strain_input.setSuffix(" %")
+        self.strain_input.setSingleStep(0.1)
+
+        # 应力输入 (Stress)
+        self.stress_input = QDoubleSpinBox()
+        self.stress_input.setRange(0, 999999.99)  # 应力可能很大
+        self.stress_input.setDecimals(3)
+        self.stress_input.setSuffix(" kPa")  # 默认单位，可视情况修改
+        self.stress_input.setSingleStep(10.0)
+
+        form.addRow("应变 (Strain):", self.strain_input)
+        form.addRow("应力 (Stress):", self.stress_input)
+
+        layout.addLayout(form)
+        layout.addStretch()
+
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout.addWidget(self.buttons)
+
+        apply_dialog_theme(self, self.buttons)
+
+    def get_data(self):
+        return {
+            "strain": self.strain_input.value(),
+            "stress": self.stress_input.value()
+        }
+
+====================
+File: src\views\dialog_utils.py
+====================
+from PySide6.QtWidgets import (QDialogButtonBox, QDateTimeEdit, QCalendarWidget)
+from PySide6.QtCore import Qt, QDateTime, QTime
+
+# === 定义一组常用的科研 Emoji 图标 ===
+SAMPLE_ICONS = [
+    "🧪", "🧫", "🪨", "🧱", "⏳", "💧",
+    "🌡️", "🔬", "🧊", "🏺", "📊", "📦"
+]
+
+# === 基础弹窗样式 ===
+DIALOG_STYLES = """
+    QDialog { background-color: #ffffff; }
+    QLabel { color: #2c3e50; font-size: 14px; font-weight: 600; font-family: "Microsoft YaHei"; }
+
+    QLineEdit, QDoubleSpinBox, QDateTimeEdit, QTextEdit, QComboBox {
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 6px 10px;
+        background-color: #f9f9f9; 
+        color: #333333;
+        font-size: 14px;
+        font-family: "Microsoft YaHei";
+        min-height: 20px;
+    }
+    QLineEdit:focus, QDoubleSpinBox:focus, QDateTimeEdit:focus, QTextEdit:focus, QComboBox:focus {
+        background-color: #ffffff;
+        border: 1px solid #3498db;
+    }
+    QLineEdit:read-only { background-color: #f0f0f0; color: #888; }
+
+    /* 下拉菜单美化 */
+    QComboBox::drop-down {
+        border: none; background: transparent; width: 20px;
+    }
+    QComboBox QAbstractItemView {
+        border: 1px solid #3498db;
+        background-color: white;
+        selection-background-color: #ecf5ff;
+        selection-color: #3498db;
+        outline: none;
+        padding: 4px;
+    }
+"""
+
+# === 日历控件专属美化样式 ===
+CALENDAR_STYLES = """
+    /* 1. 整体背景和导航条 */
+    QCalendarWidget QWidget#qt_calendar_navigationbar { 
+        background-color: #3498db; 
+        min-height: 35px;
+    }
+    QCalendarWidget QToolButton {
+        color: white;
+        background-color: transparent;
+        border: none;
+        font-weight: bold;
+        icon-size: 20px;
+        height: 30px;
+    }
+    QCalendarWidget QToolButton:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+    QCalendarWidget QToolButton::menu-indicator { image: none; }
+
+    /* 2. 年份输入框和月份菜单 */
+    QCalendarWidget QSpinBox {
+        background-color: transparent;
+        color: white;
+        border: none;
+        selection-background-color: rgba(255, 255, 255, 0.3);
+        font-weight: bold;
+    }
+    QCalendarWidget QMenu { background-color: white; color: #333; border: 1px solid #ccc; }
+
+    /* 3. 日期网格区域 */
+    QCalendarWidget QAbstractItemView:enabled {
+        background-color: white;
+        color: #333;
+        selection-background-color: #3498db; 
+        selection-color: white;             
+        font-family: "Microsoft YaHei";
+        font-size: 13px;
+        outline: none;
+    }
+    QCalendarWidget QAbstractItemView:disabled { color: #bbb; }
+"""
+
+
+def apply_dialog_theme(dialog, button_box=None):
+    """应用统一样式到对话框"""
+    dialog.setStyleSheet(DIALOG_STYLES)
+    if button_box:
+        ok_btn = button_box.button(QDialogButtonBox.Ok)
+        if ok_btn:
+            ok_btn.setText("确定")
+            ok_btn.setCursor(Qt.PointingHandCursor)
+            ok_btn.setStyleSheet(
+                "QPushButton { background-color: #3498db; color: white; border: none; border-radius: 6px; padding: 8px 25px; font-weight: bold; font-size: 14px; } QPushButton:hover { background-color: #2980b9; }")
+
+        cancel_btn = button_box.button(QDialogButtonBox.Cancel)
+        if cancel_btn:
+            cancel_btn.setText("取消")
+            cancel_btn.setCursor(Qt.PointingHandCursor)
+            cancel_btn.setStyleSheet(
+                "QPushButton { background-color: #f1f2f6; color: #7f8c8d; border: none; border-radius: 6px; padding: 8px 25px; font-size: 14px; } QPushButton:hover { background-color: #e4e7eb; color: #2c3e50; }")
+
+
+def create_datetime_edit(init_str=None):
+    """创建一个带有自定义样式的日期时间选择器"""
+    dte = QDateTimeEdit()
+    dte.setCalendarPopup(True)
+    dte.setDisplayFormat("yyyy-MM-dd-HH':00'")
+    dte.setMinimumWidth(200)
+    dte.setStyleSheet(DIALOG_STYLES + CALENDAR_STYLES)
+
+    current = QDateTime.currentDateTime()
+    current.setTime(QTime(current.time().hour(), 0, 0))
+    if init_str and init_str != "-":
+        dt = QDateTime.fromString(init_str, "yyyy-MM-dd-HH:00")
+        if not dt.isValid():
+            dt = QDateTime.fromString(init_str, "yyyy-MM-dd")
+            dt.setTime(QTime(0, 0, 0))
+        if dt.isValid():
+            dte.setDateTime(dt)
+        else:
+            dte.setDateTime(current)
+    else:
+        dte.setDateTime(current)
+    return dte
+
+====================
+File: src\views\main_window.py
+====================
+import os
+import json
+import sys
+# 1. 引入所有必要的 Qt 组件 (包括你之前报错缺少的 QGuiApplication, QAbstractItemView)
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
+                               QSplitter, QTreeWidget, QTreeWidgetItem,
+                               QToolBar, QMessageBox, QMenu, QInputDialog, QStyle, QFrame, QApplication,
+                               QAbstractItemView)
+from PySide6.QtGui import QAction, QIcon, QColor, QPalette, QDrag, QPixmap, QPainter, QFont, QGuiApplication
+from PySide6.QtCore import Qt, QSize, QMimeData
+
+from src.controllers.file_manager import FileManager
+import config
+from src.views.dialogs import NewProjectDialog, NewSampleDialog, BatchCopyWeightDialog
+from src.views.sample_view import SampleDetailView
+
+
+# === 2. FileTreeWidget 类 (这段代码其实没变，保持原样即可) ===
+class FileTreeWidget(QTreeWidget):
+    def __init__(self, parent=None, file_manager=None):
+        super().__init__(parent)
+        self.file_manager = file_manager
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setDefaultDropAction(Qt.MoveAction)
+
+    def dropEvent(self, event):
+        super().dropEvent(event)
+        if self.file_manager:
+            new_structure = {}
+            root = self.invisibleRootItem()
+            project_count = root.childCount()
+            for i in range(project_count):
+                project_item = root.child(i)
+                project_name = project_item.text(0)
+                samples = []
+                sample_count = project_item.childCount()
+                for j in range(sample_count):
+                    sample_item = project_item.child(j)
+                    if sample_item.data(0, Qt.UserRole) == "sample":
+                        samples.append(sample_item.text(0))
+                new_structure[project_name] = samples
+            self.file_manager.update_structure_order(new_structure)
+
+
+# === 3. MainWindow 类 (这里是修复重点！) ===
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.file_manager = FileManager()
+
+        self.setWindowTitle(" 试样记录管理中心 v.1.2.0")
+
+        # --- 修复 2：屏幕自适应代码 (防止屏幕小导致显示不全) ---
+        # 方案：启动即最大化 (推荐)
+        # self.showMaximized()
+
+        # (备用方案：如果你不喜欢最大化，可以用下面的 80% 大小代码，二选一即可)
+        screen = QGuiApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        new_width = int(screen_geometry.width() * 0.8)
+        new_height = int(screen_geometry.height() * 0.8)
+        self.resize(new_width, new_height)
+        self.move(
+            screen_geometry.x() + (screen_geometry.width() - new_width) // 2,
+            screen_geometry.y() + (screen_geometry.height() - new_height) // 2
+        )
+
+        # === 工具栏 ===
+        toolbar = QToolBar("MainToolbar")
+        toolbar.setIconSize(QSize(20, 20))
+        toolbar.setMovable(False)
+        toolbar.setStyleSheet("""
+            QToolBar { background: white; border-bottom: 1px solid #e0e0e0; padding: 5px; spacing: 10px; }
+            QToolButton { background: transparent; border-radius: 4px; padding: 5px 10px; font-weight: bold; color: #555; }
+            QToolButton:hover { background-color: #f0f2f5; color: #3498db; }
+        """)
+        self.addToolBar(toolbar)
+
+        new_proj_action = QAction("📁 新建项目", self)
+        new_proj_action.triggered.connect(self.on_new_project)
+        toolbar.addAction(new_proj_action)
+
+        new_sample_action = QAction("🧪 新建试样", self)
+        new_sample_action.triggered.connect(self.on_new_sample)
+        toolbar.addAction(new_sample_action)
+
+        # === 主界面 ===
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.setHandleWidth(1)
+        splitter.setStyleSheet("QSplitter::handle { background-color: #dcdfe6; }")
+
+        # === 左侧 ===
+        # 修复 3：因为上面修复 1 已经创建了 self.file_manager，这里就不会报错了
+        self.project_tree = FileTreeWidget(file_manager=self.file_manager)
+        self.project_tree.setHeaderHidden(True)
+        self.project_tree.setMinimumWidth(220)
+        self.project_tree.setIconSize(QSize(24, 24))
+        self.project_tree.setIndentation(20)
+        self.project_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.project_tree.customContextMenuRequested.connect(self.show_tree_context_menu)
+        self.project_tree.itemClicked.connect(self.on_item_selected)
+
+        self.project_tree.setStyleSheet("""
+            QTreeWidget { background-color: #2c3e50; color: #ecf0f1; border: none; padding-top: 10px; font-size: 13px; }
+            QTreeWidget::item { height: 35px; padding-left: 5px; border-radius: 4px; margin: 2px 5px; }
+            QTreeWidget::item:hover { background-color: #34495e; }
+            QTreeWidget::item:selected { background-color: #3498db; color: white; }
+        """)
+
+        # === 右侧 ===
+        self.detail_view = SampleDetailView(self.file_manager)
+        self.detail_view.require_refresh.connect(self.refresh_data)
+
+        splitter.addWidget(self.project_tree)
+        splitter.addWidget(self.detail_view)
+        splitter.setSizes([220, 980])
+        main_layout.addWidget(splitter)
+        self.refresh_data()
+
+    def center_on_screen(self):
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        window_geometry = self.frameGeometry()
+        center_point = screen_geometry.center()
+        window_geometry.moveCenter(center_point)
+        self.move(window_geometry.topLeft())
+
+    def _create_emoji_icon(self, emoji_char):
+        pixmap = QPixmap(32, 32)
+        pixmap.fill(Qt.transparent)
+        painter = QPainter(pixmap)
+        font = QFont("Segoe UI Emoji", 24)
+        if not font.exactMatch(): font = QFont("Apple Color Emoji", 24)
+
+        painter.setFont(font)
+        painter.drawText(pixmap.rect(), Qt.AlignCenter, emoji_char)
+        painter.end()
+        return QIcon(pixmap)
+
+    def refresh_data(self):
+        expanded_items = set()
+        root = self.project_tree.invisibleRootItem()
+        for i in range(root.childCount()):
+            item = root.child(i)
+            if item.isExpanded():
+                expanded_items.add(item.text(0))
+
+        self.project_tree.clear()
+        data = self.file_manager.get_project_structure()
+
+        for project_name, samples in data.items():
+            project_item = QTreeWidgetItem(self.project_tree, [project_name])
+            project_item.setData(0, Qt.UserRole, "project")
+            project_item.setIcon(0, self.style().standardIcon(QStyle.SP_DirIcon))
+            project_item.setFlags(project_item.flags() | Qt.ItemIsDropEnabled)
+            font = project_item.font(0);
+            font.setBold(True);
+            font.setPointSize(10);
+            project_item.setFont(0, font)
+
+            if project_name in expanded_items: project_item.setExpanded(True)
+
+            for sample_name in samples:
+                sample_item = QTreeWidgetItem(project_item, [sample_name])
+                sample_item.setData(0, Qt.UserRole, "sample")
+                sample_item.setFlags(sample_item.flags() & ~Qt.ItemIsDropEnabled | Qt.ItemIsDragEnabled)
+
+                # 读取 JSON 获取 Emoji
+                emoji_icon = None
+                try:
+                    json_path = os.path.join(config.DATA_ROOT, project_name, sample_name, "sample_info.json")
+                    if os.path.exists(json_path):
+                        with open(json_path, 'r', encoding='utf-8') as f:
+                            info = json.load(f)
+                            emoji_char = info.get("icon_emoji", "🧪")
+                            emoji_icon = self._create_emoji_icon(emoji_char)
+                except:
+                    pass
+
+                if emoji_icon:
+                    sample_item.setIcon(0, emoji_icon)
+                else:
+                    sample_item.setIcon(0, self.style().standardIcon(QStyle.SP_FileIcon))
+
+            project_item.setExpanded(True)
+
+    def on_item_selected(self, item, column):
+        item_type = item.data(0, Qt.UserRole)
+        name = item.text(0)
+        if item_type == "sample":
+            project_name = item.parent().text(0)
+            self.detail_view.load_sample(project_name, name)
+        else:
+            self.detail_view.show_welcome(name)
+
+    def show_tree_context_menu(self, pos):
+        item = self.project_tree.itemAt(pos)
+        if not item: return
+        item_type = item.data(0, Qt.UserRole)
+        name = item.text(0)
+        menu = QMenu(self)
+        menu.setStyleSheet(
+            "QMenu { background: white; border: 1px solid #ddd; } QMenu::item { padding: 5px 20px; } QMenu::item:selected { background: #3498db; color: white; }")
+
+        if item_type == "project":
+            rename = QAction("✏️ 重命名项目", self);
+            rename.triggered.connect(lambda: self.rename_project_ui(name));
+            menu.addAction(rename)
+            delete = QAction("🗑️ 删除项目", self);
+            delete.triggered.connect(lambda: self.delete_project_ui(name));
+            menu.addAction(delete)
+        elif item_type == "sample":
+            project_name = item.parent().text(0)
+
+            copy_action = QAction("📄 复制参数新建", self)
+            copy_action.triggered.connect(lambda: self.copy_sample_ui(project_name, name))
+            menu.addAction(copy_action)
+
+            batch_copy_w = QAction("📊 批量应用质量记录...", self)
+            batch_copy_w.triggered.connect(lambda: self.open_batch_weight_ui(project_name, name))
+            menu.addAction(batch_copy_w)
+
+            menu.addSeparator()
+
+            rename = QAction("✏️ 重命名试样", self);
+            rename.triggered.connect(lambda: self.rename_sample_ui(project_name, name));
+            menu.addAction(rename)
+            delete = QAction("🗑️ 删除试样", self);
+            delete.triggered.connect(lambda: self.delete_sample_ui(project_name, name));
+            menu.addAction(delete)
+
+        menu.exec(self.project_tree.mapToGlobal(pos))
+
+    def copy_sample_ui(self, project_name, sample_id):
+        source_data = self.file_manager.get_sample_info(project_name, sample_id)
+        if not source_data: return
+        dialog = NewSampleDialog(self, template_data=source_data)
+        if dialog.exec():
+            d = dialog.get_data()
+            if d["id"]:
+                if self.file_manager.create_sample(project_name, d["id"], d):
+                    self.refresh_data()
+                    self.statusBar().showMessage(f"试样 {d['id']} 创建成功 (复制自 {sample_id})")
+                else:
+                    QMessageBox.warning(self, "错误", f"创建失败，可能编号 {d['id']} 已存在")
+
+    def open_batch_weight_ui(self, project_name, source_id):
+        structure = self.file_manager.get_project_structure()
+        all_samples = structure.get(project_name, [])
+        if len(all_samples) <= 1:
+            QMessageBox.information(self, "提示", "该项目下没有其他试样可供复制。")
+            return
+        dialog = BatchCopyWeightDialog(source_id, all_samples, self)
+        if dialog.exec():
+            data = dialog.get_data()
+            target_ids = data["target_ids"]
+            overwrite = data["overwrite"]
+            if not target_ids: return
+            count = self.file_manager.batch_copy_weights(project_name, source_id, target_ids, overwrite)
+            if self.detail_view.current_project == project_name and self.detail_view.current_sample in target_ids:
+                self.detail_view.load_sample(project_name, self.detail_view.current_sample)
+            QMessageBox.information(self, "完成", f"成功将质量记录应用到了 {count} 个试样。")
+
+    def rename_project_ui(self, old_name):
+        new_name, ok = QInputDialog.getText(self, "重命名项目", "请输入新项目名:", text=old_name)
+        if ok and new_name and new_name != old_name:
+            if self.file_manager.rename_project(old_name, new_name):
+                self.refresh_data()
+            else:
+                QMessageBox.warning(self, "错误", "重命名失败")
+
+    def delete_project_ui(self, name):
+        if QMessageBox.question(self, "确认", f"删除项目 {name}？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            if self.file_manager.delete_project(name): self.refresh_data(); self.detail_view.show_welcome()
+
+    def rename_sample_ui(self, p_name, old_id):
+        new_id, ok = QInputDialog.getText(self, "重命名试样", "新编号:", text=old_id)
+        if ok and new_id != old_id:
+            if self.file_manager.rename_sample(p_name, old_id, new_id):
+                self.refresh_data()
+                if self.detail_view.current_sample == old_id: self.detail_view.load_sample(p_name, new_id)
+
+    def delete_sample_ui(self, p_name, s_id):
+        if QMessageBox.question(self, "确认", f"删除试样 {s_id}？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            if self.file_manager.delete_sample(p_name, s_id):
+                self.refresh_data()
+                if self.detail_view.current_sample == s_id: self.detail_view.show_welcome()
+
+    def on_new_project(self):
+        dialog = NewProjectDialog(self)
+        if dialog.exec():
+            d = dialog.get_data()
+            if d["name"] and self.file_manager.create_project(d["name"], d["description"]):
+                self.refresh_data()
+                self.statusBar().showMessage(f"项目 {d['name']} 创建成功")
+
+    def on_new_sample(self):
+        item = self.project_tree.currentItem()
+        if not item: return
+        p_name = item.parent().text(0) if item.data(0, Qt.UserRole) == "sample" else item.text(0)
+        dialog = NewSampleDialog(self)
+        if dialog.exec():
+            d = dialog.get_data()
+            if d["id"] and self.file_manager.create_sample(p_name, d["id"], d):
+                self.refresh_data()
+                self.statusBar().showMessage(f"试样 {d['id']} 创建成功")
+
+====================
+File: src\views\project_view.py
+====================
+
+
+====================
+File: src\views\sample_view.py
+====================
+import os
+import subprocess
+from datetime import datetime
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame,
+                               QScrollArea, QGridLayout, QMenu, QMessageBox,
+                               QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton,
+                               QSizePolicy, QComboBox, QFileDialog, QGraphicsDropShadowEffect)
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QPixmap, QColor
+
+from src.views.dialogs import AddWeightDialog, EditSampleDialog, AddStressDialog
+from src.views.chart_widget import MassTrendChart
+from src.views.stress_chart import StressStrainChart
+from src.utils.data_importer import DataImporter
+
+# === 样式常量 ===
+CARD_STYLE = """
+    QFrame#ModernCard {
+        background-color: white;
+        border: 1px solid #ebeef5;
+        border-radius: 8px;
+    }
+    QFrame#ModernCardHeader {
+        background-color: #fafafa;
+        border-bottom: 1px solid #ebeef5;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+"""
+TITLE_STYLE = """
+    QLabel { font-size: 13px; font-weight: bold; color: #2c3e50; font-family: "Segoe UI Emoji", "Microsoft YaHei"; }
+"""
+BTN_GHOST_STYLE = """
+    QPushButton {
+        background-color: transparent; border: 1px solid #dcdfe6; 
+        color: #606266; border-radius: 6px; padding: 3px 10px; font-size: 11px;
+        min-width: 60px;
+    }
+    QPushButton:hover { border-color: #409eff; color: #409eff; background-color: #ecf5ff; }
+"""
+BTN_PRIMARY_STYLE = """
+    QPushButton {
+        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #409eff, stop:1 #3a8ee6);
+        border: none; 
+        color: white; border-radius: 6px; padding: 4px 12px; font-size: 11px; font-weight: bold;
+        min-width: 70px; 
+    }
+    QPushButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #66b1ff, stop:1 #409eff); }
+    QPushButton:pressed { background-color: #337ecc; }
+    QPushButton:disabled { background-color: #a0cfff; }
+"""
+BTN_SUCCESS_STYLE = """
+    QPushButton {
+        background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #67c23a, stop:1 #5daf34);
+        border: none; 
+        color: white; border-radius: 6px; padding: 4px 12px; font-size: 11px; font-weight: bold;
+        min-width: 70px;
+    }
+    QPushButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #85ce61, stop:1 #67c23a); }
+    QPushButton:pressed { background-color: #529b2e; }
+"""
+TABLE_STYLE = """
+    QTableWidget {
+        background-color: white;
+        border: 1px solid #ebeef5;
+        border-radius: 6px;
+        gridline-color: #f2f6fc;
+        font-size: 11px;
+    }
+    QHeaderView::section {
+        background-color: #fafafe;
+        color: #555;
+        padding: 6px;
+        border: none;
+        border-bottom: 2px solid #e4e7ed;
+        font-weight: bold;
+        font-family: "Segoe UI Emoji", "Microsoft YaHei";
+    }
+    QTableWidget::item { padding: 4px; }
+    QTableWidget::item:selected { background-color: #ecf5ff; color: #409eff; }
+"""
+MENU_STYLE = """
+    QMenu {
+        background-color: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 4px;
+        padding: 4px 0px;
+    }
+    QMenu::item {
+        background-color: transparent;
+        color: #333333;
+        padding: 6px 20px;
+        margin: 2px 4px;
+        border-radius: 4px;
+    }
+    QMenu::item:selected {
+        background-color: #ecf5ff;
+        color: #409eff;
+    }
+    QMenu::separator {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 4px 0px;
+    }
+"""
+
+
+class ModernCard(QFrame):
+    def __init__(self, title, parent=None):
+        super().__init__(parent)
+        self.setObjectName("ModernCard")
+        self.setStyleSheet(CARD_STYLE)
+
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 10))
+        shadow.setOffset(0, 2)
+        self.setGraphicsEffect(shadow)
+
+        self.layout_main = QVBoxLayout(self)
+        self.layout_main.setContentsMargins(0, 0, 0, 0)
+        self.layout_main.setSpacing(0)
+
+        self.header = QFrame()
+        self.header.setObjectName("ModernCardHeader")
+        self.header_layout = QHBoxLayout(self.header)
+        self.header_layout.setContentsMargins(12, 8, 12, 8)
+
+        self.lbl_title = QLabel(title)
+        self.lbl_title.setStyleSheet(TITLE_STYLE)
+        self.header_layout.addWidget(self.lbl_title)
+        self.header_layout.addStretch()
+
+        self.content = QWidget()
+        self.content_layout = QVBoxLayout(self.content)
+        self.content_layout.setContentsMargins(12, 12, 12, 12)
+        self.content_layout.setSpacing(10)
+
+        self.layout_main.addWidget(self.header)
+        self.layout_main.addWidget(self.content)
+
+    def add_header_widget(self, widget):
+        self.header_layout.addWidget(widget)
+
+
+class AttachmentCard(QFrame):
+    doubleClicked = Signal()
+
+    def __init__(self, file_data, parent=None):
+        super().__init__(parent)
+        self.file_data = file_data
+        self.setFixedSize(90, 110)
+        self.setStyleSheet("""
+            AttachmentCard { 
+                background: #ffffff; 
+                border: 1px solid #ebeef5; 
+                border-radius: 8px; 
+            }
+            AttachmentCard:hover { 
+                border-color: #409eff; 
+                background: #ecf5ff; 
+                margin-top: -2px; 
+            }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(4, 8, 4, 4)
+        layout.setSpacing(4)
+
+        self.icon_lbl = QLabel()
+        self.icon_lbl.setAlignment(Qt.AlignCenter)
+        self.icon_lbl.setStyleSheet("border: none; background: transparent;")
+
+        if file_data['type'] == 'image':
+            pix = QPixmap(file_data['thumb']).scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.icon_lbl.setPixmap(pix)
+        else:
+            txt = "📄"
+            if "xls" in file_data['ext']:
+                txt = "📊"
+            elif "pdf" in file_data['ext']:
+                txt = "📕"
+            elif "txt" in file_data['ext']:
+                txt = "📝"
+            self.icon_lbl.setText(txt)
+            self.icon_lbl.setStyleSheet("font-size: 28px; border: none; background: transparent;")
+
+        self.name_lbl = QLabel(file_data['name'])
+        self.name_lbl.setAlignment(Qt.AlignCenter)
+        self.name_lbl.setWordWrap(True)
+        self.name_lbl.setStyleSheet("color: #606266; font-size: 10px; border: none; background: transparent;")
+
+        layout.addWidget(self.icon_lbl)
+        layout.addWidget(self.name_lbl)
+        layout.addStretch()
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.doubleClicked.emit()
+        super().mouseDoubleClickEvent(event)
+
+
+class SampleDetailView(QWidget):
+    require_refresh = Signal()
+
+    def __init__(self, file_manager):
+        super().__init__()
+        self.file_manager = file_manager
+        self.current_project = None
+        self.current_sample = None
+        self.current_info = None
+
+        self.setAcceptDrops(True)
+
+        self.outer_layout = QVBoxLayout(self)
+        self.outer_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+        self.scroll_area.setStyleSheet("QScrollArea { background-color: #f7f8fa; }")
+
+        self.content_widget = QWidget()
+        self.content_widget.setStyleSheet("background-color: transparent;")
+
+        self.main_grid = QGridLayout(self.content_widget)
+        self.main_grid.setContentsMargins(10, 10, 10, 10)
+        self.main_grid.setSpacing(10)
+
+        self.scroll_area.setWidget(self.content_widget)
+        self.outer_layout.addWidget(self.scroll_area)
+
+        # 初始化模块
+        self._init_header_section()
+        self._init_mass_section()
+        self._init_stress_section()
+        self._init_gallery_section()
+        self._init_welcome_section()  # 新增欢迎页初始化
+
+        # 布局放置
+        self.main_grid.addWidget(self.header_card, 0, 0, 1, 2)
+        self.main_grid.addWidget(self.mass_card, 1, 0)
+        self.main_grid.addWidget(self.stress_card, 1, 1)
+        self.main_grid.addWidget(self.gallery_card, 2, 0, 1, 2)
+
+        self.main_grid.setColumnStretch(0, 1)
+        self.main_grid.setColumnStretch(1, 1)
+
+        self.show_welcome()
+
+    def _init_welcome_section(self):
+        """初始化空状态下的欢迎界面"""
+        self.welcome_container = QWidget()
+        self.welcome_container.setStyleSheet("background-color: transparent;")
+
+        layout = QVBoxLayout(self.welcome_container)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(20)
+
+        # 1. 大图标
+        icon_lbl = QLabel("🔬")
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji';")
+
+        # 2. 欢迎标题
+        title_lbl = QLabel("欢迎使用试样记录管理中心")
+        title_lbl.setAlignment(Qt.AlignCenter)
+        title_lbl.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei';")
+
+        # 3. 操作指引
+        guide_text = """
+        <div style='color: #7f8c8d; font-size: 14px; line-height: 1.5;'>
+            <p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p>
+            <p>📊 <b>功能亮点：</b>支持 UCS 数据导入、质量变化追踪及附件管理。</p>
+            <p>💡 <b>提示：</b>右键点击列表项可进行更多操作。</p>
+        </div>
+        """
+        guide_lbl = QLabel(guide_text)
+        guide_lbl.setAlignment(Qt.AlignCenter)
+        guide_lbl.setTextFormat(Qt.RichText)
+
+        layout.addWidget(icon_lbl)
+        layout.addWidget(title_lbl)
+        layout.addWidget(guide_lbl)
+
+        # 添加到主 Grid 中，占据所有位置
+        self.main_grid.addWidget(self.welcome_container, 0, 0, 3, 2)
+
+    def _init_header_section(self):
+        self.header_card = ModernCard("📋 试样概览")
+        h_layout = QHBoxLayout()
+        h_layout.setContentsMargins(0, 5, 0, 5)
+
+        self.emoji_label = QLabel("🧪")
+        self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px; font-family: 'Segoe UI Emoji';")
+
+        info_layout = QVBoxLayout()
+        info_layout.setSpacing(2)
+
+        title_line = QHBoxLayout()
+        title_line.setSpacing(8)
+
+        self.title_label = QLabel("未选择试样")
+        self.title_label.setStyleSheet("font-size: 16px; font-weight: 800; color: #303133;")
+
+        self.shape_label = QLabel("")
+        self.shape_label.setStyleSheet(
+            "color: #409eff; font-size: 11px; font-weight: bold; background: #ecf5ff; border-radius: 4px; padding: 1px 6px; border: 1px solid #d9ecff;")
+
+        title_line.addWidget(self.title_label)
+        title_line.addWidget(self.shape_label)
+        title_line.addStretch()
+
+        self.desc_label = QLabel("暂无描述")
+        self.desc_label.setStyleSheet("color: #909399; font-size: 12px;")
+
+        info_layout.addLayout(title_line)
+        info_layout.addWidget(self.desc_label)
+
+        h_layout.addWidget(self.emoji_label)
+        h_layout.addLayout(info_layout)
+        h_layout.addStretch(1)
+
+        self.time_container = QWidget()
+        time_layout = QHBoxLayout(self.time_container)
+        time_layout.setSpacing(6)
+        time_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.lbl_prep = self._create_mini_time_box("制样", "#909399")
+        self.lbl_comp = self._create_mini_time_box("完成", "#3498db")
+        self.lbl_demold = self._create_mini_time_box("拆模", "#9b59b6")
+        self.lbl_test = self._create_mini_time_box("测试", "#67c23a")
+
+        time_layout.addWidget(self.lbl_prep)
+        time_layout.addWidget(self._create_arrow())
+        time_layout.addWidget(self.lbl_comp)
+        time_layout.addWidget(self._create_arrow())
+        time_layout.addWidget(self.lbl_demold)
+        time_layout.addWidget(self._create_arrow())
+        time_layout.addWidget(self.lbl_test)
+
+        h_layout.addWidget(self.time_container)
+
+        container = QWidget()
+        container.setLayout(h_layout)
+        self.header_card.content_layout.addWidget(container)
+
+        self.edit_btn = QPushButton("✎ 修改")
+        self.edit_btn.setStyleSheet(BTN_GHOST_STYLE)
+        self.edit_btn.clicked.connect(self.on_edit_info_click)
+        self.header_card.add_header_widget(self.edit_btn)
+
+    def _create_mini_time_box(self, title, color):
+        lbl = QLabel(f"{title}\n-")
+        lbl.setAlignment(Qt.AlignCenter)
+        lbl.setStyleSheet(f"""
+            QLabel {{
+                font-size: 11px; font-weight: bold; color: {color}; 
+                border: 1px solid {color}; border-radius: 6px; padding: 3px 8px;
+                background-color: #ffffff;
+                font-family: "Segoe UI Emoji", "Microsoft YaHei";
+            }}
+        """)
+        return lbl
+
+    def _create_arrow(self):
+        l = QLabel("›")
+        l.setStyleSheet("color: #dcdfe6; font-size: 16px; font-weight: bold; margin-bottom: 2px;")
+        return l
+
+    def _init_mass_section(self):
+        self.mass_card = ModernCard("📊 质量监控")
+        self.mass_card.setMinimumHeight(240)
+
+        self.mass_chart_type = QComboBox()
+        self.mass_chart_type.addItems(["质量(g)", "变化率(%)"])
+        self.mass_chart_type.setStyleSheet("""
+            QComboBox { 
+                border: 1px solid #dcdfe6; 
+                border-radius: 4px; 
+                padding: 2px 4px; 
+                font-size: 11px; 
+                color: #606266; 
+                background-color: #ffffff;
+            }
+            QComboBox::drop-down { border: none; background: transparent; }
+            QComboBox QAbstractItemView {
+                background-color: #ffffff;
+                border: 1px solid #dcdfe6;
+                selection-background-color: #ecf5ff;
+                selection-color: #409eff;
+                color: #606266;
+                outline: none;
+            }
+        """)
+        self.mass_chart_type.currentIndexChanged.connect(self.update_mass_chart)
+        self.mass_card.add_header_widget(self.mass_chart_type)
+
+        self.add_mass_btn = QPushButton("➕ 记录")
+        self.add_mass_btn.setStyleSheet(BTN_PRIMARY_STYLE)
+        self.add_mass_btn.clicked.connect(self.on_add_weight_click)
+        self.mass_card.add_header_widget(self.add_mass_btn)
+
+        layout = QVBoxLayout()
+        layout.setSpacing(8)
+
+        self.mass_chart = MassTrendChart(self, width=5, height=3)
+        self.mass_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.mass_table = QTableWidget()
+        self.mass_table.setColumnCount(4)
+        self.mass_table.setHorizontalHeaderLabels(["日期", "天数", "质量(g)", "变化(%)"])
+        self.mass_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.mass_table.verticalHeader().setVisible(False)
+        self.mass_table.setAlternatingRowColors(True)
+        self.mass_table.setStyleSheet(TABLE_STYLE)
+        self.mass_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.mass_table.setMaximumHeight(100)
+        self.mass_table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.mass_table.customContextMenuRequested.connect(self.show_mass_menu)
+
+        layout.addWidget(self.mass_chart, stretch=10)
+        layout.addWidget(self.mass_table, stretch=0)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.mass_card.content_layout.addWidget(container)
+
+    def _init_stress_section(self):
+        self.stress_card = ModernCard("📈 应力应变 (UCS)")
+        self.stress_card.setMinimumHeight(320)
+
+        self.add_stress_btn = QPushButton("➕ 记录点")
+        self.add_stress_btn.setStyleSheet(BTN_GHOST_STYLE)
+        self.add_stress_btn.clicked.connect(self.on_add_stress_click)
+        self.stress_card.add_header_widget(self.add_stress_btn)
+
+        self.import_stress_btn = QPushButton("📥 导入")
+        self.import_stress_btn.setStyleSheet(BTN_SUCCESS_STYLE)
+        self.import_stress_btn.clicked.connect(self.on_import_stress_click)
+        self.stress_card.add_header_widget(self.import_stress_btn)
+
+        layout = QVBoxLayout()
+        layout.setSpacing(5)
+
+        self.stress_chart = StressStrainChart(self, width=5, height=3)
+        self.stress_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.stress_chart.data_modified.connect(
+            lambda data: self.file_manager.save_stress_data(self.current_project, self.current_sample, data)
+        )
+
+        self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件或手动添加破坏点。")
+        self.stress_info_lbl.setStyleSheet("color: #909399; font-size: 10px; font-style: italic; margin-top: 2px;")
+
+        layout.addWidget(self.stress_chart)
+        layout.addWidget(self.stress_info_lbl)
+
+        container = QWidget()
+        container.setLayout(layout)
+        self.stress_card.content_layout.addWidget(container)
+
+    def _init_gallery_section(self):
+        self.gallery_card = ModernCard("🗂️ 附件画廊")
+        hint = QLabel("支持拖拽上传")
+        hint.setStyleSheet("color: #c0c4cc; font-size: 11px;")
+        self.gallery_card.add_header_widget(hint)
+
+        self.image_container = QWidget()
+        self.image_grid = QGridLayout(self.image_container)
+        self.image_grid.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self.image_grid.setSpacing(12)
+        self.image_grid.setContentsMargins(0, 0, 0, 0)
+
+        self.gallery_card.content_layout.addWidget(self.image_container)
+
+    def show_welcome(self, message=None):
+        self.header_card.hide()
+        self.mass_card.hide()
+        self.stress_card.hide()
+        self.gallery_card.hide()
+        self.current_sample = None
+
+        if hasattr(self, 'welcome_container'):
+            self.welcome_container.show()
+
+    def show_content(self):
+        if hasattr(self, 'welcome_container'):
+            self.welcome_container.hide()
+
+        self.header_card.show()
+        self.mass_card.show()
+        self.stress_card.show()
+        self.gallery_card.show()
+
+    def parse_any_date(self, date_str):
+        if not date_str or date_str == "-": return None
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d-%H:00")
+        except:
+            pass
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except:
+            pass
+        return None
+
+    def load_sample(self, project_name, sample_id):
+        self.show_content()
+        self.current_project = project_name
+        self.current_sample = sample_id
+        info = self.file_manager.get_sample_info(project_name, sample_id)
+        self.current_info = info
+        if not info: return
+
+        self.emoji_label.setText(info.get("icon_emoji", "🧪"))
+        self.title_label.setText(info.get('id'))
+        self.desc_label.setText(info.get('description') or "暂无描述信息")
+
+        shape = info.get("shape", "未指定")
+        dims = []
+        if "圆柱" in shape:
+            dims = [f"r={info.get('radius', 0)}", f"h={info.get('height', 0)}"]
+        elif "正方" in shape:
+            dims = [f"a={info.get('side_length', 0)}"]
+        elif "长方" in shape:
+            dims = [f"L={info.get('length', 0)}", f"W={info.get('width', 0)}", f"H={info.get('height', 0)}"]
+        if dims:
+            self.shape_label.setText(f"{shape} | {', '.join(dims)}")
+            self.shape_label.show()
+        else:
+            self.shape_label.hide()
+
+        def set_time_box(lbl, val, extra_info=""):
+            short = val.replace("-", "/").split(" ")[0] if val != "-" else "-"
+            title = lbl.text().splitlines()[0]
+            text = f"{title}\n{short}"
+            if extra_info:
+                text += f"\n{extra_info}"
+            lbl.setText(text)
+
+        d_prep_str = info.get('date_prep', '-')
+        d_test_str = info.get('date_test', '-')
+
+        curing_text = ""
+        d_prep_obj = self.parse_any_date(d_prep_str)
+        d_test_obj = self.parse_any_date(d_test_str)
+        if d_prep_obj and d_test_obj:
+            delta = d_test_obj - d_prep_obj
+            curing_text = f"<span style='color:#909399; font-size:10px;'>({delta.days}天)</span>"
+
+        set_time_box(self.lbl_prep, d_prep_str)
+        set_time_box(self.lbl_comp, info.get('date_complete', '-'))
+        set_time_box(self.lbl_demold, info.get('date_demold', '-'))
+
+        self.lbl_test.setTextFormat(Qt.RichText)
+        set_time_box(self.lbl_test, d_test_str, curing_text)
+
+        init_mass = float(info.get("initial_mass", 0))
+        records = info.get("weight_records", [])
+
+        self.mass_table.setRowCount(len(records))
+        for i, rec in enumerate(records):
+            mass = float(rec.get('mass', 0))
+            rate_str = "-"
+            if init_mass > 0:
+                rate = ((mass - init_mass) / init_mass) * 100
+                rate_str = f"{rate:+.2f}%"
+
+            date_str = rec.get("date", "-").replace("-", "/").replace(":00", "h")
+
+            self.mass_table.setItem(i, 0, QTableWidgetItem(date_str))
+
+            item_days = QTableWidgetItem(str(rec.get("days", "-")))
+            item_days.setTextAlignment(Qt.AlignCenter)
+            self.mass_table.setItem(i, 1, item_days)
+
+            item_mass = QTableWidgetItem(f"{mass}")
+            item_mass.setTextAlignment(Qt.AlignCenter)
+            self.mass_table.setItem(i, 2, item_mass)
+
+            item_rate = QTableWidgetItem(rate_str)
+            item_rate.setTextAlignment(Qt.AlignCenter)
+            item_rate.setForeground(QColor("#606266"))
+            if "-" not in rate_str:
+                val = float(rate_str.strip('%'))
+                if val > 0:
+                    item_rate.setForeground(QColor("#f56c6c"))
+                elif val < 0:
+                    item_rate.setForeground(QColor("#67c23a"))
+            self.mass_table.setItem(i, 3, item_rate)
+
+        self.mass_chart_type.setCurrentIndex(0)
+        self.update_mass_chart()
+
+        stress_data = self.file_manager.get_stress_data(project_name, sample_id)
+        if stress_data:
+            self.stress_chart.update_chart(stress_data)
+        else:
+            self.stress_chart.clear_chart()
+
+        self.refresh_gallery()
+
+    def update_mass_chart(self):
+        if not self.current_info: return
+        mode = "mass" if self.mass_chart_type.currentIndex() == 0 else "rate"
+        init_mass = float(self.current_info.get("initial_mass", 0))
+        records = self.current_info.get("weight_records", [])
+        self.mass_chart.update_chart(init_mass, records, mode=mode)
+
+    def refresh_gallery(self):
+        while self.image_grid.count():
+            item = self.image_grid.takeAt(0)
+            if item.widget(): item.widget().deleteLater()
+
+        files = self.file_manager.get_sample_files(self.current_project, self.current_sample)
+        cols = 6
+        for i, f_data in enumerate(files):
+            card = AttachmentCard(f_data)
+            card.doubleClicked.connect(lambda p=f_data['path']: self.open_file(p))
+            card.setContextMenuPolicy(Qt.CustomContextMenu)
+            card.customContextMenuRequested.connect(
+                lambda pos, c=card, p=f_data['path']: self.show_file_menu(pos, c, p))
+            self.image_grid.addWidget(card, i // cols, i % cols)
+
+    def on_add_weight_click(self):
+        if not self.current_info: return
+        dialog = AddWeightDialog(parent=self)
+        if dialog.exec():
+            data = dialog.get_data()
+            d_prep = self.current_info.get("date_prep")
+            d1 = self.parse_any_date(d_prep)
+            d2 = self.parse_any_date(data["date"])
+            days = "-"
+            if d1 and d2: days = f"{(d2 - d1).total_seconds() / 86400:.1f}"
+            rec = {"date": data["date"], "mass": data["mass"], "days": days}
+            self.file_manager.add_weight_record(self.current_project, self.current_sample, rec)
+            self.load_sample(self.current_project, self.current_sample)
+
+    def on_edit_info_click(self):
+        if not self.current_info: return
+        dialog = EditSampleDialog(self.current_info, self)
+        if dialog.exec():
+            new_data = dialog.get_data()
+            self.file_manager.update_sample_info(self.current_project, self.current_sample, new_data)
+            self.require_refresh.emit()
+            self.load_sample(self.current_project, self.current_sample)
+
+    def on_add_stress_click(self):
+        if not self.current_sample: return
+        dialog = AddStressDialog(parent=self)
+        if dialog.exec():
+            new_point = dialog.get_data()
+            current_data = self.file_manager.get_stress_data(self.current_project, self.current_sample) or []
+            current_data.append(new_point)
+            current_data.sort(key=lambda x: x["strain"])
+            if self.file_manager.save_stress_data(self.current_project, self.current_sample, current_data):
+                self.stress_chart.update_chart(current_data)
+
+    def on_import_stress_click(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "选择数据文件", "", "Excel/CSV Files (*.xlsx *.xls *.csv)")
+        if file_path:
+            data, msg = DataImporter.load_stress_strain_data(file_path)
+            if data:
+                if self.file_manager.save_stress_data(self.current_project, self.current_sample, data):
+                    self.stress_chart.update_chart(data)
+                    QMessageBox.information(self, "成功", msg)
+                    if QMessageBox.question(self, "备份", "是否将此原文件作为附件保存？",
+                                            QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                        self.file_manager.add_file_to_sample(self.current_project, self.current_sample, file_path)
+                        self.refresh_gallery()
+                else:
+                    QMessageBox.warning(self, "错误", "数据保存失败")
+            else:
+                QMessageBox.warning(self, "解析失败", msg)
+
+    def show_mass_menu(self, pos):
+        item = self.mass_table.itemAt(pos)
+        if not item: return
+        row = item.row()
+        menu = QMenu(self)
+        menu.setStyleSheet(MENU_STYLE)
+        menu.addAction("✏️ 修改", lambda: self.edit_weight_record(row))
+        menu.addAction("🗑️ 删除", lambda: self.delete_weight_record_confirm(row))
+        menu.exec(self.mass_table.mapToGlobal(pos))
+
+    def edit_weight_record(self, row):
+        if not self.current_info: return
+        records = self.current_info.get("weight_records", [])
+        if row < 0 or row >= len(records): return
+        dialog = AddWeightDialog(current_data=records[row], parent=self)
+        if dialog.exec():
+            data = dialog.get_data()
+            d_prep = self.current_info.get("date_prep")
+            d1 = self.parse_any_date(d_prep)
+            d2 = self.parse_any_date(data["date"])
+            days = "-"
+            if d1 and d2: days = f"{(d2 - d1).total_seconds() / 86400:.1f}"
+            new_rec = {"date": data["date"], "mass": data["mass"], "days": days}
+            if self.file_manager.update_weight_record(self.current_project, self.current_sample, row, new_rec):
+                self.load_sample(self.current_project, self.current_sample)
+
+    def delete_weight_record_confirm(self, row):
+        if QMessageBox.question(self, "确认", "删除记录？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            self.file_manager.delete_weight_record(self.current_project, self.current_sample, row)
+            self.load_sample(self.current_project, self.current_sample)
+
+    def show_file_menu(self, pos, widget, path):
+        menu = QMenu(self)
+        menu.setStyleSheet(MENU_STYLE)
+        menu.addAction("👁️ 打开", lambda: self.open_file(path))
+        menu.addAction("📂 位置", lambda: self.open_file_location(path))
+        menu.addAction("🗑️ 删除", lambda: self.delete_file_confirm(path))
+        menu.exec(widget.mapToGlobal(pos))
+
+    def open_file(self, path):
+        try:
+            os.startfile(path)
+        except:
+            pass
+
+    def open_file_location(self, path):
+        try:
+            subprocess.Popen(['explorer', '/select,', os.path.normpath(path)])
+        except:
+            pass
+
+    def delete_file_confirm(self, path):
+        if QMessageBox.question(self, "确认", "删除文件？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            self.file_manager.delete_file(path)
+            self.refresh_gallery()
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasUrls():
+            e.accept()
+        else:
+            e.ignore()
+
+    def dropEvent(self, e):
+        if not self.current_sample: return
+        for url in e.mimeData().urls():
+            path = url.toLocalFile()
+            if os.path.isfile(path):
+                self.file_manager.add_file_to_sample(self.current_project, self.current_sample, path)
+        self.refresh_gallery()
+
+====================
+File: src\views\splash_screen.py
+====================
+from PySide6.QtWidgets import QSplashScreen, QProgressBar
+from PySide6.QtGui import QPixmap, QPainter, QColor, QFont, QLinearGradient, QBrush
+from PySide6.QtCore import Qt, QRect
+
+class ModernSplashScreen(QSplashScreen):
+    def __init__(self):
+        # 1. 动态绘制一张背景图 (600x350)
+        pixmap = QPixmap(600, 350)
+        pixmap.fill(Qt.transparent)
+
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # 绘制圆角矩形背景 (深蓝渐变)
+        gradient = QLinearGradient(0, 0, 600, 350)
+        gradient.setColorAt(0, QColor("#2c3e50"))  # 深蓝
+        gradient.setColorAt(1, QColor("#3498db"))  # 亮蓝
+
+        rect = QRect(0, 0, 600, 350)
+        painter.setBrush(QBrush(gradient))
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(rect, 15, 15)
+
+        # 绘制 Logo/Emoji
+        font_icon = QFont("Segoe UI Emoji", 60)
+        if not font_icon.exactMatch():
+            font_icon = QFont("Apple Color Emoji", 60)
+        painter.setFont(font_icon)
+        painter.setPen(QColor("white"))
+        painter.drawText(QRect(0, 50, 600, 100), Qt.AlignCenter, "🔬")
+
+        # 绘制主标题
+        font_title = QFont("Microsoft YaHei", 24, QFont.Bold)
+        painter.setFont(font_title)
+        painter.drawText(QRect(0, 160, 600, 50), Qt.AlignCenter, "试样记录管理中心")
+
+        # 绘制副标题/版本号
+        font_sub = QFont("Microsoft YaHei", 12)
+        painter.setFont(font_sub)
+        painter.setPen(QColor("#ecf0f1"))
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.0")
+
+        painter.end()
+
+        super().__init__(pixmap)
+
+        # 2. 添加进度条
+        self.progress = QProgressBar(self)
+        self.progress.setGeometry(50, 280, 500, 8) # 位置和大小
+        self.progress.setStyleSheet("""
+            QProgressBar {
+                background-color: rgba(255, 255, 255, 0.2);
+                border: none;
+                border-radius: 4px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #2ecc71;
+                border-radius: 4px;
+            }
+        """)
+        self.progress.setTextVisible(False)
+        self.progress.setRange(0, 100)
+
+    def update_progress(self, value):
+        self.progress.setValue(value)
+
+====================
+File: src\views\stress_chart.py
+====================
+import csv
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
+                               QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
+                               QHeaderView, QMenu)
+from PySide6.QtCore import Qt, Signal
+import matplotlib
+
+matplotlib.use('QtAgg')
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib import rcParams
+
+# 引入弹窗用于编辑
+from src.views.dialogs import AddStressDialog
+
+rcParams['font.family'] = 'Microsoft YaHei'
+rcParams['axes.unicode_minus'] = False
+rcParams['font.size'] = 9
+
+# === 样式定义 ===
+# 按钮样式
+BTN_STYLE = """
+    QPushButton {
+        background-color: white;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #606266;
+    }
+    QPushButton:hover {
+        border-color: #409eff;
+        color: #409eff;
+        background-color: #ecf5ff;
+    }
+"""
+
+# 表格样式
+TABLE_STYLE = """
+    QTableWidget {
+        background-color: white;
+        border: 1px solid #ebeef5;
+        border-radius: 6px;
+        gridline-color: #f2f6fc;
+        font-size: 11px;
+    }
+    QHeaderView::section {
+        background-color: #fafafe;
+        color: #555;
+        padding: 6px;
+        border: none;
+        border-bottom: 2px solid #e4e7ed;
+        font-weight: bold;
+        font-family: "Microsoft YaHei";
+    }
+    QTableWidget::item { padding: 4px; }
+    QTableWidget::item:selected { background-color: #ecf5ff; color: #409eff; }
+
+    /* 滚动条美化 */
+    QScrollBar:vertical {
+        border: none;
+        background: #f4f6f9;
+        width: 6px;
+    }
+    QScrollBar::handle:vertical {
+        background: #c0c4cc;
+        border-radius: 3px;
+    }
+"""
+
+# 右键菜单样式 (保持风格统一)
+MENU_STYLE = """
+    QMenu {
+        background-color: #ffffff;
+        border: 1px solid #f0f0f0;
+        border-radius: 4px;
+        padding: 4px 0px;
+    }
+    QMenu::item {
+        background-color: transparent;
+        color: #333333;
+        padding: 6px 20px;
+        margin: 2px 4px;
+        border-radius: 4px;
+    }
+    QMenu::item:selected {
+        background-color: #ecf5ff;
+        color: #409eff;
+    }
+    QMenu::separator {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 4px 0px;
+    }
+"""
+
+
+class StressStrainChart(QWidget):
+    # 定义一个信号，当数据被修改/删除时发出，携带最新的数据列表
+    data_modified = Signal(list)
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        super().__init__(parent)
+        self.current_data_points = []  # 存储原始数据
+
+        # 1. 主布局
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0.5)
+
+        # 2. 图表层
+        self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
+        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
+
+        self.canvas = FigureCanvasQTAgg(self.fig)
+        self.ax = self.fig.add_subplot(111)
+        layout.addWidget(self.canvas, stretch=10)
+
+        # 3. 按钮工具栏
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 0, 10, 0)
+        btn_layout.addStretch()
+
+        self.btn_export_data = QPushButton("📊 导出数据")
+        self.btn_export_data.setStyleSheet(BTN_STYLE)
+        self.btn_export_data.setCursor(Qt.PointingHandCursor)
+        self.btn_export_data.clicked.connect(self.export_data)
+
+        self.btn_export_img = QPushButton("🖼️ 导出高清图像")
+        self.btn_export_img.setStyleSheet(BTN_STYLE)
+        self.btn_export_img.setCursor(Qt.PointingHandCursor)
+        self.btn_export_img.clicked.connect(self.export_image)
+
+        btn_layout.addWidget(self.btn_export_data)
+        btn_layout.addWidget(self.btn_export_img)
+
+        layout.addLayout(btn_layout)
+
+        # 4. 数据表格
+        self.table = QTableWidget()
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(["应变 / Strain (%)", "应力 / Stress (kPa)"])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
+        self.table.setStyleSheet(TABLE_STYLE)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setMaximumHeight(150)
+
+        # 启用右键菜单
+        self.table.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self.show_context_menu)
+
+        layout.addWidget(self.table, stretch=3)
+
+        self.apply_style()
+
+    def wheelEvent(self, event):
+        if self.table.underMouse():
+            super().wheelEvent(event)
+        else:
+            event.ignore()
+
+    def apply_style(self):
+        self.ax.clear()
+        self.ax.set_facecolor('white')
+        self.ax.spines['top'].set_visible(False)
+        self.ax.spines['right'].set_visible(False)
+        self.ax.spines['left'].set_color('#dcdfe6')
+        self.ax.spines['bottom'].set_color('#dcdfe6')
+        self.ax.grid(True, linestyle=':', alpha=0.6, color='#909399')
+
+        self.ax.tick_params(axis='both', which='both', direction='in',
+                            length=4, width=1, color='#606266', labelcolor='#606266')
+
+    def clear_chart(self):
+        self.apply_style()
+        self.ax.set_title("暂无 UCS 数据", color='#909399', pad=10)
+        self.ax.set_xlabel("应变 (%)", color='#606266')
+        self.ax.set_ylabel("应力 (kPa)", color='#606266')
+        self.current_data_points = []
+        self.canvas.draw()
+        self.table.setRowCount(0)
+
+    def update_chart(self, data_points):
+        self.apply_style()
+        self.current_data_points = data_points
+
+        # === 1. 更新图表 ===
+        x_data = [p["strain"] for p in data_points]
+        y_data = [p["stress"] for p in data_points]
+
+        self.ax.set_title("应力-应变曲线 (UCS)", fontsize=10, fontweight='bold', color='#303133', pad=10)
+        self.ax.set_xlabel("应变 / Strain (%)", fontsize=9, color='#606266')
+        self.ax.set_ylabel("应力 / Stress (kPa)", fontsize=9, color='#606266')
+
+        line_color = "#e74c3c"
+        self.ax.plot(x_data, y_data, color=line_color, linewidth=2, zorder=3)
+
+        if y_data:
+            max_y = max(y_data)
+            max_index = y_data.index(max_y)
+            max_x = x_data[max_index]
+
+            self.ax.plot(max_x, max_y, 'o', color='#c0392b', markersize=6, zorder=4)
+
+            info_text = (
+                f"峰值应力: {max_y:.2f} kPa\n"
+                f"峰值应变: {max_x:.2f} %"
+            )
+
+            self.ax.text(0.96, 0.04, info_text,
+                         transform=self.ax.transAxes,
+                         horizontalalignment='right',
+                         verticalalignment='bottom',
+                         fontsize=9,
+                         color='#303133',
+                         bbox=dict(boxstyle="round,pad=0.5", facecolor='white', edgecolor='#dcdfe6', alpha=0.9))
+
+        self.canvas.draw()
+
+        # === 2. 更新表格 ===
+        self.table.setRowCount(len(data_points))
+        for i, p in enumerate(data_points):
+            item_strain = QTableWidgetItem(f"{p['strain']:.3f}")
+            item_strain.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 0, item_strain)
+
+            item_stress = QTableWidgetItem(f"{p['stress']:.3f}")
+            item_stress.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(i, 1, item_stress)
+
+    # === 右键菜单逻辑 ===
+    def show_context_menu(self, pos):
+        item = self.table.itemAt(pos)
+        if not item: return
+
+        row = item.row()
+        menu = QMenu(self)
+        menu.setStyleSheet(MENU_STYLE)
+
+        action_edit = menu.addAction("✏️ 修改")
+        action_edit.triggered.connect(lambda: self.edit_data_point(row))
+
+        action_del = menu.addAction("🗑️ 删除")
+        action_del.triggered.connect(lambda: self.delete_data_point(row))
+
+        menu.exec(self.table.mapToGlobal(pos))
+
+    def edit_data_point(self, row):
+        if row < 0 or row >= len(self.current_data_points): return
+
+        # 获取当前行的数据
+        data = self.current_data_points[row]
+
+        # 复用 AddStressDialog
+        dialog = AddStressDialog(self)
+        dialog.setWindowTitle("修改数据点")
+        # 预填数据
+        dialog.strain_input.setValue(data['strain'])
+        dialog.stress_input.setValue(data['stress'])
+
+        if dialog.exec():
+            new_data = dialog.get_data()
+            # 更新数据列表
+            self.current_data_points[row] = new_data
+            # 按应变重新排序，保证曲线逻辑正确
+            self.current_data_points.sort(key=lambda x: x["strain"])
+
+            # 更新图表和表格
+            self.update_chart(self.current_data_points)
+            # 发送信号通知外部保存
+            self.data_modified.emit(self.current_data_points)
+
+    def delete_data_point(self, row):
+        if QMessageBox.question(self, "确认", "确定删除该数据点吗？",
+                                QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            del self.current_data_points[row]
+            self.update_chart(self.current_data_points)
+            # 发送信号通知外部保存
+            self.data_modified.emit(self.current_data_points)
+
+    # === 导出功能 ===
+    def export_data(self):
+        if not self.current_data_points:
+            QMessageBox.warning(self, "无数据", "当前没有应力应变数据可导出。")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(self, "导出UCS数据", "", "CSV Files (*.csv)")
+        if file_path:
+            try:
+                with open(file_path, 'w', newline='', encoding='utf-8-sig') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["Strain (%)", "Stress (kPa)"])
+                    for p in self.current_data_points:
+                        writer.writerow([p["strain"], p["stress"]])
+                QMessageBox.information(self, "成功", f"数据已导出至:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"导出失败: {e}")
+
+    def export_image(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "导出图片", "", "PNG Image (*.png);;JPEG Image (*.jpg)")
+        if file_path:
+            try:
+                self.fig.savefig(file_path, dpi=300, bbox_inches='tight')
+                QMessageBox.information(self, "成功", f"图片已保存:\n{file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"保存失败: {e}")
+
+====================
+File: src\views\__init__.py
+====================
+

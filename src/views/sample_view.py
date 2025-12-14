@@ -4,18 +4,16 @@ from datetime import datetime
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QFrame,
                                QScrollArea, QGridLayout, QMenu, QMessageBox,
                                QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton,
-                               QSizePolicy, QComboBox, QFileDialog, QSplitter, QGraphicsDropShadowEffect)
+                               QSizePolicy, QComboBox, QFileDialog, QGraphicsDropShadowEffect)
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap, QIcon, QAction, QColor, QFont
+from PySide6.QtGui import QPixmap, QColor
 
 from src.views.dialogs import AddWeightDialog, EditSampleDialog, AddStressDialog
 from src.views.chart_widget import MassTrendChart
 from src.views.stress_chart import StressStrainChart
 from src.utils.data_importer import DataImporter
 
-# === 样式常量 (美化版) ===
-
-# 卡片：增加阴影和更柔和的边框
+# === 样式常量 (保持不变) ===
 CARD_STYLE = """
     QFrame#ModernCard {
         background-color: white;
@@ -29,12 +27,9 @@ CARD_STYLE = """
         border-top-right-radius: 8px;
     }
 """
-
 TITLE_STYLE = """
     QLabel { font-size: 13px; font-weight: bold; color: #2c3e50; font-family: "Segoe UI Emoji", "Microsoft YaHei"; }
 """
-
-# 幽灵按钮：增加圆角
 BTN_GHOST_STYLE = """
     QPushButton {
         background-color: transparent; border: 1px solid #dcdfe6; 
@@ -43,8 +38,6 @@ BTN_GHOST_STYLE = """
     }
     QPushButton:hover { border-color: #409eff; color: #409eff; background-color: #ecf5ff; }
 """
-
-# 主按钮：增加渐变质感
 BTN_PRIMARY_STYLE = """
     QPushButton {
         background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #409eff, stop:1 #3a8ee6);
@@ -56,8 +49,6 @@ BTN_PRIMARY_STYLE = """
     QPushButton:pressed { background-color: #337ecc; }
     QPushButton:disabled { background-color: #a0cfff; }
 """
-
-# 绿色按钮：增加渐变质感
 BTN_SUCCESS_STYLE = """
     QPushButton {
         background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #67c23a, stop:1 #5daf34);
@@ -68,7 +59,6 @@ BTN_SUCCESS_STYLE = """
     QPushButton:hover { background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #85ce61, stop:1 #67c23a); }
     QPushButton:pressed { background-color: #529b2e; }
 """
-
 TABLE_STYLE = """
     QTableWidget {
         background-color: white;
@@ -89,8 +79,6 @@ TABLE_STYLE = """
     QTableWidget::item { padding: 4px; }
     QTableWidget::item:selected { background-color: #ecf5ff; color: #409eff; }
 """
-
-# 右键菜单通用样式（解决黑底问题）
 MENU_STYLE = """
     QMenu {
         background-color: #ffffff;
@@ -117,14 +105,12 @@ MENU_STYLE = """
 """
 
 
-# === 1. 统一的卡片容器 (美化版) ===
 class ModernCard(QFrame):
     def __init__(self, title, parent=None):
         super().__init__(parent)
         self.setObjectName("ModernCard")
         self.setStyleSheet(CARD_STYLE)
 
-        # 可选：添加轻微阴影 (如果卡顿可注释掉)
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(15)
         shadow.setColor(QColor(0, 0, 0, 10))
@@ -135,7 +121,6 @@ class ModernCard(QFrame):
         self.layout_main.setContentsMargins(0, 0, 0, 0)
         self.layout_main.setSpacing(0)
 
-        # 标题栏
         self.header = QFrame()
         self.header.setObjectName("ModernCardHeader")
         self.header_layout = QHBoxLayout(self.header)
@@ -146,7 +131,6 @@ class ModernCard(QFrame):
         self.header_layout.addWidget(self.lbl_title)
         self.header_layout.addStretch()
 
-        # 内容区
         self.content = QWidget()
         self.content_layout = QVBoxLayout(self.content)
         self.content_layout.setContentsMargins(12, 12, 12, 12)
@@ -156,7 +140,6 @@ class ModernCard(QFrame):
         self.layout_main.addWidget(self.content)
 
     def add_header_widget(self, widget):
-        """向标题栏右侧添加按钮等"""
         self.header_layout.addWidget(widget)
 
 
@@ -176,7 +159,7 @@ class AttachmentCard(QFrame):
             AttachmentCard:hover { 
                 border-color: #409eff; 
                 background: #ecf5ff; 
-                margin-top: -2px; /* 悬浮上移微动效 */
+                margin-top: -2px; 
             }
         """)
 
@@ -217,7 +200,6 @@ class AttachmentCard(QFrame):
         super().mouseDoubleClickEvent(event)
 
 
-# === 2. 主视图类 ===
 class SampleDetailView(QWidget):
     require_refresh = Signal()
 
@@ -230,60 +212,83 @@ class SampleDetailView(QWidget):
 
         self.setAcceptDrops(True)
 
-        # 整体布局
         self.outer_layout = QVBoxLayout(self)
         self.outer_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
-        self.scroll_area.setStyleSheet("QScrollArea { background-color: #f7f8fa; }")  # 非常淡的灰背景
+        self.scroll_area.setStyleSheet("QScrollArea { background-color: transparent; border: none; }")
 
         self.content_widget = QWidget()
         self.content_widget.setStyleSheet("background-color: transparent;")
 
-        # 使用 Grid Layout 实现仪表盘布局
         self.main_grid = QGridLayout(self.content_widget)
-        # [修改] 减小边距和间距，使布局更紧凑
         self.main_grid.setContentsMargins(10, 10, 10, 10)
         self.main_grid.setSpacing(10)
 
         self.scroll_area.setWidget(self.content_widget)
         self.outer_layout.addWidget(self.scroll_area)
 
-        # === 初始化各个模块 ===
-        self._init_header_section()  # 顶部
-        self._init_mass_section()  # 左侧
-        self._init_stress_section()  # 右侧
-        self._init_gallery_section()  # 底部
+        # 初始化模块
+        self._init_header_section()
+        self._init_mass_section()
+        self._init_stress_section()
+        self._init_gallery_section()
+        self._init_welcome_section()
 
         # 布局放置
-        # Row 0: Header (span 2 cols)
         self.main_grid.addWidget(self.header_card, 0, 0, 1, 2)
-
-        # Row 1: Mass (Col 0) & Stress (Col 1)
         self.main_grid.addWidget(self.mass_card, 1, 0)
         self.main_grid.addWidget(self.stress_card, 1, 1)
-
-        # Row 2: Gallery (span 2 cols)
         self.main_grid.addWidget(self.gallery_card, 2, 0, 1, 2)
 
-        # 设置列宽比例 1:1
         self.main_grid.setColumnStretch(0, 1)
         self.main_grid.setColumnStretch(1, 1)
 
         self.show_welcome()
 
-    def _init_header_section(self):
-        """顶部：包含基本信息和水平时间轴"""
-        self.header_card = ModernCard("📋 试样概览")  # 增加标题Emoji
+    def _init_welcome_section(self):
+        self.welcome_container = QWidget()
+        self.welcome_container.setStyleSheet("background-color: transparent;")
 
-        # 自定义 Header 内容
+        layout = QVBoxLayout(self.welcome_container)
+        layout.setAlignment(Qt.AlignCenter)
+        layout.setSpacing(20)
+
+        icon_lbl = QLabel("🔬")
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji'; background: transparent;")
+
+        title_lbl = QLabel("欢迎使用试样记录管理中心")
+        title_lbl.setAlignment(Qt.AlignCenter)
+        title_lbl.setStyleSheet(
+            "font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; background: transparent;")
+
+        guide_text = """
+        <div style='color: #555; font-size: 14px; line-height: 1.5; font-weight: 500;'>
+            <p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p>
+            <p>📊 <b>功能亮点：</b>支持 UCS 数据导入、质量变化追踪及附件管理。</p>
+            <p>💡 <b>提示：</b>右键点击列表项可进行更多操作。</p>
+        </div>
+        """
+        guide_lbl = QLabel(guide_text)
+        guide_lbl.setAlignment(Qt.AlignCenter)
+        guide_lbl.setTextFormat(Qt.RichText)
+        guide_lbl.setStyleSheet("background: transparent;")
+
+        layout.addWidget(icon_lbl)
+        layout.addWidget(title_lbl)
+        layout.addWidget(guide_lbl)
+
+        self.main_grid.addWidget(self.welcome_container, 0, 0, 3, 2)
+
+    def _init_header_section(self):
+        self.header_card = ModernCard("📋 试样概览")
         h_layout = QHBoxLayout()
         h_layout.setContentsMargins(0, 5, 0, 5)
 
-        # 左侧：图标 + ID + 描述
         self.emoji_label = QLabel("🧪")
-        self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px;")
+        self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px; font-family: 'Segoe UI Emoji';")
 
         info_layout = QVBoxLayout()
         info_layout.setSpacing(2)
@@ -312,13 +317,11 @@ class SampleDetailView(QWidget):
         h_layout.addLayout(info_layout)
         h_layout.addStretch(1)
 
-        # 右侧：时间轴 (Emoji 增强版)
         self.time_container = QWidget()
         time_layout = QHBoxLayout(self.time_container)
         time_layout.setSpacing(6)
         time_layout.setContentsMargins(0, 0, 0, 0)
 
-        # 使用 Emoji 让时间轴更生动
         self.lbl_prep = self._create_mini_time_box("制样", "#909399")
         self.lbl_comp = self._create_mini_time_box("完成", "#3498db")
         self.lbl_demold = self._create_mini_time_box("拆模", "#9b59b6")
@@ -362,8 +365,7 @@ class SampleDetailView(QWidget):
         return l
 
     def _init_mass_section(self):
-        self.mass_card = ModernCard("📊 质量监控")  # Emoji Title
-        # [修改] 减小最小高度，使其更紧凑
+        self.mass_card = ModernCard("📊 质量监控")
         self.mass_card.setMinimumHeight(240)
 
         self.mass_chart_type = QComboBox()
@@ -377,10 +379,7 @@ class SampleDetailView(QWidget):
                 color: #606266; 
                 background-color: #ffffff;
             }
-            QComboBox::drop-down {
-                border: none;
-                background: transparent;
-            }
+            QComboBox::drop-down { border: none; background: transparent; }
             QComboBox QAbstractItemView {
                 background-color: #ffffff;
                 border: 1px solid #dcdfe6;
@@ -406,14 +405,12 @@ class SampleDetailView(QWidget):
 
         self.mass_table = QTableWidget()
         self.mass_table.setColumnCount(4)
-        # 表头添加 Emoji
         self.mass_table.setHorizontalHeaderLabels(["日期", "天数", "质量(g)", "变化(%)"])
         self.mass_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.mass_table.verticalHeader().setVisible(False)
         self.mass_table.setAlternatingRowColors(True)
         self.mass_table.setStyleSheet(TABLE_STYLE)
         self.mass_table.setSelectionBehavior(QTableWidget.SelectRows)
-        # [修改] 减小表格最大高度
         self.mass_table.setMaximumHeight(100)
         self.mass_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.mass_table.customContextMenuRequested.connect(self.show_mass_menu)
@@ -426,8 +423,7 @@ class SampleDetailView(QWidget):
         self.mass_card.content_layout.addWidget(container)
 
     def _init_stress_section(self):
-        self.stress_card = ModernCard("📈 应力应变 (UCS)")  # Emoji Title
-        # [修改] 减小最小高度 (之前是400，现在改小以适应一屏显示)
+        self.stress_card = ModernCard("📈 应力应变 (UCS)")
         self.stress_card.setMinimumHeight(320)
 
         self.add_stress_btn = QPushButton("➕ 记录点")
@@ -443,17 +439,16 @@ class SampleDetailView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(5)
 
-        # 初始化图表
-        # [修改] 高度参数从 4 改为 3，与左侧质量图表保持一致，节省垂直空间
         self.stress_chart = StressStrainChart(self, width=5, height=3)
         self.stress_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # 【关键修改】连接数据修改信号，实现右键修改/删除后的自动保存
         self.stress_chart.data_modified.connect(
             lambda data: self.file_manager.save_stress_data(self.current_project, self.current_sample, data)
         )
 
-        self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件或手动添加破坏点。")
+        # === 连接拖拽导入信号 ===
+        self.stress_chart.file_dropped.connect(self.process_imported_stress_file)
+
+        self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件 (拖拽或点击导入)。")
         self.stress_info_lbl.setStyleSheet("color: #909399; font-size: 10px; font-style: italic; margin-top: 2px;")
 
         layout.addWidget(self.stress_chart)
@@ -464,7 +459,7 @@ class SampleDetailView(QWidget):
         self.stress_card.content_layout.addWidget(container)
 
     def _init_gallery_section(self):
-        self.gallery_card = ModernCard("🗂️ 附件画廊")  # Emoji Title
+        self.gallery_card = ModernCard("🗂️ 附件画廊")
         hint = QLabel("支持拖拽上传")
         hint.setStyleSheet("color: #c0c4cc; font-size: 11px;")
         self.gallery_card.add_header_widget(hint)
@@ -472,12 +467,10 @@ class SampleDetailView(QWidget):
         self.image_container = QWidget()
         self.image_grid = QGridLayout(self.image_container)
         self.image_grid.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        self.image_grid.setSpacing(12)  # 附件间距稍微大一点点
+        self.image_grid.setSpacing(12)
         self.image_grid.setContentsMargins(0, 0, 0, 0)
 
         self.gallery_card.content_layout.addWidget(self.image_container)
-
-    # === 逻辑与数据加载 ===
 
     def show_welcome(self, message=None):
         self.header_card.hide()
@@ -486,7 +479,13 @@ class SampleDetailView(QWidget):
         self.gallery_card.hide()
         self.current_sample = None
 
+        if hasattr(self, 'welcome_container'):
+            self.welcome_container.show()
+
     def show_content(self):
+        if hasattr(self, 'welcome_container'):
+            self.welcome_container.hide()
+
         self.header_card.show()
         self.mass_card.show()
         self.stress_card.show()
@@ -512,12 +511,10 @@ class SampleDetailView(QWidget):
         self.current_info = info
         if not info: return
 
-        # 1. Header Info
         self.emoji_label.setText(info.get("icon_emoji", "🧪"))
         self.title_label.setText(info.get('id'))
         self.desc_label.setText(info.get('description') or "暂无描述信息")
 
-        # Shape Tag
         shape = info.get("shape", "未指定")
         dims = []
         if "圆柱" in shape:
@@ -532,11 +529,9 @@ class SampleDetailView(QWidget):
         else:
             self.shape_label.hide()
 
-        # 2. Timeline & Curing Time
         def set_time_box(lbl, val, extra_info=""):
             short = val.replace("-", "/").split(" ")[0] if val != "-" else "-"
             title = lbl.text().splitlines()[0]
-            # 保留标题中的 Emoji
             text = f"{title}\n{short}"
             if extra_info:
                 text += f"\n{extra_info}"
@@ -545,24 +540,20 @@ class SampleDetailView(QWidget):
         d_prep_str = info.get('date_prep', '-')
         d_test_str = info.get('date_test', '-')
 
-        # 计算养护时间
         curing_text = ""
         d_prep_obj = self.parse_any_date(d_prep_str)
         d_test_obj = self.parse_any_date(d_test_str)
         if d_prep_obj and d_test_obj:
             delta = d_test_obj - d_prep_obj
-            # 使用灰色小字显示养护时间，不喧宾夺主
             curing_text = f"<span style='color:#909399; font-size:10px;'>({delta.days}天)</span>"
 
         set_time_box(self.lbl_prep, d_prep_str)
         set_time_box(self.lbl_comp, info.get('date_complete', '-'))
         set_time_box(self.lbl_demold, info.get('date_demold', '-'))
 
-        # 将养护时长显示在测试时间节点内 (Label 支持简单的 HTML)
         self.lbl_test.setTextFormat(Qt.RichText)
         set_time_box(self.lbl_test, d_test_str, curing_text)
 
-        # 3. Mass Data
         init_mass = float(info.get("initial_mass", 0))
         records = info.get("weight_records", [])
 
@@ -592,22 +583,20 @@ class SampleDetailView(QWidget):
             if "-" not in rate_str:
                 val = float(rate_str.strip('%'))
                 if val > 0:
-                    item_rate.setForeground(QColor("#f56c6c"))  # Red
+                    item_rate.setForeground(QColor("#f56c6c"))
                 elif val < 0:
-                    item_rate.setForeground(QColor("#67c23a"))  # Green
+                    item_rate.setForeground(QColor("#67c23a"))
             self.mass_table.setItem(i, 3, item_rate)
 
         self.mass_chart_type.setCurrentIndex(0)
         self.update_mass_chart()
 
-        # 4. Stress Data
         stress_data = self.file_manager.get_stress_data(project_name, sample_id)
         if stress_data:
             self.stress_chart.update_chart(stress_data)
         else:
             self.stress_chart.clear_chart()
 
-        # 5. Gallery
         self.refresh_gallery()
 
     def update_mass_chart(self):
@@ -631,8 +620,6 @@ class SampleDetailView(QWidget):
             card.customContextMenuRequested.connect(
                 lambda pos, c=card, p=f_data['path']: self.show_file_menu(pos, c, p))
             self.image_grid.addWidget(card, i // cols, i % cols)
-
-    # === 事件处理函数 ===
 
     def on_add_weight_click(self):
         if not self.current_info: return
@@ -671,26 +658,32 @@ class SampleDetailView(QWidget):
     def on_import_stress_click(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "选择数据文件", "", "Excel/CSV Files (*.xlsx *.xls *.csv)")
         if file_path:
-            data, msg = DataImporter.load_stress_strain_data(file_path)
-            if data:
-                if self.file_manager.save_stress_data(self.current_project, self.current_sample, data):
-                    self.stress_chart.update_chart(data)
-                    QMessageBox.information(self, "成功", msg)
-                    if QMessageBox.question(self, "备份", "是否将此原文件作为附件保存？",
-                                            QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-                        self.file_manager.add_file_to_sample(self.current_project, self.current_sample, file_path)
-                        self.refresh_gallery()
-                else:
-                    QMessageBox.warning(self, "错误", "数据保存失败")
+            self.process_imported_stress_file(file_path)
+
+    # === 处理拖拽或点击导入的文件 ===
+    def process_imported_stress_file(self, file_path):
+        data, msg = DataImporter.load_stress_strain_data(file_path)
+        if data:
+            if self.file_manager.save_stress_data(self.current_project, self.current_sample, data):
+                self.stress_chart.update_chart(data)
+                QMessageBox.information(self, "成功", msg)
+
+                # 询问是否备份源文件
+                if QMessageBox.question(self, "备份", "是否将此原文件作为附件保存？",
+                                        QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                    self.file_manager.add_file_to_sample(self.current_project, self.current_sample, file_path)
+                    self.refresh_gallery()
             else:
-                QMessageBox.warning(self, "解析失败", msg)
+                QMessageBox.warning(self, "错误", "数据保存失败")
+        else:
+            QMessageBox.warning(self, "解析失败", msg)
 
     def show_mass_menu(self, pos):
         item = self.mass_table.itemAt(pos)
         if not item: return
         row = item.row()
         menu = QMenu(self)
-        menu.setStyleSheet(MENU_STYLE)  # 应用白色菜单样式
+        menu.setStyleSheet(MENU_STYLE)
         menu.addAction("✏️ 修改", lambda: self.edit_weight_record(row))
         menu.addAction("🗑️ 删除", lambda: self.delete_weight_record_confirm(row))
         menu.exec(self.mass_table.mapToGlobal(pos))
@@ -718,7 +711,7 @@ class SampleDetailView(QWidget):
 
     def show_file_menu(self, pos, widget, path):
         menu = QMenu(self)
-        menu.setStyleSheet(MENU_STYLE)  # 应用白色菜单样式
+        menu.setStyleSheet(MENU_STYLE)
         menu.addAction("👁️ 打开", lambda: self.open_file(path))
         menu.addAction("📂 位置", lambda: self.open_file_location(path))
         menu.addAction("🗑️ 删除", lambda: self.delete_file_confirm(path))

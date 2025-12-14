@@ -1,20 +1,21 @@
 import os
 import json
+import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                                QSplitter, QTreeWidget, QTreeWidgetItem,
-                               QToolBar, QMessageBox, QMenu, QInputDialog, QStyle, QFrame, QApplication,
-                               QAbstractItemView)
-from PySide6.QtGui import QAction, QIcon, QColor, QPalette, QDrag, QPixmap, QPainter, QFont
-from PySide6.QtCore import Qt, QSize, QMimeData
+                               QToolBar, QMessageBox, QMenu, QInputDialog, QStyle,
+                               QAbstractItemView, QLabel, QSizePolicy, QHBoxLayout)
+from PySide6.QtGui import (QAction, QIcon, QColor, QPixmap, QPainter,
+                           QFont, QGuiApplication)
+from PySide6.QtCore import Qt, QSize, QRect
 
 from src.controllers.file_manager import FileManager
 import config
 from src.views.dialogs import NewProjectDialog, NewSampleDialog, BatchCopyWeightDialog
 from src.views.sample_view import SampleDetailView
 
-# 已删除: from src.views.analysis_dialog import AnalysisDialog
 
-
+# === FileTreeWidget 类 ===
 class FileTreeWidget(QTreeWidget):
     def __init__(self, parent=None, file_manager=None):
         super().__init__(parent)
@@ -43,26 +44,43 @@ class FileTreeWidget(QTreeWidget):
             self.file_manager.update_structure_order(new_structure)
 
 
+# === MainWindow 类 ===
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.file_manager = FileManager()
+
         self.setWindowTitle(" 试样记录管理中心 v.1.2.0")
 
-        self.resize(1200, 800)
-        self.center_on_screen()
+        # --- 屏幕自适应 ---
+        screen = QGuiApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        new_width = int(screen_geometry.width() * 0.8)
+        new_height = int(screen_geometry.height() * 0.8)
+        self.resize(new_width, new_height)
+        self.move(
+            screen_geometry.x() + (screen_geometry.width() - new_width) // 2,
+            screen_geometry.y() + (screen_geometry.height() - new_height) // 2
+        )
 
-        # === 工具栏 ===
+        # === 1. 加载背景图片 ===
+        self.bg_pixmap = None
+        bg_path = os.path.join(config.BASE_DIR, "assets", "background.jpg")
+        if os.path.exists(bg_path):
+            self.bg_pixmap = QPixmap(bg_path)
+
+        # === 2. 工具栏与个性化签名 ===
         toolbar = QToolBar("MainToolbar")
         toolbar.setIconSize(QSize(20, 20))
         toolbar.setMovable(False)
         toolbar.setStyleSheet("""
-            QToolBar { background: white; border-bottom: 1px solid #e0e0e0; padding: 5px; spacing: 10px; }
+            QToolBar { background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid #e0e0e0; padding: 5px; spacing: 10px; }
             QToolButton { background: transparent; border-radius: 4px; padding: 5px 10px; font-weight: bold; color: #555; }
             QToolButton:hover { background-color: #f0f2f5; color: #3498db; }
         """)
         self.addToolBar(toolbar)
 
+        # 左侧按钮
         new_proj_action = QAction("📁 新建项目", self)
         new_proj_action.triggered.connect(self.on_new_project)
         toolbar.addAction(new_proj_action)
@@ -71,11 +89,53 @@ class MainWindow(QMainWindow):
         new_sample_action.triggered.connect(self.on_new_sample)
         toolbar.addAction(new_sample_action)
 
-        # 已删除: AI 分析按钮及分隔符
+        # === 弹簧：将后面的内容顶到最右边 ===
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        toolbar.addWidget(spacer)
+
+        # === 右侧个性化区域 (Logo + 签名) ===
+        profile_widget = QWidget()
+        profile_layout = QHBoxLayout(profile_widget)
+        profile_layout.setContentsMargins(0, 0, 6, 0)  # 右边留点空隙
+        profile_layout.setSpacing(4)  # Logo 和文字之间的间距
+
+        # 1. 处理 Logo 图片 (PNG 透明底)
+        logo_path = os.path.join(config.BASE_DIR, "assets", "小白元宵logo.png")
+        logo_label = QLabel()
+
+        if os.path.exists(logo_path):
+            pixmap = QPixmap(logo_path)
+            if not pixmap.isNull():
+                # 缩放到 24x24，保持纵横比，开启平滑缩放防止锯齿
+                scaled_pixmap = pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                logo_label.setPixmap(scaled_pixmap)
+        else:
+            # 如果找不到图片，就用一个 emoji 代替
+            logo_label.setText("😐")
+
+            # 2. 处理签名文字
+        text_label = QLabel("@小白元宵")
+        text_label.setStyleSheet("""
+            color: #909399; 
+            font-family: "Microsoft YaHei";
+            font-size: 10px;
+            font-weight: bold;
+        """)
+
+        # 将它们加入布局
+        profile_layout.addWidget(text_label)
+        profile_layout.addWidget(logo_label)
+
+        # 将这个容器放入工具栏
+        toolbar.addWidget(profile_widget)
 
         # === 主界面 ===
         central_widget = QWidget()
+        # 让 central_widget 透明，透出背景
+        central_widget.setAttribute(Qt.WA_TranslucentBackground)
         self.setCentralWidget(central_widget)
+
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -109,6 +169,24 @@ class MainWindow(QMainWindow):
         splitter.setSizes([220, 980])
         main_layout.addWidget(splitter)
         self.refresh_data()
+
+    # === 背景绘制 ===
+    def paintEvent(self, event):
+        painter = QPainter(self)
+
+        # 1. 绘制底色 (保持不变 #f4f6f9)
+        painter.fillRect(self.rect(), QColor("#f4f6f9"))
+
+        # 2. 绘制背景图片 (15% 不透明度)
+        if self.bg_pixmap and not self.bg_pixmap.isNull():
+            painter.setOpacity(0.08)
+            scaled_pixmap = self.bg_pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            # 居中绘制
+            x = (self.width() - scaled_pixmap.width()) // 2
+            y = (self.height() - scaled_pixmap.height()) // 2
+            painter.drawPixmap(x, y, scaled_pixmap)
+
+        painter.setOpacity(1.0)
 
     def center_on_screen(self):
         screen = QApplication.primaryScreen()
@@ -223,8 +301,6 @@ class MainWindow(QMainWindow):
             menu.addAction(delete)
 
         menu.exec(self.project_tree.mapToGlobal(pos))
-
-    # 已删除: on_open_ai_analysis 方法
 
     def copy_sample_ui(self, project_name, sample_id):
         source_data = self.file_manager.get_sample_info(project_name, sample_id)

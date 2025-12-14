@@ -1,13 +1,15 @@
 import sys
 import os
-from PySide6.QtGui import QFont, QPalette, QColor
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+import time
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication, QMessageBox, QFileDialog
+from PySide6.QtCore import Qt
 
 import config
 from src.views.main_window import MainWindow
+from src.views.splash_screen import ModernSplashScreen
 
 # === 全局样式表 (QSS) ===
-# 这里定义了所有控件的默认长相
 GLOBAL_STYLES = """
 /* 全局字体与背景 */
 QWidget {
@@ -97,26 +99,57 @@ QScrollBar::handle:vertical:hover {
 
 
 def main():
+    # 高分屏适配
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+    os.environ["QT_SCALE_FACTOR"] = "1"
+
     app = QApplication(sys.argv)
 
-    # 1. 设置全局字体 (稍微调大一点点，更清晰)
-    font = QFont("Microsoft YaHei", 10)  # 这里的10是pt，大概对应13-14px
+    # 1. 设置全局字体
+    font = QFont("Microsoft YaHei", 10)
     app.setFont(font)
-
-    # 2. 应用全局样式
     app.setStyleSheet(GLOBAL_STYLES)
 
-    # 3. 路径检查逻辑
+    # === 2. 显示启动动画 ===
+    splash = ModernSplashScreen()
+    splash.show()
+
+    # 模拟加载过程
+    loading_steps = [
+        (10, "正在初始化核心组件..."),
+        (30, "加载用户配置文件..."),
+        (60, "校验数据完整性..."),
+        (80, "准备用户界面..."),
+        (100, "启动完成")
+    ]
+
+    for progress, msg in loading_steps:
+        splash.update_progress(progress)
+        splash.showMessage(f"\n\n\n\n\n\n\n\n\n\n{msg}", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
+        t_end = time.time() + 0.3
+        while time.time() < t_end:
+            app.processEvents()
+
+    # === 3. 路径检查逻辑 ===
     if config.DATA_ROOT is None:
+        splash.hide()
         QMessageBox.information(None, "欢迎", "欢迎使用试样管理器！\n请先选择一个文件夹作为您的数据仓库。")
         selected_path = QFileDialog.getExistingDirectory(None, "选择数据存储根目录")
 
         if selected_path:
             config.save_settings(selected_path)
+            splash.show()
         else:
             sys.exit(0)
 
+    # === 4. 启动主窗口 ===
     window = MainWindow()
+
+    # 动画结束，切换到主窗口
+    splash.finish(window)
+    # 根据 main_window.py 中的设置，这里可以直接 show
+    # (如果 main_window.py 中用了 showMaximized，这里也生效)
     window.show()
 
     sys.exit(app.exec())
