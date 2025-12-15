@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout,
 from PySide6.QtCore import QTime, Qt, QDateTime
 from PySide6.QtGui import QFont
 
-# 引入刚刚拆分出去的工具
 from src.views.dialog_utils import (SAMPLE_ICONS, apply_dialog_theme, create_datetime_edit)
 
 
@@ -17,7 +16,7 @@ class NewSampleDialog(QDialog):
         if template_data:
             self.setWindowTitle("新建试样 (复制自 " + template_data.get('id', '') + ")")
 
-        self.resize(550, 750)
+        self.resize(550, 700)  # 稍微减小高度，因为少了一个框
 
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
@@ -106,10 +105,29 @@ class NewSampleDialog(QDialog):
         form_layout.addRow("几何尺寸:", self.dim_stack)
         self.shape_combo.currentIndexChanged.connect(self.dim_stack.setCurrentIndex)
 
-        self.desc_input = QTextEdit()
-        self.desc_input.setPlaceholderText("描述配比、砂土类型等...")
-        self.desc_input.setMaximumHeight(60)
-        form_layout.addRow("试样描述:", self.desc_input)
+        # 【核心修改】合并了配方和描述
+        self.recipe_input = QTextEdit()
+        self.recipe_input.setPlaceholderText("试样的配方、描述，方便后续分析")
+        self.recipe_input.setMaximumHeight(80)  # 稍微增加高度
+        form_layout.addRow("试样配方/描述:", self.recipe_input)
+
+        # 关键变量 (拆分为 名称 + 数值)
+        key_var_layout = QHBoxLayout()
+        self.key_var_name = QLineEdit()
+        self.key_var_name.setPlaceholderText("如: 浓度")
+        self.key_var_name.setFixedWidth(120)
+
+        self.key_var_input = QDoubleSpinBox()
+        self.key_var_input.setRange(-99999, 99999)
+        self.key_var_input.setDecimals(3)
+        self.key_var_input.setToolTip("用于对比分析的数值")
+
+        key_var_layout.addWidget(self.key_var_name)
+        key_var_layout.addWidget(self.key_var_input)
+
+        form_layout.addRow("关键配方变量:", key_var_layout)
+
+        # 【已删除】删除了独立的 desc_input
 
         self.date_prep = create_datetime_edit()
         self.date_complete = create_datetime_edit()
@@ -133,21 +151,16 @@ class NewSampleDialog(QDialog):
             self.fill_from_template(template_data)
 
     def fill_from_template(self, data):
-        """将模板数据填入表单"""
-        # 1. 自动生成一个带 _copy 后缀的编号，并全选方便用户直接修改
         self.id_input.setText(f"{data.get('id', '')}_copy")
         self.id_input.selectAll()
         self.id_input.setFocus()
 
-        # 2. 复制图标
         emoji = data.get("icon_emoji", "🧪")
         idx = self.icon_combo.findText(emoji)
         if idx >= 0: self.icon_combo.setCurrentIndex(idx)
 
-        # 3. 复制质量
         self.mass_input.setValue(float(data.get("initial_mass", 0)))
 
-        # 4. 复制形状和尺寸
         shape_str = data.get("shape", "未指定")
         idx = self.shape_combo.findText(shape_str)
         if idx >= 0: self.shape_combo.setCurrentIndex(idx)
@@ -160,10 +173,16 @@ class NewSampleDialog(QDialog):
         if "height" in data:
             self.cuboid_h.setValue(float(data.get("height", 0)))
 
-        # 5. 复制描述
-        self.desc_input.setPlainText(data.get("description", ""))
+        # 【核心修改】合并旧数据中的配方和描述
+        rec = data.get("recipe", "")
+        desc = data.get("description", "")
+        combined = f"{rec}\n{desc}".strip()  # 如果都有，换行拼接
+        self.recipe_input.setPlainText(combined)
 
-        # 6. 复制日期
+        # 回填关键变量
+        self.key_var_name.setText(data.get("key_variable_name", ""))
+        self.key_var_input.setValue(float(data.get("key_variable", 0)))
+
         def set_dt(widget, val):
             if val and val != "-":
                 dt = QDateTime.fromString(val, "yyyy-MM-dd-HH:00")
@@ -182,7 +201,9 @@ class NewSampleDialog(QDialog):
         data = {
             "id": self.id_input.text().strip(),
             "initial_mass": self.mass_input.value(),
-            "description": self.desc_input.toPlainText(),
+            "recipe": self.recipe_input.toPlainText(),  # 统一存入 recipe
+            "key_variable": self.key_var_input.value(),
+            "key_variable_name": self.key_var_name.text().strip(),
             "icon_emoji": self.icon_combo.currentText(),
             "date_prep": self.date_prep.text(),
             "date_complete": self.date_complete.text(),
@@ -207,7 +228,7 @@ class EditSampleDialog(QDialog):
     def __init__(self, current_data, parent=None):
         super().__init__(parent)
         self.setWindowTitle("修改信息")
-        self.resize(550, 750)
+        self.resize(550, 700)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
@@ -309,11 +330,36 @@ class EditSampleDialog(QDialog):
         if "height" in current_data and idx == 3:
             self.cuboid_h.setValue(float(current_data.get("height", 0)))
 
-        self.desc_input = QTextEdit()
-        desc = current_data.get("description", "") or current_data.get("note", "")
-        self.desc_input.setPlainText(desc)
-        self.desc_input.setMaximumHeight(60)
-        form_layout.addRow("试样描述:", self.desc_input)
+        # 【核心修改】合并配方和描述到同一个文本框
+        self.recipe_input = QTextEdit()
+        rec_text = current_data.get("recipe", "")
+        desc_text = current_data.get("description", "") or current_data.get("note", "")
+        combined_text = rec_text
+        if desc_text and desc_text not in rec_text:  # 简单去重避免重复拼接
+            combined_text += f"\n{desc_text}"
+        self.recipe_input.setPlainText(combined_text.strip())
+
+        self.recipe_input.setMaximumHeight(80)
+        form_layout.addRow("试样配方/描述:", self.recipe_input)
+
+        # 关键配方变量 (拆分为 名称 + 数值)
+        key_var_layout = QHBoxLayout()
+        self.key_var_name = QLineEdit()
+        self.key_var_name.setPlaceholderText("变量名 (如: 浓度)")
+        self.key_var_name.setText(current_data.get("key_variable_name", ""))
+        self.key_var_name.setFixedWidth(120)
+
+        self.key_var_input = QDoubleSpinBox()
+        self.key_var_input.setRange(-99999, 99999)
+        self.key_var_input.setDecimals(3)
+        self.key_var_input.setValue(float(current_data.get("key_variable", 0)))
+
+        key_var_layout.addWidget(self.key_var_name)
+        key_var_layout.addWidget(self.key_var_input)
+
+        form_layout.addRow("关键配方变量:", key_var_layout)
+
+        # 【已删除】删除了独立的 desc_input
 
         self.date_prep = create_datetime_edit(current_data.get("date_prep"))
         self.date_complete = create_datetime_edit(current_data.get("date_complete"))
@@ -336,7 +382,9 @@ class EditSampleDialog(QDialog):
         data = {
             "id": self.id_input.text().strip(),
             "initial_mass": self.mass_input.value(),
-            "description": self.desc_input.toPlainText(),
+            "recipe": self.recipe_input.toPlainText(),  # 统一存入 recipe
+            "key_variable": self.key_var_input.value(),
+            "key_variable_name": self.key_var_name.text().strip(),  # 新增字段
             "icon_emoji": self.icon_combo.currentText(),
             "date_prep": self.date_prep.text(),
             "date_complete": self.date_complete.text(),
@@ -452,12 +500,10 @@ class BatchCopyWeightDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
 
-        # 提示
         lbl = QLabel(f"请选择要将 [{source_id}] 的质量记录应用到哪些试样？")
         lbl.setWordWrap(True)
         layout.addWidget(lbl)
 
-        # 列表
         self.list_widget = QListWidget()
         self.list_widget.setStyleSheet("""
             QListWidget { border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
@@ -465,7 +511,7 @@ class BatchCopyWeightDialog(QDialog):
             QListWidget::item:hover { background: #f0f2f5; }
         """)
         for s_id in all_samples:
-            if s_id == source_id: continue  # 跳过自己
+            if s_id == source_id: continue
             item = QListWidgetItem(s_id)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
@@ -473,12 +519,10 @@ class BatchCopyWeightDialog(QDialog):
 
         layout.addWidget(self.list_widget)
 
-        # 全选按钮
         btn_layout = QHBoxLayout()
         self.btn_all = QPushButton("全选")
         self.btn_none = QPushButton("全不选")
 
-        # 按钮样式微调 (小一点)
         mini_btn_style = "QPushButton { padding: 4px 10px; font-size: 12px; background: #eee; border: none; border-radius: 3px; } QPushButton:hover { background: #ddd; }"
         self.btn_all.setStyleSheet(mini_btn_style)
         self.btn_none.setStyleSheet(mini_btn_style)
@@ -491,7 +535,6 @@ class BatchCopyWeightDialog(QDialog):
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
-        # 选项：覆盖模式
         self.overwrite_cb = QCheckBox("⚠️ 完全覆盖 (清空目标原有的记录，完全替换为源记录)")
         self.overwrite_cb.setStyleSheet("color: #e74c3c; font-weight: bold;")
         self.overwrite_cb.setToolTip("如果不勾选，则为【合并模式】：保留目标已有记录，仅追加新日期的记录。")
@@ -499,7 +542,6 @@ class BatchCopyWeightDialog(QDialog):
 
         layout.addStretch()
 
-        # 底部按钮
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
@@ -525,7 +567,6 @@ class BatchCopyWeightDialog(QDialog):
         }
 
 
-# === 手动添加应力应变数据对话框 ===
 class AddStressDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -539,18 +580,16 @@ class AddStressDialog(QDialog):
         form = QFormLayout()
         form.setVerticalSpacing(15)
 
-        # 应变输入 (Strain)
         self.strain_input = QDoubleSpinBox()
-        self.strain_input.setRange(0, 9999.99)  # 允许较大的应变范围
-        self.strain_input.setDecimals(3)  # 保留3位小数
+        self.strain_input.setRange(0, 9999.99)
+        self.strain_input.setDecimals(3)
         self.strain_input.setSuffix(" %")
         self.strain_input.setSingleStep(0.1)
 
-        # 应力输入 (Stress)
         self.stress_input = QDoubleSpinBox()
-        self.stress_input.setRange(0, 999999.99)  # 应力可能很大
+        self.stress_input.setRange(0, 999999.99)
         self.stress_input.setDecimals(3)
-        self.stress_input.setSuffix(" kPa")  # 默认单位，可视情况修改
+        self.stress_input.setSuffix(" kPa")
         self.stress_input.setSingleStep(10.0)
 
         form.addRow("应变 (Strain):", self.strain_input)

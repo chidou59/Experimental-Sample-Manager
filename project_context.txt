@@ -353,7 +353,8 @@ if __name__ == "__main__":
 ====================
 File: README.md
 ====================
-# Laboratory Sample Records Management System | 实验试样数据管理平台
+# 试样数据管理平台
+### Sample Records Management System
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![PySide6](https://img.shields.io/badge/GUI-PySide6-green)
@@ -362,23 +363,24 @@ File: README.md
 
 ## 📖 项目简介 (Introduction)
 
-**实验试样数据管理平台** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
+**试样数据管理平台** 是一个基于 Python 和 PySide6 开发的桌面应用程序，为需要试验制样的科研人员设计。
 本软件旨在提供一个**结构化、可视化、交互式**的平台，帮助科研人员将繁杂的excel等各种文件集中管理。
 <div align="center">
-  <img src="fig\fig1.png" width="800" />
+  <img src="fig\fig2.png" width="800" />
+  <br> <p>图 1：主操作界面</p>
 </div>
 
 ## ✨ 核心功能 (Key Features)
 
 **🗂️ 项目与试样管理**
 * 清晰的树状结构，管理多个实验项目及下属试样。
-* 详细记录试样信息（尺寸、形状、各阶段日期等）。
+* 详细记录试样元数据（尺寸、形状、各阶段日期等）。
 * 支持复制参数快速新建，避免重复编辑。
 <div align="center">
-  <img src="fig\fig2.png" width="300" />
-  <br> <p>图 2：快速修改试样信息</p>
-  <img src="fig\fig3.png" width="400" />
-  <br> <p>图 3：复制参数快速新建</p>
+  <img src="fig\fig1.png" width="200" />
+  <br> <p>图 2：树状管理、快速新建</p>
+  <img src="fig\fig3.png" width="300" />
+  <br> <p>图 3：试样参数输入</p>
 </div>
 
 **📊 质量变化追踪**
@@ -388,7 +390,7 @@ File: README.md
 * **批量操作**：支持将某一试样的质量记录批量应用/覆盖到其他同批次试样。
 <div align="center">
   <img src="fig\fig5.png" width="300" />
-  <br> <p>图 4：复制参数快速新建</p>
+  <br> <p>图 4：输入质量自动绘图</p>
 </div>
 
 **📈 应力应变分析**
@@ -398,7 +400,7 @@ File: README.md
 * 支持一键导出数据、高清图像。
 <div align="center">
   <img src="fig\fig4.png" width="300" />
-  <br> <p>图 5：应力应变模块</p>
+  <br> <p>图 5：导入数据自动绘图</p>
 </div>
 
 **🖼️ 附件画廊**
@@ -407,7 +409,7 @@ File: README.md
 * 支持**拖拽上传**，双击预览或打开文件位置。
 <div align="center">
   <img src="fig\fig6.png" width="600" />
-  <br> <p>图 6：应力应变模块</p>
+  <br> <p>图 6：附件画廊清晰管理</p>
 </div>
 
 **💾 数据持久化**
@@ -489,6 +491,1383 @@ File: requirements.txt
 # 读取错误: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
 
 ====================
+File: build\试样数据管理平台\warn-试样数据管理平台.txt
+====================
+
+This file lists modules PyInstaller was not able to find. This does not
+necessarily mean this module is required for running your program. Python and
+Python 3rd-party packages include a lot of conditional or optional modules. For
+example the module 'ntpath' only exists on Windows, whereas the module
+'posixpath' only exists on Posix systems.
+
+Types if import:
+* top-level: imported at the top-level - look at these first
+* conditional: imported within an if-statement
+* delayed: imported within a function
+* optional: imported within a try-except-statement
+
+IMPORTANT: Do NOT post this list to the issue-tracker. Use it as a basis for
+            tracking down the missing module yourself. Thanks!
+
+missing module named org - imported by copy (optional)
+missing module named 'org.python' - imported by pickle (optional), xml.sax (delayed, conditional)
+missing module named grp - imported by shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional), subprocess (delayed, conditional, optional), setuptools._vendor.backports.tarfile (optional), distutils.archive_util (optional), setuptools._distutils.archive_util (optional)
+missing module named pwd - imported by posixpath (delayed, conditional, optional), shutil (delayed, optional), tarfile (optional), pathlib (delayed, optional), subprocess (delayed, conditional, optional), http.server (delayed, optional), webbrowser (delayed), netrc (delayed, conditional), getpass (delayed), distutils.util (delayed, conditional, optional), setuptools._vendor.backports.tarfile (optional), distutils.archive_util (optional), setuptools._distutils.util (delayed, conditional, optional), setuptools._distutils.archive_util (optional)
+missing module named posix - imported by os (conditional, optional), shutil (conditional), importlib._bootstrap_external (conditional), posixpath (optional)
+missing module named resource - imported by posix (top-level)
+missing module named _frozen_importlib_external - imported by importlib._bootstrap (delayed), importlib (optional), importlib.abc (optional), zipimport (top-level)
+excluded module named _frozen_importlib - imported by importlib (optional), importlib.abc (optional), zipimport (top-level)
+missing module named pyimod02_importers - imported by C:\Users\hansh\PycharmProjects\Github\Specimen-Info-Hub\.venv\Lib\site-packages\PyInstaller\hooks\rthooks\pyi_rth_pkgutil.py (delayed), C:\Users\hansh\PycharmProjects\Github\Specimen-Info-Hub\.venv\Lib\site-packages\PyInstaller\hooks\rthooks\pyi_rth_pkgres.py (delayed)
+missing module named _posixsubprocess - imported by subprocess (conditional), multiprocessing.util (delayed)
+missing module named fcntl - imported by subprocess (optional)
+missing module named _manylinux - imported by packaging._manylinux (delayed, optional), setuptools._vendor.packaging._manylinux (delayed, optional), wheel.vendored.packaging._manylinux (delayed, optional)
+missing module named typing_extensions.TypeAlias - imported by setuptools._vendor.typing_extensions (top-level), setuptools._reqs (conditional), setuptools.warnings (conditional), setuptools._path (conditional), setuptools.config.setupcfg (conditional), setuptools.config._apply_pyprojecttoml (conditional), setuptools.dist (conditional), pkg_resources (conditional), setuptools.command.bdist_egg (conditional), setuptools.compat.py311 (conditional)
+missing module named typing_extensions.Self - imported by setuptools._vendor.typing_extensions (top-level), setuptools.config.expand (conditional), setuptools.config.pyprojecttoml (conditional), setuptools.config._validate_pyproject.error_reporting (conditional), pkg_resources (conditional)
+missing module named _posixshmem - imported by multiprocessing.resource_tracker (conditional), multiprocessing.shared_memory (conditional)
+missing module named multiprocessing.set_start_method - imported by multiprocessing (top-level), multiprocessing.spawn (top-level)
+missing module named multiprocessing.get_start_method - imported by multiprocessing (top-level), multiprocessing.spawn (top-level)
+missing module named multiprocessing.get_context - imported by multiprocessing (top-level), multiprocessing.pool (top-level), multiprocessing.managers (top-level), multiprocessing.sharedctypes (top-level)
+missing module named multiprocessing.TimeoutError - imported by multiprocessing (top-level), multiprocessing.pool (top-level)
+missing module named _scproxy - imported by urllib.request (conditional)
+missing module named termios - imported by tty (top-level), getpass (optional)
+missing module named 'java.lang' - imported by platform (delayed, optional), xml.sax._exceptions (conditional)
+missing module named multiprocessing.BufferTooShort - imported by multiprocessing (top-level), multiprocessing.connection (top-level)
+missing module named multiprocessing.AuthenticationError - imported by multiprocessing (top-level), multiprocessing.connection (top-level)
+missing module named asyncio.DefaultEventLoopPolicy - imported by asyncio (delayed, conditional), asyncio.events (delayed, conditional)
+missing module named 'distutils._modified' - imported by setuptools._distutils.file_util (delayed)
+missing module named 'distutils._log' - imported by setuptools._distutils.command.bdist_dumb (top-level), setuptools._distutils.command.bdist_rpm (top-level), setuptools._distutils.command.build_clib (top-level), setuptools._distutils.command.build_ext (top-level), setuptools._distutils.command.build_py (top-level), setuptools._distutils.command.build_scripts (top-level), setuptools._distutils.command.clean (top-level), setuptools._distutils.command.config (top-level), setuptools._distutils.command.install (top-level), setuptools._distutils.command.install_scripts (top-level), setuptools._distutils.command.sdist (top-level)
+missing module named usercustomize - imported by site (delayed, optional)
+missing module named sitecustomize - imported by site (delayed, optional)
+missing module named readline - imported by cmd (delayed, conditional, optional), code (delayed, conditional, optional), pdb (delayed, optional), site (delayed, optional), rlcompleter (optional)
+missing module named trove_classifiers - imported by setuptools.config._validate_pyproject.formats (optional)
+missing module named typing_extensions.Buffer - imported by setuptools._vendor.typing_extensions (top-level), wheel.wheelfile (conditional)
+missing module named typing_extensions.Literal - imported by setuptools._vendor.typing_extensions (top-level), setuptools.config._validate_pyproject.formats (conditional)
+missing module named '_typeshed.importlib' - imported by pkg_resources (conditional)
+missing module named _typeshed - imported by numpy.random.bit_generator (top-level), pkg_resources (conditional), setuptools.glob (conditional), setuptools.compat.py311 (conditional), setuptools._distutils.dist (conditional)
+missing module named jnius - imported by setuptools._vendor.platformdirs.android (delayed, conditional, optional)
+missing module named android - imported by setuptools._vendor.platformdirs.android (delayed, conditional, optional)
+missing module named importlib_resources - imported by setuptools._vendor.jaraco.text (optional)
+missing module named vms_lib - imported by platform (delayed, optional)
+missing module named java - imported by platform (delayed)
+missing module named _winreg - imported by platform (delayed, optional)
+missing module named collections.Mapping - imported by collections (optional), pytz.lazy (optional)
+missing module named six.moves.range - imported by six.moves (top-level), dateutil.rrule (top-level)
+runtime module named six.moves - imported by dateutil.tz.tz (top-level), dateutil.tz._factories (top-level), dateutil.tz.win (top-level), dateutil.rrule (top-level)
+missing module named dateutil.tz.tzfile - imported by dateutil.tz (top-level), dateutil.zoneinfo (top-level)
+missing module named StringIO - imported by six (conditional)
+missing module named numexpr - imported by pandas.core.computation.expressions (conditional), pandas.core.computation.engines (delayed)
+missing module named numba - imported by pandas.core._numba.executor (delayed, conditional), pandas.core.util.numba_ (delayed, conditional), pandas.core.window.numba_ (delayed, conditional), pandas.core.window.online (delayed, conditional), pandas.core._numba.kernels.mean_ (top-level), pandas.core._numba.kernels.shared (top-level), pandas.core._numba.kernels.sum_ (top-level), pandas.core._numba.kernels.min_max_ (top-level), pandas.core._numba.kernels.var_ (top-level), pandas.core.groupby.numba_ (delayed, conditional), pandas.core._numba.extensions (top-level)
+missing module named 'numba.extending' - imported by pandas.core._numba.kernels.sum_ (top-level)
+missing module named 'pyarrow.compute' - imported by pandas.core.arrays._arrow_string_mixins (conditional), pandas.core.arrays.string_arrow (conditional), pandas.core.reshape.merge (delayed, conditional), pandas.core.arrays.arrow.array (conditional), pandas.core.arrays.arrow.accessors (conditional)
+missing module named 'numba.typed' - imported by pandas.core._numba.extensions (delayed)
+missing module named 'numba.core' - imported by pandas.core._numba.extensions (top-level)
+missing module named pyarrow - imported by pandas.core.arrays._arrow_string_mixins (conditional), pandas.core.arrays.masked (delayed), pandas.core.arrays.boolean (delayed, conditional), pandas.core.arrays.numeric (delayed, conditional), pandas.core.arrays.arrow._arrow_utils (top-level), pandas.core.interchange.utils (delayed, conditional), pandas.core.strings.accessor (delayed, conditional), pandas.io._util (conditional), pandas.io.parsers.base_parser (delayed, conditional), pandas.core.arrays.interval (delayed), pandas.core.arrays.arrow.extension_types (top-level), pandas.core.arrays.period (delayed), pandas.core.methods.describe (delayed, conditional), pandas.io.sql (delayed, conditional), pandas.core.arrays.string_arrow (conditional), pandas.core.reshape.merge (delayed, conditional), pandas.core.arrays.arrow.array (conditional), pandas.core.interchange.buffer (conditional), pandas.io.feather_format (delayed), pandas.core.indexes.base (delayed, conditional), pandas.core.dtypes.cast (delayed, conditional), pandas.core.arrays.string_ (delayed, conditional), pandas.core.arrays.arrow.accessors (conditional), pandas.core.dtypes.dtypes (delayed, conditional), pandas.compat.pyarrow (optional), pandas.core.reshape.encoding (delayed, conditional), pandas._testing (conditional)
+missing module named psutil - imported by numpy.testing._private.utils (delayed, optional)
+missing module named numpy._core.asarray - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.lib._array_utils_impl (top-level), numpy (conditional), numpy.fft._helper (top-level), numpy.fft._pocketfft (top-level)
+missing module named threadpoolctl - imported by numpy.lib._utils_impl (delayed, optional)
+missing module named numpy._core.iinfo - imported by numpy._core (top-level), numpy.lib._twodim_base_impl (top-level), numpy (conditional)
+missing module named numpy._core.vecdot - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.transpose - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.lib._function_base_impl (top-level), numpy (conditional)
+missing module named numpy._core.trace - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.tensordot - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.outer - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.matrix_transpose - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.matmul - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.diagonal - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.cross - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.zeros - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.swapaxes - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.sum - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.sqrt - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional), numpy.fft._pocketfft (top-level)
+missing module named numpy._core.sort - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.single - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.sign - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.reciprocal - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional), numpy.fft._pocketfft (top-level)
+missing module named numpy._core.prod - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.newaxis - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.multiply - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.moveaxis - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.isfinite - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.intc - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.inexact - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.finfo - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.empty_like - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional), numpy.fft._pocketfft (top-level)
+missing module named numpy._core.double - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.dot - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.divide - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.csingle - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.count_nonzero - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.complexfloating - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.cdouble - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.atleast_2d - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.asanyarray - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.argsort - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.amin - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.amax - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.add - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy (conditional)
+missing module named numpy._core.vstack - imported by numpy._core (top-level), numpy.lib._shape_base_impl (top-level), numpy (conditional)
+missing module named numpy._core.atleast_3d - imported by numpy._core (top-level), numpy.lib._shape_base_impl (top-level), numpy (conditional)
+missing module named numpy._core.ones - imported by numpy._core (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.hstack - imported by numpy._core (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.atleast_1d - imported by numpy._core (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.linspace - imported by numpy._core (top-level), numpy.lib._index_tricks_impl (top-level), numpy (conditional)
+missing module named _dummy_thread - imported by numpy._core.arrayprint (optional)
+missing module named numpy._core.result_type - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy (conditional), numpy.fft._pocketfft (top-level)
+missing module named numpy._core.number - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.object_ - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.max - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.isnan - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.inf - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.errstate - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.array2string - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.all - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.signbit - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy (conditional)
+missing module named numpy._core.isscalar - imported by numpy._core (delayed), numpy.testing._private.utils (delayed), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named win32pdh - imported by numpy.testing._private.utils (delayed, conditional)
+missing module named numpy._core.ndarray - imported by numpy._core (top-level), numpy.testing._private.utils (top-level), numpy.lib._utils_impl (top-level), numpy (conditional)
+missing module named numpy._core.isnat - imported by numpy._core (top-level), numpy.testing._private.utils (top-level), numpy (conditional)
+missing module named numpy._core.intp - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (top-level), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.float32 - imported by numpy._core (top-level), numpy.testing._private.utils (top-level), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.empty - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (top-level), numpy (conditional), numpy.fft._helper (top-level)
+missing module named numpy._core.array_repr - imported by numpy._core (top-level), numpy.testing._private.utils (top-level), numpy (conditional)
+missing module named numpy._core.array - imported by numpy._core (top-level), numpy.linalg._linalg (top-level), numpy.testing._private.utils (top-level), numpy.lib._polynomial_impl (top-level), numpy (conditional)
+missing module named numpy._core.arange - imported by numpy._core (top-level), numpy.testing._private.utils (top-level), numpy (conditional), numpy.fft._helper (top-level)
+missing module named numpy._core.void - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.vecmat - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ushort - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.unsignedinteger - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ulonglong - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ulong - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.uintp - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.uintc - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.uint64 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.uint32 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.uint16 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.uint - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ubyte - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.trunc - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.true_divide - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.timedelta64 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.tanh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.tan - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.subtract - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.str_ - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.square - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.spacing - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.sinh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.signedinteger - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.short - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.rint - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.right_shift - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.remainder - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.radians - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.rad2deg - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.power - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.positive - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.pi - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.not_equal - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.negative - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.modf - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.mod - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.minimum - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.maximum - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.matvec - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.longlong - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.longdouble - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.long - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logical_xor - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logical_or - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logical_not - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logical_and - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logaddexp2 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.logaddexp - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.log2 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.log1p - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.log - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.less_equal - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.less - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.left_shift - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ldexp - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.lcm - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.integer - imported by numpy._core (conditional), numpy (conditional), numpy.fft._helper (top-level)
+missing module named numpy._core.int64 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.int32 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.int16 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.int8 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.hypot - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.heaviside - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.half - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.greater_equal - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.greater - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.gcd - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.frompyfunc - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.frexp - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.fmod - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.fmin - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.fmax - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.floor_divide - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.floor - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.floating - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.float_power - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.float16 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.fabs - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.expm1 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.exp - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.euler_gamma - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.equal - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.e - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.divmod - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.degrees - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.deg2rad - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.datetime64 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.cosh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.cos - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.copysign - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.conjugate - imported by numpy._core (conditional), numpy (conditional), numpy.fft._pocketfft (top-level)
+missing module named numpy._core.conj - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.complex64 - imported by numpy._core (conditional), numpy (conditional), numpy._array_api_info (top-level)
+missing module named numpy._core.clongdouble - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.character - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.ceil - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.cbrt - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bytes_ - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.byte - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bool_ - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bitwise_xor - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bitwise_or - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bitwise_count - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.bitwise_and - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arctanh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arctan2 - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arctan - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arcsinh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arcsin - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arccosh - imported by numpy._core (conditional), numpy (conditional)
+missing module named numpy._core.arccos - imported by numpy._core (conditional), numpy (conditional)
+missing module named 'scipy.stats' - imported by pandas.core.nanops (delayed, conditional), pandas.plotting._matplotlib.misc (delayed, conditional), pandas.plotting._matplotlib.hist (delayed)
+missing module named scipy - imported by pandas.core.dtypes.common (delayed, conditional, optional), pandas.core.missing (delayed)
+missing module named traitlets - imported by pandas.io.formats.printing (delayed, conditional)
+missing module named 'IPython.core' - imported by pandas.io.formats.printing (delayed, conditional)
+missing module named IPython - imported by pandas.io.formats.printing (delayed)
+missing module named jinja2 - imported by pyparsing.diagram (top-level), pandas.io.formats.style (top-level)
+missing module named xlsxwriter - imported by pandas.io.excel._xlsxwriter (delayed)
+missing module named 'openpyxl.cell' - imported by pandas.io.excel._openpyxl (delayed)
+missing module named 'openpyxl.styles' - imported by pandas.io.excel._openpyxl (delayed)
+missing module named 'openpyxl.workbook' - imported by pandas.io.excel._openpyxl (delayed)
+missing module named 'openpyxl.descriptors' - imported by pandas.io.excel._openpyxl (conditional)
+missing module named openpyxl - imported by pandas.io.excel._openpyxl (delayed, conditional)
+missing module named 'odf.config' - imported by pandas.io.excel._odswriter (delayed)
+missing module named 'odf.style' - imported by pandas.io.excel._odswriter (delayed)
+missing module named 'odf.text' - imported by pandas.io.excel._odfreader (delayed), pandas.io.excel._odswriter (delayed)
+missing module named 'odf.table' - imported by pandas.io.excel._odfreader (delayed), pandas.io.excel._odswriter (delayed)
+missing module named 'odf.opendocument' - imported by pandas.io.excel._odfreader (delayed), pandas.io.excel._odswriter (delayed)
+missing module named xlrd - imported by pandas.io.excel._xlrd (delayed, conditional), pandas.io.excel._base (delayed, conditional)
+missing module named pyxlsb - imported by pandas.io.excel._pyxlsb (delayed, conditional)
+missing module named 'odf.office' - imported by pandas.io.excel._odfreader (delayed)
+missing module named 'odf.element' - imported by pandas.io.excel._odfreader (delayed)
+missing module named 'odf.namespaces' - imported by pandas.io.excel._odfreader (delayed)
+missing module named odf - imported by pandas.io.excel._odfreader (conditional)
+missing module named python_calamine - imported by pandas.io.excel._calamine (delayed, conditional)
+missing module named railroad - imported by pyparsing.diagram (top-level)
+missing module named pyparsing.Word - imported by pyparsing (delayed), pyparsing.unicode (delayed)
+missing module named olefile - imported by PIL.FpxImagePlugin (top-level), PIL.MicImagePlugin (top-level)
+missing module named defusedxml - imported by PIL.Image (optional)
+missing module named shiboken2 - imported by matplotlib.backends.qt_compat (delayed, conditional, optional)
+missing module named sip - imported by matplotlib.backends.qt_compat (delayed, conditional)
+missing module named 'tornado.template' - imported by matplotlib.backends.backend_webagg (delayed)
+missing module named 'tornado.websocket' - imported by matplotlib.backends.backend_webagg (optional)
+missing module named 'tornado.ioloop' - imported by matplotlib.backends.backend_webagg (optional)
+missing module named tornado - imported by matplotlib.backends.backend_webagg (optional), matplotlib.backends.backend_webagg_core (delayed)
+missing module named gi - imported by matplotlib.cbook (delayed, conditional)
+missing module named numpy.VisibleDeprecationWarning - imported by numpy (optional), matplotlib.cbook (optional)
+missing module named numpy.random.RandomState - imported by numpy.random (top-level), numpy.random._generator (top-level)
+missing module named certifi - imported by matplotlib (delayed, optional)
+missing module named setuptools_scm - imported by matplotlib (delayed, conditional, optional)
+missing module named markupsafe - imported by pandas.io.formats.style_render (top-level)
+missing module named botocore - imported by pandas.io.common (delayed, conditional, optional)
+missing module named sets - imported by pytz.tzinfo (optional)
+missing module named UserDict - imported by pytz.lazy (optional)
+missing module named 'scipy.sparse' - imported by pandas.core.arrays.sparse.array (conditional), pandas.core.arrays.sparse.scipy_sparse (delayed, conditional), pandas.core.arrays.sparse.accessor (delayed)
+missing module named pandas.core.internals.Block - imported by pandas.core.internals (conditional), pandas.io.pytables (conditional)
+missing module named Foundation - imported by pandas.io.clipboard (delayed, conditional, optional)
+missing module named AppKit - imported by pandas.io.clipboard (delayed, conditional, optional)
+missing module named PyQt4 - imported by pandas.io.clipboard (delayed, conditional, optional)
+missing module named qtpy - imported by pandas.io.clipboard (delayed, conditional, optional)
+missing module named 'sqlalchemy.engine' - imported by pandas.io.sql (delayed)
+missing module named 'sqlalchemy.types' - imported by pandas.io.sql (delayed, conditional)
+missing module named 'sqlalchemy.schema' - imported by pandas.io.sql (delayed)
+missing module named 'sqlalchemy.sql' - imported by pandas.io.sql (conditional)
+missing module named sqlalchemy - imported by pandas.io.sql (delayed, conditional)
+missing module named tables - imported by pandas.io.pytables (delayed, conditional)
+missing module named 'lxml.etree' - imported by pandas.io.xml (delayed), pandas.io.formats.xml (delayed), pandas.io.html (delayed)
+missing module named lxml - imported by pandas.io.xml (conditional)
+missing module named 'pyarrow.fs' - imported by pandas.io.orc (conditional)
+missing module named fsspec - imported by pandas.io.orc (conditional)
+missing module named 'pyarrow.parquet' - imported by pandas.io.parquet (delayed)
+missing module named google - imported by pandas.io.gbq (conditional)
+missing module named 'numpy_distutils.cpuinfo' - imported by numpy.f2py.diagnose (delayed, conditional, optional)
+missing module named 'numpy_distutils.fcompiler' - imported by numpy.f2py.diagnose (delayed, conditional, optional)
+missing module named 'numpy_distutils.command' - imported by numpy.f2py.diagnose (delayed, conditional, optional)
+missing module named numpy_distutils - imported by numpy.f2py.diagnose (delayed, optional)
+missing module named charset_normalizer - imported by numpy.f2py.crackfortran (optional)
+missing module named yaml - imported by numpy.__config__ (delayed)
+missing module named numpy._distributor_init_local - imported by numpy (optional), numpy._distributor_init (optional)
+missing module named 'lxml.html' - imported by pandas.io.html (delayed)
+missing module named bs4 - imported by pandas.io.html (delayed)
+missing module named pytest - imported by pandas._testing._io (delayed), pandas._testing (delayed)
+
+
+====================
+File: dist\试样数据管理平台\_internal\matplotlib\mpl-data\fonts\pdfcorefonts\readme.txt
+====================
+Font Metrics for the 14 PDF Core Fonts
+======================================
+
+This directory contains font metrics for the 14 PDF Core Fonts,
+downloaded from Adobe. The title and this paragraph were added by
+Matplotlib developers. The download URL was
+<http://partners.adobe.com/public/developer/font/index.html>.
+
+This file and the 14 PostScript(R) AFM files it accompanies may be used, copied, 
+and distributed for any purpose and without charge, with or without modification, 
+provided that all copyright notices are retained; that the AFM files are not 
+distributed without this file; that all modifications to this file or any of 
+the AFM files are prominently noted in the modified file(s); and that this 
+paragraph is not modified. Adobe Systems has no responsibility or obligation 
+to support the use of the AFM files.
+
+
+====================
+File: dist\试样数据管理平台\_internal\matplotlib\mpl-data\sample_data\README.txt
+====================
+This is the sample data needed for some of matplotlib's examples and
+docs.  See matplotlib.cbook.get_sample_data for more info.
+
+
+====================
+File: dist\试样数据管理平台\_internal\numpy-2.3.5.dist-info\entry_points.txt
+====================
+[pkg_config]
+numpy = numpy._core.lib.pkgconfig
+
+[array_api]
+numpy = numpy
+
+[pyinstaller40]
+hook-dirs = numpy:_pyinstaller_hooks_dir
+
+[console_scripts]
+f2py = numpy.f2py.f2py2e:main
+numpy-config = numpy._configtool:main
+
+
+
+====================
+File: dist\试样数据管理平台\_internal\numpy-2.3.5.dist-info\LICENSE.txt
+====================
+Copyright (c) 2005-2025, NumPy Developers.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+       copyright notice, this list of conditions and the following
+       disclaimer in the documentation and/or other materials provided
+       with the distribution.
+
+    * Neither the name of the NumPy Developers nor the names of any
+       contributors may be used to endorse or promote products derived
+       from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----
+
+The NumPy repository and source distributions bundle several libraries that are
+compatibly licensed.  We list these here.
+
+Name: lapack-lite
+Files: numpy/linalg/lapack_lite/*
+License: BSD-3-Clause
+  For details, see numpy/linalg/lapack_lite/LICENSE.txt
+
+Name: dragon4
+Files: numpy/_core/src/multiarray/dragon4.c
+License: MIT
+  For license text, see numpy/_core/src/multiarray/dragon4.c
+
+Name: libdivide
+Files: numpy/_core/include/numpy/libdivide/*
+License: Zlib
+  For license text, see numpy/_core/include/numpy/libdivide/LICENSE.txt
+
+
+Note that the following files are vendored in the repository and sdist but not
+installed in built numpy packages:
+
+Name: Meson
+Files: vendored-meson/meson/*
+License: Apache 2.0
+  For license text, see vendored-meson/meson/COPYING
+
+Name: spin
+Files: .spin/cmds.py
+License: BSD-3
+  For license text, see .spin/LICENSE
+
+Name: tempita
+Files: numpy/_build_utils/tempita/*
+License: MIT
+  For details, see numpy/_build_utils/tempita/LICENCE.txt
+
+----
+
+This binary distribution of NumPy also bundles the following software:
+
+
+Name: OpenBLAS
+Files: numpy.libs\libscipy_openblas*.dll
+Description: bundled as a dynamically linked library
+Availability: https://github.com/OpenMathLib/OpenBLAS/
+License: BSD-3-Clause
+  Copyright (c) 2011-2014, The OpenBLAS Project
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+     1. Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+     2. Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in
+        the documentation and/or other materials provided with the
+        distribution.
+     3. Neither the name of the OpenBLAS project nor the names of
+        its contributors may be used to endorse or promote products
+        derived from this software without specific prior written
+        permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Name: LAPACK
+Files: numpy.libs\libscipy_openblas*.dll
+Description: bundled in OpenBLAS
+Availability: https://github.com/OpenMathLib/OpenBLAS/
+License: BSD-3-Clause-Open-MPI
+  Copyright (c) 1992-2013 The University of Tennessee and The University
+                          of Tennessee Research Foundation.  All rights
+                          reserved.
+  Copyright (c) 2000-2013 The University of California Berkeley. All
+                          rights reserved.
+  Copyright (c) 2006-2013 The University of Colorado Denver.  All rights
+                          reserved.
+
+  $COPYRIGHT$
+
+  Additional copyrights may follow
+
+  $HEADER$
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer listed
+    in this license in the documentation and/or other materials
+    provided with the distribution.
+
+  - Neither the name of the copyright holders nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+  The copyright holders provide no reassurances that the source code
+  provided does not infringe any patent, copyright, or any other
+  intellectual property rights of third parties.  The copyright holders
+  disclaim any liability to any recipient for claims brought against
+  recipient by any third party for infringement of that parties
+  intellectual property rights.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Name: GCC runtime library
+Files: numpy.libs\libscipy_openblas*.dll
+Description: statically linked to files compiled with gcc
+Availability: https://gcc.gnu.org/git/?p=gcc.git;a=tree;f=libgfortran
+License: GPL-3.0-or-later WITH GCC-exception-3.1
+  Copyright (C) 2002-2017 Free Software Foundation, Inc.
+
+  Libgfortran is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3, or (at your option)
+  any later version.
+
+  Libgfortran is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  Under Section 7 of GPL version 3, you are granted additional
+  permissions described in the GCC Runtime Library Exception, version
+  3.1, as published by the Free Software Foundation.
+
+  You should have received a copy of the GNU General Public License and
+  a copy of the GCC Runtime Library Exception along with this program;
+  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+  <http://www.gnu.org/licenses/>.
+
+----
+
+Full text of license texts referred to above follows (that they are
+listed below does not necessarily imply the conditions apply to the
+present binary release):
+
+----
+
+GCC RUNTIME LIBRARY EXCEPTION
+
+Version 3.1, 31 March 2009
+
+Copyright (C) 2009 Free Software Foundation, Inc. <https://fsf.org/>
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+This GCC Runtime Library Exception ("Exception") is an additional
+permission under section 7 of the GNU General Public License, version
+3 ("GPLv3"). It applies to a given file (the "Runtime Library") that
+bears a notice placed by the copyright holder of the file stating that
+the file is governed by GPLv3 along with this Exception.
+
+When you use GCC to compile a program, GCC may combine portions of
+certain GCC header files and runtime libraries with the compiled
+program. The purpose of this Exception is to allow compilation of
+non-GPL (including proprietary) programs to use, in this way, the
+header files and runtime libraries covered by this Exception.
+
+0. Definitions.
+
+A file is an "Independent Module" if it either requires the Runtime
+Library for execution after a Compilation Process, or makes use of an
+interface provided by the Runtime Library, but is not otherwise based
+on the Runtime Library.
+
+"GCC" means a version of the GNU Compiler Collection, with or without
+modifications, governed by version 3 (or a specified later version) of
+the GNU General Public License (GPL) with the option of using any
+subsequent versions published by the FSF.
+
+"GPL-compatible Software" is software whose conditions of propagation,
+modification and use would permit combination with GCC in accord with
+the license of GCC.
+
+"Target Code" refers to output from any compiler for a real or virtual
+target processor architecture, in executable form or suitable for
+input to an assembler, loader, linker and/or execution
+phase. Notwithstanding that, Target Code does not include data in any
+format that is used as a compiler intermediate representation, or used
+for producing a compiler intermediate representation.
+
+The "Compilation Process" transforms code entirely represented in
+non-intermediate languages designed for human-written code, and/or in
+Java Virtual Machine byte code, into Target Code. Thus, for example,
+use of source code generators and preprocessors need not be considered
+part of the Compilation Process, since the Compilation Process can be
+understood as starting with the output of the generators or
+preprocessors.
+
+A Compilation Process is "Eligible" if it is done using GCC, alone or
+with other GPL-compatible software, or if it is done without using any
+work based on GCC. For example, using non-GPL-compatible Software to
+optimize any GCC intermediate representations would not qualify as an
+Eligible Compilation Process.
+
+1. Grant of Additional Permission.
+
+You have permission to propagate a work of Target Code formed by
+combining the Runtime Library with Independent Modules, even if such
+propagation would otherwise violate the terms of GPLv3, provided that
+all Target Code was generated by Eligible Compilation Processes. You
+may then convey such a combination under terms of your choice,
+consistent with the licensing of the Independent Modules.
+
+2. No Weakening of GCC Copyleft.
+
+The availability of this Exception does not imply any general
+presumption that third-party software is unaffected by the copyleft
+requirements of the license of GCC.
+
+----
+
+                    GNU GENERAL PUBLIC LICENSE
+                       Version 3, 29 June 2007
+
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
+
+  The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works.  By contrast,
+the GNU General Public License is intended to guarantee your freedom to
+share and change all versions of a program--to make sure it remains free
+software for all its users.  We, the Free Software Foundation, use the
+GNU General Public License for most of our software; it applies also to
+any other work released this way by its authors.  You can apply it to
+your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
+
+  To protect your rights, we need to prevent others from denying you
+these rights or asking you to surrender the rights.  Therefore, you have
+certain responsibilities if you distribute copies of the software, or if
+you modify it: responsibilities to respect the freedom of others.
+
+  For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must pass on to the recipients the same
+freedoms that you received.  You must make sure that they, too, receive
+or can get the source code.  And you must show them these terms so they
+know their rights.
+
+  Developers that use the GNU GPL protect your rights with two steps:
+(1) assert copyright on the software, and (2) offer you this License
+giving you legal permission to copy, distribute and/or modify it.
+
+  For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software.  For both users' and
+authors' sake, the GPL requires that modified versions be marked as
+changed, so that their problems will not be attributed erroneously to
+authors of previous versions.
+
+  Some devices are designed to deny users access to install or run
+modified versions of the software inside them, although the manufacturer
+can do so.  This is fundamentally incompatible with the aim of
+protecting users' freedom to change the software.  The systematic
+pattern of such abuse occurs in the area of products for individuals to
+use, which is precisely where it is most unacceptable.  Therefore, we
+have designed this version of the GPL to prohibit the practice for those
+products.  If such problems arise substantially in other domains, we
+stand ready to extend this provision to those domains in future versions
+of the GPL, as needed to protect the freedom of users.
+
+  Finally, every program is threatened constantly by software patents.
+States should not allow patents to restrict development and use of
+software on general-purpose computers, but in those that do, we wish to
+avoid the special danger that patents applied to a free program could
+make it effectively proprietary.  To prevent this, the GPL assures that
+patents cannot be used to render the program non-free.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+                       TERMS AND CONDITIONS
+
+  0. Definitions.
+
+  "This License" refers to version 3 of the GNU General Public License.
+
+  "Copyright" also means copyright-like laws that apply to other kinds of
+works, such as semiconductor masks.
+
+  "The Program" refers to any copyrightable work licensed under this
+License.  Each licensee is addressed as "you".  "Licensees" and
+"recipients" may be individuals or organizations.
+
+  To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of an
+exact copy.  The resulting work is called a "modified version" of the
+earlier work or a work "based on" the earlier work.
+
+  A "covered work" means either the unmodified Program or a work based
+on the Program.
+
+  To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy.  Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
+
+  To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies.  Mere interaction with a user through
+a computer network, with no transfer of a copy, is not conveying.
+
+  An interactive user interface displays "Appropriate Legal Notices"
+to the extent that it includes a convenient and prominently visible
+feature that (1) displays an appropriate copyright notice, and (2)
+tells the user that there is no warranty for the work (except to the
+extent that warranties are provided), that licensees may convey the
+work under this License, and how to view a copy of this License.  If
+the interface presents a list of user commands or options, such as a
+menu, a prominent item in the list meets this criterion.
+
+  1. Source Code.
+
+  The "source code" for a work means the preferred form of the work
+for making modifications to it.  "Object code" means any non-source
+form of a work.
+
+  A "Standard Interface" means an interface that either is an official
+standard defined by a recognized standards body, or, in the case of
+interfaces specified for a particular programming language, one that
+is widely used among developers working in that language.
+
+  The "System Libraries" of an executable work include anything, other
+than the work as a whole, that (a) is included in the normal form of
+packaging a Major Component, but which is not part of that Major
+Component, and (b) serves only to enable use of the work with that
+Major Component, or to implement a Standard Interface for which an
+implementation is available to the public in source code form.  A
+"Major Component", in this context, means a major essential component
+(kernel, window system, and so on) of the specific operating system
+(if any) on which the executable work runs, or a compiler used to
+produce the work, or an object code interpreter used to run it.
+
+  The "Corresponding Source" for a work in object code form means all
+the source code needed to generate, install, and (for an executable
+work) run the object code and to modify the work, including scripts to
+control those activities.  However, it does not include the work's
+System Libraries, or general-purpose tools or generally available free
+programs which are used unmodified in performing those activities but
+which are not part of the work.  For example, Corresponding Source
+includes interface definition files associated with source files for
+the work, and the source code for shared libraries and dynamically
+linked subprograms that the work is specifically designed to require,
+such as by intimate data communication or control flow between those
+subprograms and other parts of the work.
+
+  The Corresponding Source need not include anything that users
+can regenerate automatically from other parts of the Corresponding
+Source.
+
+  The Corresponding Source for a work in source code form is that
+same work.
+
+  2. Basic Permissions.
+
+  All rights granted under this License are granted for the term of
+copyright on the Program, and are irrevocable provided the stated
+conditions are met.  This License explicitly affirms your unlimited
+permission to run the unmodified Program.  The output from running a
+covered work is covered by this License only if the output, given its
+content, constitutes a covered work.  This License acknowledges your
+rights of fair use or other equivalent, as provided by copyright law.
+
+  You may make, run and propagate covered works that you do not
+convey, without conditions so long as your license otherwise remains
+in force.  You may convey covered works to others for the sole purpose
+of having them make modifications exclusively for you, or provide you
+with facilities for running those works, provided that you comply with
+the terms of this License in conveying all material for which you do
+not control copyright.  Those thus making or running the covered works
+for you must do so exclusively on your behalf, under your direction
+and control, on terms that prohibit them from making any copies of
+your copyrighted material outside their relationship with you.
+
+  Conveying under any other circumstances is permitted solely under
+the conditions stated below.  Sublicensing is not allowed; section 10
+makes it unnecessary.
+
+  3. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+  No covered work shall be deemed part of an effective technological
+measure under any applicable law fulfilling obligations under article
+11 of the WIPO copyright treaty adopted on 20 December 1996, or
+similar laws prohibiting or restricting circumvention of such
+measures.
+
+  When you convey a covered work, you waive any legal power to forbid
+circumvention of technological measures to the extent such circumvention
+is effected by exercising rights under this License with respect to
+the covered work, and you disclaim any intention to limit operation or
+modification of the work as a means of enforcing, against the work's
+users, your or third parties' legal rights to forbid circumvention of
+technological measures.
+
+  4. Conveying Verbatim Copies.
+
+  You may convey verbatim copies of the Program's source code as you
+receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice;
+keep intact all notices stating that this License and any
+non-permissive terms added in accord with section 7 apply to the code;
+keep intact all notices of the absence of any warranty; and give all
+recipients a copy of this License along with the Program.
+
+  You may charge any price or no price for each copy that you convey,
+and you may offer support or warranty protection for a fee.
+
+  5. Conveying Modified Source Versions.
+
+  You may convey a work based on the Program, or the modifications to
+produce it from the Program, in the form of source code under the
+terms of section 4, provided that you also meet all of these conditions:
+
+    a) The work must carry prominent notices stating that you modified
+    it, and giving a relevant date.
+
+    b) The work must carry prominent notices stating that it is
+    released under this License and any conditions added under section
+    7.  This requirement modifies the requirement in section 4 to
+    "keep intact all notices".
+
+    c) You must license the entire work, as a whole, under this
+    License to anyone who comes into possession of a copy.  This
+    License will therefore apply, along with any applicable section 7
+    additional terms, to the whole of the work, and all its parts,
+    regardless of how they are packaged.  This License gives no
+    permission to license the work in any other way, but it does not
+    invalidate such permission if you have separately received it.
+
+    d) If the work has interactive user interfaces, each must display
+    Appropriate Legal Notices; however, if the Program has interactive
+    interfaces that do not display Appropriate Legal Notices, your
+    work need not make them do so.
+
+  A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit.  Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate.
+
+  6. Conveying Non-Source Forms.
+
+  You may convey a covered work in object code form under the terms
+of sections 4 and 5, provided that you also convey the
+machine-readable Corresponding Source under the terms of this License,
+in one of these ways:
+
+    a) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by the
+    Corresponding Source fixed on a durable physical medium
+    customarily used for software interchange.
+
+    b) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
+    copy of the Corresponding Source for all the software in the
+    product that is covered by this License, on a durable physical
+    medium customarily used for software interchange, for a price no
+    more than your reasonable cost of physically performing this
+    conveying of source, or (2) access to copy the
+    Corresponding Source from a network server at no charge.
+
+    c) Convey individual copies of the object code with a copy of the
+    written offer to provide the Corresponding Source.  This
+    alternative is allowed only occasionally and noncommercially, and
+    only if you received the object code with such an offer, in accord
+    with subsection 6b.
+
+    d) Convey the object code by offering access from a designated
+    place (gratis or for a charge), and offer equivalent access to the
+    Corresponding Source in the same way through the same place at no
+    further charge.  You need not require recipients to copy the
+    Corresponding Source along with the object code.  If the place to
+    copy the object code is a network server, the Corresponding Source
+    may be on a different server (operated by you or a third party)
+    that supports equivalent copying facilities, provided you maintain
+    clear directions next to the object code saying where to find the
+    Corresponding Source.  Regardless of what server hosts the
+    Corresponding Source, you remain obligated to ensure that it is
+    available for as long as needed to satisfy these requirements.
+
+    e) Convey the object code using peer-to-peer transmission, provided
+    you inform other peers where the object code and Corresponding
+    Source of the work are being offered to the general public at no
+    charge under subsection 6d.
+
+  A separable portion of the object code, whose source code is excluded
+from the Corresponding Source as a System Library, need not be
+included in conveying the object code work.
+
+  A "User Product" is either (1) a "consumer product", which means any
+tangible personal property which is normally used for personal, family,
+or household purposes, or (2) anything designed or sold for incorporation
+into a dwelling.  In determining whether a product is a consumer product,
+doubtful cases shall be resolved in favor of coverage.  For a particular
+product received by a particular user, "normally used" refers to a
+typical or common use of that class of product, regardless of the status
+of the particular user or of the way in which the particular user
+actually uses, or expects or is expected to use, the product.  A product
+is a consumer product regardless of whether the product has substantial
+commercial, industrial or non-consumer uses, unless such uses represent
+the only significant mode of use of the product.
+
+  "Installation Information" for a User Product means any methods,
+procedures, authorization keys, or other information required to install
+and execute modified versions of a covered work in that User Product from
+a modified version of its Corresponding Source.  The information must
+suffice to ensure that the continued functioning of the modified object
+code is in no case prevented or interfered with solely because
+modification has been made.
+
+  If you convey an object code work under this section in, or with, or
+specifically for use in, a User Product, and the conveying occurs as
+part of a transaction in which the right of possession and use of the
+User Product is transferred to the recipient in perpetuity or for a
+fixed term (regardless of how the transaction is characterized), the
+Corresponding Source conveyed under this section must be accompanied
+by the Installation Information.  But this requirement does not apply
+if neither you nor any third party retains the ability to install
+modified object code on the User Product (for example, the work has
+been installed in ROM).
+
+  The requirement to provide Installation Information does not include a
+requirement to continue to provide support service, warranty, or updates
+for a work that has been modified or installed by the recipient, or for
+the User Product in which it has been modified or installed.  Access to a
+network may be denied when the modification itself materially and
+adversely affects the operation of the network or violates the rules and
+protocols for communication across the network.
+
+  Corresponding Source conveyed, and Installation Information provided,
+in accord with this section must be in a format that is publicly
+documented (and with an implementation available to the public in
+source code form), and must require no special password or key for
+unpacking, reading or copying.
+
+  7. Additional Terms.
+
+  "Additional permissions" are terms that supplement the terms of this
+License by making exceptions from one or more of its conditions.
+Additional permissions that are applicable to the entire Program shall
+be treated as though they were included in this License, to the extent
+that they are valid under applicable law.  If additional permissions
+apply only to part of the Program, that part may be used separately
+under those permissions, but the entire Program remains governed by
+this License without regard to the additional permissions.
+
+  When you convey a copy of a covered work, you may at your option
+remove any additional permissions from that copy, or from any part of
+it.  (Additional permissions may be written to require their own
+removal in certain cases when you modify the work.)  You may place
+additional permissions on material, added by you to a covered work,
+for which you have or can give appropriate copyright permission.
+
+  Notwithstanding any other provision of this License, for material you
+add to a covered work, you may (if authorized by the copyright holders of
+that material) supplement the terms of this License with terms:
+
+    a) Disclaiming warranty or limiting liability differently from the
+    terms of sections 15 and 16 of this License; or
+
+    b) Requiring preservation of specified reasonable legal notices or
+    author attributions in that material or in the Appropriate Legal
+    Notices displayed by works containing it; or
+
+    c) Prohibiting misrepresentation of the origin of that material, or
+    requiring that modified versions of such material be marked in
+    reasonable ways as different from the original version; or
+
+    d) Limiting the use for publicity purposes of names of licensors or
+    authors of the material; or
+
+    e) Declining to grant rights under trademark law for use of some
+    trade names, trademarks, or service marks; or
+
+    f) Requiring indemnification of licensors and authors of that
+    material by anyone who conveys the material (or modified versions of
+    it) with contractual assumptions of liability to the recipient, for
+    any liability that these contractual assumptions directly impose on
+    those licensors and authors.
+
+  All other non-permissive additional terms are considered "further
+restrictions" within the meaning of section 10.  If the Program as you
+received it, or any part of it, contains a notice stating that it is
+governed by this License along with a term that is a further
+restriction, you may remove that term.  If a license document contains
+a further restriction but permits relicensing or conveying under this
+License, you may add to a covered work material governed by the terms
+of that license document, provided that the further restriction does
+not survive such relicensing or conveying.
+
+  If you add terms to a covered work in accord with this section, you
+must place, in the relevant source files, a statement of the
+additional terms that apply to those files, or a notice indicating
+where to find the applicable terms.
+
+  Additional terms, permissive or non-permissive, may be stated in the
+form of a separately written license, or stated as exceptions;
+the above requirements apply either way.
+
+  8. Termination.
+
+  You may not propagate or modify a covered work except as expressly
+provided under this License.  Any attempt otherwise to propagate or
+modify it is void, and will automatically terminate your rights under
+this License (including any patent licenses granted under the third
+paragraph of section 11).
+
+  However, if you cease all violation of this License, then your
+license from a particular copyright holder is reinstated (a)
+provisionally, unless and until the copyright holder explicitly and
+finally terminates your license, and (b) permanently, if the copyright
+holder fails to notify you of the violation by some reasonable means
+prior to 60 days after the cessation.
+
+  Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
+
+  Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License.  If your rights have been terminated and not permanently
+reinstated, you do not qualify to receive new licenses for the same
+material under section 10.
+
+  9. Acceptance Not Required for Having Copies.
+
+  You are not required to accept this License in order to receive or
+run a copy of the Program.  Ancillary propagation of a covered work
+occurring solely as a consequence of using peer-to-peer transmission
+to receive a copy likewise does not require acceptance.  However,
+nothing other than this License grants you permission to propagate or
+modify any covered work.  These actions infringe copyright if you do
+not accept this License.  Therefore, by modifying or propagating a
+covered work, you indicate your acceptance of this License to do so.
+
+  10. Automatic Licensing of Downstream Recipients.
+
+  Each time you convey a covered work, the recipient automatically
+receives a license from the original licensors, to run, modify and
+propagate that work, subject to this License.  You are not responsible
+for enforcing compliance by third parties with this License.
+
+  An "entity transaction" is a transaction transferring control of an
+organization, or substantially all assets of one, or subdividing an
+organization, or merging organizations.  If propagation of a covered
+work results from an entity transaction, each party to that
+transaction who receives a copy of the work also receives whatever
+licenses to the work the party's predecessor in interest had or could
+give under the previous paragraph, plus a right to possession of the
+Corresponding Source of the work from the predecessor in interest, if
+the predecessor has it or can get it with reasonable efforts.
+
+  You may not impose any further restrictions on the exercise of the
+rights granted or affirmed under this License.  For example, you may
+not impose a license fee, royalty, or other charge for exercise of
+rights granted under this License, and you may not initiate litigation
+(including a cross-claim or counterclaim in a lawsuit) alleging that
+any patent claim is infringed by making, using, selling, offering for
+sale, or importing the Program or any portion of it.
+
+  11. Patents.
+
+  A "contributor" is a copyright holder who authorizes use under this
+License of the Program or a work on which the Program is based.  The
+work thus licensed is called the contributor's "contributor version".
+
+  A contributor's "essential patent claims" are all patent claims
+owned or controlled by the contributor, whether already acquired or
+hereafter acquired, that would be infringed by some manner, permitted
+by this License, of making, using, or selling its contributor version,
+but do not include claims that would be infringed only as a
+consequence of further modification of the contributor version.  For
+purposes of this definition, "control" includes the right to grant
+patent sublicenses in a manner consistent with the requirements of
+this License.
+
+  Each contributor grants you a non-exclusive, worldwide, royalty-free
+patent license under the contributor's essential patent claims, to
+make, use, sell, offer for sale, import and otherwise run, modify and
+propagate the contents of its contributor version.
+
+  In the following three paragraphs, a "patent license" is any express
+agreement or commitment, however denominated, not to enforce a patent
+(such as an express permission to practice a patent or covenant not to
+sue for patent infringement).  To "grant" such a patent license to a
+party means to make such an agreement or commitment not to enforce a
+patent against the party.
+
+  If you convey a covered work, knowingly relying on a patent license,
+and the Corresponding Source of the work is not available for anyone
+to copy, free of charge and under the terms of this License, through a
+publicly available network server or other readily accessible means,
+then you must either (1) cause the Corresponding Source to be so
+available, or (2) arrange to deprive yourself of the benefit of the
+patent license for this particular work, or (3) arrange, in a manner
+consistent with the requirements of this License, to extend the patent
+license to downstream recipients.  "Knowingly relying" means you have
+actual knowledge that, but for the patent license, your conveying the
+covered work in a country, or your recipient's use of the covered work
+in a country, would infringe one or more identifiable patents in that
+country that you have reason to believe are valid.
+
+  If, pursuant to or in connection with a single transaction or
+arrangement, you convey, or propagate by procuring conveyance of, a
+covered work, and grant a patent license to some of the parties
+receiving the covered work authorizing them to use, propagate, modify
+or convey a specific copy of the covered work, then the patent license
+you grant is automatically extended to all recipients of the covered
+work and works based on it.
+
+  A patent license is "discriminatory" if it does not include within
+the scope of its coverage, prohibits the exercise of, or is
+conditioned on the non-exercise of one or more of the rights that are
+specifically granted under this License.  You may not convey a covered
+work if you are a party to an arrangement with a third party that is
+in the business of distributing software, under which you make payment
+to the third party based on the extent of your activity of conveying
+the work, and under which the third party grants, to any of the
+parties who would receive the covered work from you, a discriminatory
+patent license (a) in connection with copies of the covered work
+conveyed by you (or copies made from those copies), or (b) primarily
+for and in connection with specific products or compilations that
+contain the covered work, unless you entered into that arrangement,
+or that patent license was granted, prior to 28 March 2007.
+
+  Nothing in this License shall be construed as excluding or limiting
+any implied license or other defenses to infringement that may
+otherwise be available to you under applicable patent law.
+
+  12. No Surrender of Others' Freedom.
+
+  If conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License.  If you cannot convey a
+covered work so as to satisfy simultaneously your obligations under this
+License and any other pertinent obligations, then as a consequence you may
+not convey it at all.  For example, if you agree to terms that obligate you
+to collect a royalty for further conveying from those to whom you convey
+the Program, the only way you could satisfy both those terms and this
+License would be to refrain entirely from conveying the Program.
+
+  13. Use with the GNU Affero General Public License.
+
+  Notwithstanding any other provision of this License, you have
+permission to link or combine any covered work with a work licensed
+under version 3 of the GNU Affero General Public License into a single
+combined work, and to convey the resulting work.  The terms of this
+License will continue to apply to the part which is the covered work,
+but the special requirements of the GNU Affero General Public License,
+section 13, concerning interaction through a network will apply to the
+combination as such.
+
+  14. Revised Versions of this License.
+
+  The Free Software Foundation may publish revised and/or new versions of
+the GNU General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+
+  Each version is given a distinguishing version number.  If the
+Program specifies that a certain numbered version of the GNU General
+Public License "or any later version" applies to it, you have the
+option of following the terms and conditions either of that numbered
+version or of any later version published by the Free Software
+Foundation.  If the Program does not specify a version number of the
+GNU General Public License, you may choose any version ever published
+by the Free Software Foundation.
+
+  If the Program specifies that a proxy can decide which future
+versions of the GNU General Public License can be used, that proxy's
+public statement of acceptance of a version permanently authorizes you
+to choose that version for the Program.
+
+  Later license versions may give you additional or different
+permissions.  However, no additional obligations are imposed on any
+author or copyright holder as a result of your choosing to follow a
+later version.
+
+  15. Disclaimer of Warranty.
+
+  THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY
+OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM
+IS WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF
+ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+  16. Limitation of Liability.
+
+  IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
+DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
+PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
+EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+  17. Interpretation of Sections 15 and 16.
+
+  If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
+
+                     END OF TERMS AND CONDITIONS
+
+            How to Apply These Terms to Your New Programs
+
+  If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these terms.
+
+  To do so, attach the following notices to the program.  It is safest
+to attach them to the start of each source file to most effectively
+state the exclusion of warranty; and each file should have at least
+the "copyright" line and a pointer to where the full notice is found.
+
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) <year>  <name of author>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+Also add information on how to contact you by electronic and paper mail.
+
+  If the program does terminal interaction, make it output a short
+notice like this when it starts in an interactive mode:
+
+    <program>  Copyright (C) <year>  <name of author>
+    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; type `show c' for details.
+
+The hypothetical commands `show w' and `show c' should show the appropriate
+parts of the General Public License.  Of course, your program's commands
+might be different; for a GUI interface, you would use an "about box".
+
+  You should also get your employer (if you work as a programmer) or school,
+if any, to sign a "copyright disclaimer" for the program, if necessary.
+For more information on this, and how to apply and follow the GNU GPL, see
+<https://www.gnu.org/licenses/>.
+
+  The GNU General Public License does not permit incorporating your program
+into proprietary programs.  If your program is a subroutine library, you
+may consider it more useful to permit linking proprietary applications with
+the library.  If this is what you want to do, use the GNU Lesser General
+Public License instead of this License.  But first, please read
+<https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+
+
+====================
+File: dist\试样数据管理平台\_internal\setuptools\_vendor\importlib_metadata-8.0.0.dist-info\top_level.txt
+====================
+importlib_metadata
+
+
+====================
+File: dist\试样数据管理平台\_internal\setuptools\_vendor\jaraco\text\Lorem ipsum.txt
+====================
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis, neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque nunc. Nullam arcu. Aliquam consequat. Curabitur augue lorem, dapibus quis, laoreet et, pretium ac, nisi. Aenean magna nisl, mollis quis, molestie eu, feugiat in, orci. In hac habitasse platea dictumst.
+
+
+====================
+File: dist\试样数据管理平台\_internal\wheel-0.45.1.dist-info\entry_points.txt
+====================
+[console_scripts]
+wheel=wheel.cli:main
+
+[distutils.commands]
+bdist_wheel=wheel.bdist_wheel:bdist_wheel
+
+
+
+====================
+File: dist\试样数据管理平台\_internal\wheel-0.45.1.dist-info\LICENSE.txt
+====================
+MIT License
+
+Copyright (c) 2012 Daniel Holth <dholth@fastmail.fm> and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+
+====================
 File: src\__init__.py
 ====================
 
@@ -528,12 +1907,7 @@ class FileManager:
         except Exception as e:
             print(f"保存元数据失败: {e}")
 
-    # === 原有 Project/Sample 基础 CRUD 方法保持不变 (create_project, create_sample...) ===
-    # 为节省篇幅，这里假设原有 create_project, create_sample, update_sample_info 等依然存在
-    # 请务必保留原文件中的这些代码，仅添加下方的新方法。
-
     def create_project(self, project_name, description=""):
-        # ... (保留原代码) ...
         project_path = os.path.join(config.DATA_ROOT, project_name)
         try:
             if os.path.exists(project_path): return False
@@ -558,7 +1932,6 @@ class FileManager:
             return False
 
     def create_sample(self, project_name, sample_id, sample_data):
-        # ... (保留原代码) ...
         project_path = os.path.join(config.DATA_ROOT, project_name)
         sample_path = os.path.join(project_path, sample_id)
         try:
@@ -595,7 +1968,6 @@ class FileManager:
             return False
 
     def update_sample_info(self, project_name, sample_id, new_data):
-        # ... (保留原代码) ...
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             if not os.path.exists(json_path): return False
@@ -603,9 +1975,11 @@ class FileManager:
             with open(json_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
+            # 【核心修改】添加 key_variable_name 到白名单
             editable_fields = [
                 "description", "date_prep", "date_complete", "date_demold", "date_test", "initial_mass",
-                "shape", "radius", "height", "side_length", "length", "width", "icon_emoji"
+                "shape", "radius", "height", "side_length", "length", "width", "icon_emoji",
+                "recipe", "key_variable", "key_variable_name"
             ]
 
             for field in editable_fields:
@@ -620,7 +1994,6 @@ class FileManager:
             return False
 
     def get_project_structure(self):
-        # ... (保留原代码) ...
         structure = {}
         if not os.path.exists(config.DATA_ROOT): return structure
         meta = self._load_root_meta()
@@ -672,7 +2045,6 @@ class FileManager:
         return structure
 
     def update_structure_order(self, new_structure_dict):
-        # ... (保留原代码) ...
         new_projects_order = list(new_structure_dict.keys())
         self._save_root_meta({"projects_order": new_projects_order})
         for project_name, samples_list in new_structure_dict.items():
@@ -688,7 +2060,6 @@ class FileManager:
                     print(f"保存试样顺序失败 {project_name}: {e}")
 
     def rename_project(self, old_name, new_name):
-        # ... (保留原代码) ...
         old_path = os.path.join(config.DATA_ROOT, old_name)
         new_path = os.path.join(config.DATA_ROOT, new_name)
         if not os.path.exists(old_path) or os.path.exists(new_path): return False
@@ -710,7 +2081,6 @@ class FileManager:
             return False
 
     def rename_sample(self, project_name, old_id, new_id):
-        # ... (保留原代码) ...
         base_path = os.path.join(config.DATA_ROOT, project_name)
         old_path = os.path.join(base_path, old_id)
         new_path = os.path.join(base_path, new_id)
@@ -737,7 +2107,6 @@ class FileManager:
             return False
 
     def delete_project(self, project_name):
-        # ... (保留原代码) ...
         path = os.path.join(config.DATA_ROOT, project_name)
         try:
             shutil.rmtree(path)
@@ -751,7 +2120,6 @@ class FileManager:
             return False
 
     def delete_sample(self, project_name, sample_id):
-        # ... (保留原代码) ...
         path = os.path.join(config.DATA_ROOT, project_name, sample_id)
         try:
             shutil.rmtree(path)
@@ -769,7 +2137,6 @@ class FileManager:
             return False
 
     def get_sample_info(self, project_name, sample_id):
-        # ... (保留原代码) ...
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             with open(json_path, 'r', encoding='utf-8') as f:
@@ -778,30 +2145,58 @@ class FileManager:
             return None
 
     def add_file_to_sample(self, project_name, sample_id, source_path):
-        # ... (保留原代码) ...
+        """
+        添加文件到试样。如果是 HEIC，自动转换为 JPG。
+        """
         try:
             base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
             thumb_dir = os.path.join(base_dir, "thumbnails")
             os.makedirs(thumb_dir, exist_ok=True)
+
             filename = os.path.basename(source_path)
-            target_path = os.path.join(base_dir, filename)
-            shutil.copy(source_path, target_path)
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp']:
+            name, ext = os.path.splitext(filename)
+            ext_lower = ext.lower()
+
+            target_path = ""
+
+            # 如果是 HEIC，直接转为 JPG 保存，不存原件
+            if ext_lower == '.heic':
+                new_filename = name + ".jpg"
+                target_path = os.path.join(base_dir, new_filename)
+
+                # 转换并保存
+                if not ImageHelper.convert_to_jpg(source_path, target_path):
+                    print(f"HEIC 转换失败: {source_path}")
+                    return None
+
+                filename = new_filename
+                ext_lower = '.jpg'
+            else:
+                target_path = os.path.join(base_dir, filename)
+                shutil.copy(source_path, target_path)
+
+            if ext_lower in ['.png', '.jpg', '.jpeg', '.tif', '.bmp']:
                 thumb_path = os.path.join(thumb_dir, filename)
                 ImageHelper.generate_thumbnail(target_path, thumb_path)
+
             return target_path
-        except:
+        except Exception as e:
+            print(f"Add file error: {e}")
             return None
 
     def get_sample_files(self, project_name, sample_id):
-        # ... (保留原代码) ...
         try:
             base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
             thumb_dir = os.path.join(base_dir, "thumbnails")
             if not os.path.exists(base_dir): return []
             files_list = []
-            valid_exts = ['.png', '.jpg', '.jpeg', '.tif', '.bmp', '.pdf', '.xls', '.xlsx', '.csv', '.txt']
+
+            valid_exts = [
+                '.png', '.jpg', '.jpeg', '.tif', '.bmp', '.heic',
+                '.pdf', '.xls', '.xlsx', '.csv',
+                '.txt', '.doc', '.docx'
+            ]
+
             for f in os.listdir(base_dir):
                 if os.path.isdir(os.path.join(base_dir, f)): continue
                 ext = os.path.splitext(f)[1].lower()
@@ -809,19 +2204,19 @@ class FileManager:
                     file_info = {
                         "name": f,
                         "path": os.path.join(base_dir, f),
-                        "type": "image" if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp'] else "file",
+                        "type": "image" if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp', '.heic'] else "file",
                         "ext": ext
                     }
                     if file_info["type"] == "image":
                         thumb_path = os.path.join(thumb_dir, f)
                         file_info["thumb"] = thumb_path if os.path.exists(thumb_path) else file_info["path"]
+
                     files_list.append(file_info)
             return files_list
         except:
             return []
 
     def delete_file(self, file_path):
-        # ... (保留原代码) ...
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -835,7 +2230,6 @@ class FileManager:
             return False
 
     def add_weight_record(self, project_name, sample_id, record):
-        # ... (保留原代码) ...
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             if not os.path.exists(json_path): return False
@@ -851,7 +2245,6 @@ class FileManager:
             return False
 
     def update_weight_record(self, project_name, sample_id, index, new_record):
-        # ... (保留原代码) ...
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             if not os.path.exists(json_path): return False
@@ -869,7 +2262,6 @@ class FileManager:
             return False
 
     def delete_weight_record(self, project_name, sample_id, index):
-        # ... (保留原代码) ...
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             if not os.path.exists(json_path): return False
@@ -886,16 +2278,15 @@ class FileManager:
             return False
 
     def batch_copy_weights(self, project_name, source_id, target_ids, overwrite=False):
-        # ... (保留原代码) ...
         source_info = self.get_sample_info(project_name, source_id)
         if not source_info: return False
 
         source_records = source_info.get("weight_records", [])
-        if not source_records: return True  # 源没有记录，没必要复制，但也不算失败
+        if not source_records: return True
 
         success_count = 0
         for tid in target_ids:
-            if tid == source_id: continue  # 跳过自己
+            if tid == source_id: continue
 
             try:
                 json_path = os.path.join(config.DATA_ROOT, project_name, tid, "sample_info.json")
@@ -930,24 +2321,17 @@ class FileManager:
 
         return success_count
 
-    # === 【新增】应力应变数据管理方法 ===
     def save_stress_data(self, project_name, sample_id, data_points):
-        """
-        保存应力应变数据到单独的 JSON 文件 (避免主文件过大)
-        :param data_points: list of dict [{"strain": x, "stress": y}, ...]
-        """
         try:
-            # 存放在 sample 文件夹下的 stress_data.json
             path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
             with open(path, 'w', encoding='utf-8') as f:
-                json.dump(data_points, f, ensure_ascii=False)  # 不缩进，减小体积
+                json.dump(data_points, f, ensure_ascii=False)
             return True
         except Exception as e:
             print(f"保存应力数据失败: {e}")
             return False
 
     def get_stress_data(self, project_name, sample_id):
-        """读取应力应变数据"""
         try:
             path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
             if os.path.exists(path):
@@ -1057,8 +2441,38 @@ File: src\utils\image_helper.py
 import os
 from PIL import Image
 
+# 尝试导入并注册 HEIC 支持库
+# 这样 Image.open 就能自动识别 .heic 文件了
+try:
+    import pillow_heif
+
+    pillow_heif.register_heif_opener()
+except ImportError:
+    print("Warning: 'pillow_heif' library not found. HEIC conversion will fail.")
+
 
 class ImageHelper:
+    @staticmethod
+    def convert_to_jpg(source_path, target_path, quality=90):
+        """
+        将任意支持的图片格式转换为 JPG 并保存
+        :param source_path: 源图片路径 (可以是 .heic)
+        :param target_path: 目标保存路径 (建议以 .jpg 结尾)
+        :param quality: JPG 质量 (1-100)
+        """
+        try:
+            with Image.open(source_path) as img:
+                # 转换为 RGB 模式 (防止 PNG 透明背景或 HEIC 格式导致保存 JPG 报错)
+                if img.mode in ('RGBA', 'P'):
+                    img = img.convert('RGB')
+
+                # 保存为新文件
+                img.save(target_path, "JPEG", quality=quality)
+                return True
+        except Exception as e:
+            print(f"格式转换失败 ({source_path}): {e}")
+            return False
+
     @staticmethod
     def generate_thumbnail(original_path, thumbnail_path, size=(200, 200)):
         """
@@ -1069,19 +2483,15 @@ class ImageHelper:
         """
         try:
             with Image.open(original_path) as img:
-                # 转换为 RGB 模式 (防止 PNG 透明背景导致报错)
                 if img.mode in ('RGBA', 'P'):
                     img = img.convert('RGB')
 
-                # copy() 创建副本，thumbnail() 会直接修改副本
                 img_copy = img.copy()
                 img_copy.thumbnail(size)
-
-                # 保存为 JPG 格式，质量 85
                 img_copy.save(thumbnail_path, "JPEG", quality=85)
                 return True
         except Exception as e:
-            print(f"缩略图生成失败: {e}")
+            print(f"缩略图生成失败 ({original_path}): {e}")
             return False
 
 ====================
@@ -1140,8 +2550,10 @@ class MassTrendChart(QWidget):
 
         # 2. 图表层
         self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
-        # 调整边距，保证标签显示完整
-        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
+
+        # 【关键修正】大幅增加边距，彻底解决截断问题
+        # left=0.22 (左侧留白), bottom=0.28 (底部留白)
+        self.fig.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
 
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax = self.fig.add_subplot(111)
@@ -1189,7 +2601,7 @@ class MassTrendChart(QWidget):
         # 虚线网格
         self.ax.grid(True, linestyle=':', alpha=0.6, color='#909399')
 
-        # 【学术化修改】刻度线朝内 (direction='in')
+        # 刻度线朝内
         self.ax.tick_params(axis='both', which='both', direction='in',
                             length=4, width=1, color='#606266', labelcolor='#606266')
 
@@ -1296,6 +2708,437 @@ class MassTrendChart(QWidget):
                 QMessageBox.critical(self, "错误", f"保存失败: {e}")
 
 ====================
+File: src\views\comparison_view.py
+====================
+import matplotlib
+
+matplotlib.use('QtAgg')
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib import rcParams
+
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QGridLayout, QTreeWidget, QTreeWidgetItem,
+                               QLabel, QSplitter, QFrame, QCheckBox, QComboBox,
+                               QHeaderView, QTreeWidgetItemIterator, QSizePolicy, QTextEdit, QPushButton,
+                               QApplication, QScrollArea)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QFont, QIcon
+
+# 配置绘图字体
+rcParams['font.family'] = 'Microsoft YaHei'
+rcParams['axes.unicode_minus'] = False
+rcParams['font.size'] = 9
+
+# 定义一组高对比度的颜色
+COLOR_CYCLE = [
+    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+]
+
+
+class ComparisonView(QWidget):
+    def __init__(self, file_manager, parent=None):
+        super().__init__(parent)
+        self.file_manager = file_manager
+        self.selected_samples = {}
+
+        # === 主布局 ===
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.setHandleWidth(1)
+        self.splitter.setStyleSheet("QSplitter::handle { background-color: #dcdfe6; }")
+
+        # === 1. 左侧：选择列表 ===
+        left_panel = QWidget()
+        left_panel.setStyleSheet("background-color: #2c3e50;")
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(0)
+
+        self.tree = QTreeWidget()
+        self.tree.setHeaderLabel("勾选以对比")
+        header = self.tree.header()
+        header.setStyleSheet("""
+            QHeaderView::section {
+                background-color: #34495e;
+                color: #bdc3c7;
+                padding: 8px;
+                border: none;
+                border-bottom: 1px solid #2c3e50;
+                font-weight: bold;
+                font-size: 12px;
+            }
+        """)
+
+        self.tree.setStyleSheet("""
+            QTreeWidget { 
+                background-color: #2c3e50; 
+                color: #ecf0f1; 
+                border: none; 
+                padding-top: 10px; 
+                font-size: 13px; 
+            }
+            QTreeWidget::item { 
+                height: 35px; 
+                padding-left: 5px; 
+                border-radius: 4px; 
+                margin: 2px 5px; 
+            }
+            QTreeWidget::item:hover { 
+                background-color: #34495e; 
+            }
+            QTreeWidget::item:selected { 
+                background-color: #3498db; 
+                color: white; 
+            }
+            QTreeWidget::indicator {
+                width: 16px;
+                height: 16px;
+            }
+        """)
+
+        self.tree.itemChanged.connect(self.on_item_changed)
+        left_layout.addWidget(self.tree)
+
+        # === 2. 右侧：图表区域 ===
+        right_panel = QWidget()
+        right_panel.setStyleSheet("background-color: #f4f6f9;")
+
+        # 使用 ScrollArea 防止内容过多显示不全
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.NoFrame)
+        scroll_area.setStyleSheet("background-color: transparent;")
+
+        charts_container = QWidget()
+        charts_layout = QGridLayout(charts_container)
+        charts_layout.setContentsMargins(20, 20, 20, 20)
+        charts_layout.setSpacing(15)
+
+        card_style = """
+            QFrame {
+                background-color: white;
+                border: 1px solid #dcdfe6;
+                border-radius: 8px;
+            }
+            QLabel {
+                border: none;
+                background-color: transparent;
+            }
+        """
+
+        # 统一设置图表内容的最小高度
+        UNIFIED_MIN_HEIGHT = 300
+
+        # --- 1. 左上：质量图卡片 ---
+        mass_card = QFrame()
+        mass_card.setStyleSheet(card_style)
+        mass_layout = QVBoxLayout(mass_card)
+        mass_layout.setContentsMargins(15, 15, 15, 15)
+        mass_layout.setSpacing(5)
+
+        lbl1 = QLabel("📊 质量变化对比")
+        lbl1.setStyleSheet("font-weight: bold; color: #2c3e50; font-size: 15px;")
+        lbl1.setAlignment(Qt.AlignCenter)
+
+        self.mass_fig = Figure(figsize=(4, 3), dpi=100, facecolor='white')
+        self.mass_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
+
+        self.mass_canvas = FigureCanvasQTAgg(self.mass_fig)
+        self.mass_ax = self.mass_fig.add_subplot(111)
+        self.mass_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.mass_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)
+
+        mass_layout.addWidget(lbl1)
+        mass_layout.addWidget(self.mass_canvas)
+
+        # --- 2. 右上：应力应变图卡片 ---
+        stress_card = QFrame()
+        stress_card.setStyleSheet(card_style)
+        stress_layout = QVBoxLayout(stress_card)
+        stress_layout.setContentsMargins(15, 15, 15, 15)
+        stress_layout.setSpacing(5)
+
+        lbl2 = QLabel("📈 应力应变对比")
+        lbl2.setStyleSheet("font-weight: bold; color: #2c3e50; font-size: 15px;")
+        lbl2.setAlignment(Qt.AlignCenter)
+
+        self.stress_fig = Figure(figsize=(4, 3), dpi=100, facecolor='white')
+        self.stress_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
+
+        self.stress_canvas = FigureCanvasQTAgg(self.stress_fig)
+        self.stress_ax = self.stress_fig.add_subplot(111)
+        self.stress_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.stress_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)
+
+        stress_layout.addWidget(lbl2)
+        stress_layout.addWidget(self.stress_canvas)
+
+        # --- 3. 左下：关键变量趋势图卡片 ---
+        var_card = QFrame()
+        var_card.setStyleSheet(card_style)
+        var_layout = QVBoxLayout(var_card)
+        var_layout.setContentsMargins(15, 15, 15, 15)
+        var_layout.setSpacing(5)
+
+        # 【修改】将 Label 变为成员变量，以便动态修改文本
+        self.var_chart_title = QLabel("📐 关键变量对峰值应力的影响")
+        self.var_chart_title.setStyleSheet("font-weight: bold; color: #2c3e50; font-size: 15px;")
+        self.var_chart_title.setAlignment(Qt.AlignCenter)
+
+        self.var_fig = Figure(figsize=(4, 3), dpi=100, facecolor='white')
+        self.var_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
+
+        self.var_canvas = FigureCanvasQTAgg(self.var_fig)
+        self.var_ax = self.var_fig.add_subplot(111)
+        self.var_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.var_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)
+
+        var_layout.addWidget(self.var_chart_title)
+        var_layout.addWidget(self.var_canvas)
+
+        # --- 4. 右下：AI 分析卡片 ---
+        ai_card = QFrame()
+        ai_card.setStyleSheet(card_style)
+        ai_layout = QVBoxLayout(ai_card)
+        ai_layout.setContentsMargins(15, 15, 15, 15)
+        ai_layout.setSpacing(10)
+
+        ai_header = QHBoxLayout()
+        ai_lbl = QLabel("🤖 AI分析提示词生成器")
+        ai_lbl.setStyleSheet("font-weight: bold; color: #2c3e50; font-size: 15px;")
+
+        ai_hint = QLabel("将提示词发给AI进行分析吧")
+        ai_hint.setStyleSheet("color: #909399; font-size: 12px; font-style: italic;")
+
+        self.btn_copy_ai = QPushButton("📋 复制")
+        self.btn_copy_ai.setCursor(Qt.PointingHandCursor)
+        self.btn_copy_ai.setStyleSheet("""
+            QPushButton { 
+                background-color: #ecf5ff; color: #409eff; border: 1px solid #b3d8ff; 
+                border-radius: 4px; padding: 4px 10px; font-weight: bold; font-size: 12px;
+            }
+            QPushButton:hover { background-color: #409eff; color: white; }
+        """)
+        self.btn_copy_ai.clicked.connect(self.copy_ai_prompt)
+
+        ai_header.addWidget(ai_lbl)
+        ai_header.addWidget(ai_hint)
+        ai_header.addStretch()
+        ai_header.addWidget(self.btn_copy_ai)
+
+        self.ai_text_edit = QTextEdit()
+        self.ai_text_edit.setReadOnly(True)
+        self.ai_text_edit.setPlaceholderText(
+            "勾选试样后这里会自动生成提示词，复制给AI看看吧~")
+        self.ai_text_edit.setStyleSheet("""
+            QTextEdit { 
+                background-color: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; 
+                color: #555; font-family: "Microsoft YaHei"; font-size: 12px; padding: 8px;
+            }
+        """)
+        self.ai_text_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.ai_text_edit.setMinimumHeight(UNIFIED_MIN_HEIGHT - 40)
+
+        ai_layout.addLayout(ai_header)
+        ai_layout.addWidget(self.ai_text_edit)
+
+        # --- Grid 布局 ---
+        # Row 0
+        charts_layout.addWidget(mass_card, 0, 0)
+        charts_layout.addWidget(stress_card, 0, 1)
+        # Row 1
+        charts_layout.addWidget(var_card, 1, 0)
+        charts_layout.addWidget(ai_card, 1, 1)
+
+        charts_layout.setRowStretch(0, 1)
+        charts_layout.setRowStretch(1, 1)
+        charts_layout.setColumnStretch(0, 1)
+        charts_layout.setColumnStretch(1, 1)
+
+        scroll_area.setWidget(charts_container)
+
+        self.splitter.addWidget(left_panel)
+        self.splitter.addWidget(scroll_area)
+        self.splitter.setSizes([220, 980])
+
+        layout.addWidget(self.splitter)
+        self.reset_charts()
+
+    def refresh_tree(self):
+        """重新加载左侧的试样树"""
+        self.tree.clear()
+        self.tree.blockSignals(True)
+
+        structure = self.file_manager.get_project_structure()
+
+        for project_name, samples in structure.items():
+            p_item = QTreeWidgetItem(self.tree)
+            p_item.setText(0, project_name)
+            p_item.setFlags(p_item.flags() | Qt.ItemIsAutoTristate | Qt.ItemIsUserCheckable)
+            p_item.setCheckState(0, Qt.Unchecked)
+            p_item.setExpanded(True)
+
+            for sample_id in samples:
+                s_item = QTreeWidgetItem(p_item)
+                s_item.setText(0, sample_id)
+                s_item.setData(0, Qt.UserRole, f"{project_name}/{sample_id}")
+                s_item.setFlags(s_item.flags() | Qt.ItemIsUserCheckable)
+                s_item.setCheckState(0, Qt.Unchecked)
+
+        self.tree.blockSignals(False)
+
+    def on_item_changed(self, item, column):
+        self.update_charts()
+
+    def copy_ai_prompt(self):
+        text = self.ai_text_edit.toPlainText()
+        if text:
+            clipboard = QApplication.clipboard()
+            clipboard.setText(text)
+            self.btn_copy_ai.setText("已复制! ✅")
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(1000, lambda: self.btn_copy_ai.setText("📋 复制"))
+
+    def update_charts(self):
+        self.reset_charts()
+
+        checked_samples = []
+        iterator = QTreeWidgetItemIterator(self.tree, QTreeWidgetItemIterator.Checked)
+        while iterator.value():
+            item = iterator.value()
+            unique_id = item.data(0, Qt.UserRole)
+            if unique_id:
+                project_name, sample_id = unique_id.split('/')
+                checked_samples.append((project_name, sample_id))
+            iterator += 1
+
+        if not checked_samples:
+            self.mass_canvas.draw()
+            self.stress_canvas.draw()
+            self.var_canvas.draw()
+            self.ai_text_edit.clear()
+            self.var_chart_title.setText("📐 关键变量对峰值应力的影响")  # 重置标题
+            return
+
+        trend_data = []
+        ai_prompt = "我正在进行一组材料/试样性能对比实验。以下是整理好的数据，包含配方差异、关键变量以及对应的实验结果（质量变化率和峰值应力）。请帮我分析这些变量对试样性能的影响规律，并尝试推测背后的科学机制：\n\n"
+
+        # 记录第一个被选中的试样的变量名称，用于更新图表标题
+        current_key_var_name = "关键变量"
+
+        for i, (p_name, s_id) in enumerate(checked_samples):
+            color = COLOR_CYCLE[i % len(COLOR_CYCLE)]
+            label = f"{s_id}"
+
+            # 读取信息
+            info = self.file_manager.get_sample_info(p_name, s_id)
+            if not info: continue
+
+            init_mass = float(info.get("initial_mass", 0))
+            records = info.get("weight_records", [])
+            key_var = float(info.get("key_variable", 0))
+            key_var_name = info.get("key_variable_name", "关键变量")
+            recipe = info.get("recipe", "无配方")
+
+            # 获取第一个试样的变量名
+            if i == 0:
+                current_key_var_name = key_var_name
+
+            # --- 1. 处理质量数据 ---
+            x_data = []
+            y_data = []
+            final_mass_rate = 0.0
+
+            if init_mass > 0:
+                x_data.append(0)
+                y_data.append(0)
+                for r in records:
+                    try:
+                        day = float(r.get("days", 0))
+                        mass = float(r.get("mass", 0))
+                        rate = ((mass - init_mass) / init_mass) * 100
+                        x_data.append(day)
+                        y_data.append(rate)
+                        final_mass_rate = rate
+                    except:
+                        continue
+
+                combined = sorted(zip(x_data, y_data))
+                if combined:
+                    x_data, y_data = zip(*combined)
+                    self.mass_ax.plot(x_data, y_data, marker='o', markersize=4,
+                                      linewidth=2, color=color, label=label)
+
+            # --- 2. 处理应力应变 & 计算峰值 ---
+            stress_data = self.file_manager.get_stress_data(p_name, s_id)
+            peak_stress_val = 0.0
+
+            if stress_data:
+                sx = [p['strain'] for p in stress_data]
+                sy = [p['stress'] for p in stress_data]
+                self.stress_ax.plot(sx, sy, linewidth=2, color=color, label=label)
+
+                if len(sy) > 0:
+                    peak_stress_val = max(sy)
+                    trend_data.append((key_var, peak_stress_val, label, color))
+
+            # --- 3. 添加到 AI Prompt ---
+            ai_prompt += f"【试样 {label}】\n"
+            ai_prompt += f"- 配方描述: {recipe}\n"
+            ai_prompt += f"- {key_var_name}: {key_var}\n"
+            ai_prompt += f"- 最终质量增加率: {final_mass_rate:.2f}%\n"
+            ai_prompt += f"- 峰值应力 (UCS): {peak_stress_val:.2f} kPa\n\n"
+
+        # --- 绘制变量趋势图 ---
+        # 【修改】动态更新标题和横坐标标签
+        self.var_chart_title.setText(f"📐 {current_key_var_name}对峰值应力的影响")
+        self.var_ax.set_xlabel(current_key_var_name, fontsize=8)
+
+        if trend_data:
+            trend_data.sort(key=lambda x: x[0])
+            tx = [item[0] for item in trend_data]
+            ty = [item[1] for item in trend_data]
+
+            self.var_ax.plot(tx, ty, color='#999999', linestyle='--', linewidth=1.5, zorder=1)
+            for k_var, p_stress, s_label, s_color in trend_data:
+                self.var_ax.scatter(k_var, p_stress, color=s_color, s=60, zorder=2, label=s_label)
+
+        # 刷新图例
+        if checked_samples:
+            self.mass_ax.legend(frameon=False, fontsize=8)
+            self.stress_ax.legend(frameon=False, fontsize=8)
+            self.var_ax.legend(frameon=False, fontsize=8)
+
+        self.mass_canvas.draw()
+        self.stress_canvas.draw()
+        self.var_canvas.draw()
+
+        self.ai_text_edit.setPlainText(ai_prompt)
+
+    def reset_charts(self):
+        """重置画布背景和坐标轴"""
+        for ax in [self.mass_ax, self.stress_ax, self.var_ax]:
+            ax.clear()
+            ax.set_facecolor('white')
+            ax.grid(True, linestyle=':', alpha=0.6)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.tick_params(direction='in')
+
+        self.mass_ax.set_xlabel("时间 (天)", fontsize=8)
+        self.mass_ax.set_ylabel("质量变化率 (%)", fontsize=8)
+
+        self.stress_ax.set_xlabel("应变 (%)", fontsize=8)
+        self.stress_ax.set_ylabel("应力 (kPa)", fontsize=8)
+
+        # 默认标题
+        self.var_ax.set_xlabel("关键变量", fontsize=8)
+        self.var_ax.set_ylabel("峰值应力 (kPa)", fontsize=8)
+
+====================
 File: src\views\dialogs.py
 ====================
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout,
@@ -1306,7 +3149,6 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout,
 from PySide6.QtCore import QTime, Qt, QDateTime
 from PySide6.QtGui import QFont
 
-# 引入刚刚拆分出去的工具
 from src.views.dialog_utils import (SAMPLE_ICONS, apply_dialog_theme, create_datetime_edit)
 
 
@@ -1317,7 +3159,7 @@ class NewSampleDialog(QDialog):
         if template_data:
             self.setWindowTitle("新建试样 (复制自 " + template_data.get('id', '') + ")")
 
-        self.resize(550, 750)
+        self.resize(550, 700)  # 稍微减小高度，因为少了一个框
 
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
@@ -1406,10 +3248,29 @@ class NewSampleDialog(QDialog):
         form_layout.addRow("几何尺寸:", self.dim_stack)
         self.shape_combo.currentIndexChanged.connect(self.dim_stack.setCurrentIndex)
 
-        self.desc_input = QTextEdit()
-        self.desc_input.setPlaceholderText("描述配比、砂土类型等...")
-        self.desc_input.setMaximumHeight(60)
-        form_layout.addRow("试样描述:", self.desc_input)
+        # 【核心修改】合并了配方和描述
+        self.recipe_input = QTextEdit()
+        self.recipe_input.setPlaceholderText("试样的配方、描述，方便后续分析")
+        self.recipe_input.setMaximumHeight(80)  # 稍微增加高度
+        form_layout.addRow("试样配方/描述:", self.recipe_input)
+
+        # 关键变量 (拆分为 名称 + 数值)
+        key_var_layout = QHBoxLayout()
+        self.key_var_name = QLineEdit()
+        self.key_var_name.setPlaceholderText("如: 浓度")
+        self.key_var_name.setFixedWidth(120)
+
+        self.key_var_input = QDoubleSpinBox()
+        self.key_var_input.setRange(-99999, 99999)
+        self.key_var_input.setDecimals(3)
+        self.key_var_input.setToolTip("用于对比分析的数值")
+
+        key_var_layout.addWidget(self.key_var_name)
+        key_var_layout.addWidget(self.key_var_input)
+
+        form_layout.addRow("关键配方变量:", key_var_layout)
+
+        # 【已删除】删除了独立的 desc_input
 
         self.date_prep = create_datetime_edit()
         self.date_complete = create_datetime_edit()
@@ -1433,21 +3294,16 @@ class NewSampleDialog(QDialog):
             self.fill_from_template(template_data)
 
     def fill_from_template(self, data):
-        """将模板数据填入表单"""
-        # 1. 自动生成一个带 _copy 后缀的编号，并全选方便用户直接修改
         self.id_input.setText(f"{data.get('id', '')}_copy")
         self.id_input.selectAll()
         self.id_input.setFocus()
 
-        # 2. 复制图标
         emoji = data.get("icon_emoji", "🧪")
         idx = self.icon_combo.findText(emoji)
         if idx >= 0: self.icon_combo.setCurrentIndex(idx)
 
-        # 3. 复制质量
         self.mass_input.setValue(float(data.get("initial_mass", 0)))
 
-        # 4. 复制形状和尺寸
         shape_str = data.get("shape", "未指定")
         idx = self.shape_combo.findText(shape_str)
         if idx >= 0: self.shape_combo.setCurrentIndex(idx)
@@ -1460,10 +3316,16 @@ class NewSampleDialog(QDialog):
         if "height" in data:
             self.cuboid_h.setValue(float(data.get("height", 0)))
 
-        # 5. 复制描述
-        self.desc_input.setPlainText(data.get("description", ""))
+        # 【核心修改】合并旧数据中的配方和描述
+        rec = data.get("recipe", "")
+        desc = data.get("description", "")
+        combined = f"{rec}\n{desc}".strip()  # 如果都有，换行拼接
+        self.recipe_input.setPlainText(combined)
 
-        # 6. 复制日期
+        # 回填关键变量
+        self.key_var_name.setText(data.get("key_variable_name", ""))
+        self.key_var_input.setValue(float(data.get("key_variable", 0)))
+
         def set_dt(widget, val):
             if val and val != "-":
                 dt = QDateTime.fromString(val, "yyyy-MM-dd-HH:00")
@@ -1482,7 +3344,9 @@ class NewSampleDialog(QDialog):
         data = {
             "id": self.id_input.text().strip(),
             "initial_mass": self.mass_input.value(),
-            "description": self.desc_input.toPlainText(),
+            "recipe": self.recipe_input.toPlainText(),  # 统一存入 recipe
+            "key_variable": self.key_var_input.value(),
+            "key_variable_name": self.key_var_name.text().strip(),
             "icon_emoji": self.icon_combo.currentText(),
             "date_prep": self.date_prep.text(),
             "date_complete": self.date_complete.text(),
@@ -1507,7 +3371,7 @@ class EditSampleDialog(QDialog):
     def __init__(self, current_data, parent=None):
         super().__init__(parent)
         self.setWindowTitle("修改信息")
-        self.resize(550, 750)
+        self.resize(550, 700)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(15)
@@ -1609,11 +3473,36 @@ class EditSampleDialog(QDialog):
         if "height" in current_data and idx == 3:
             self.cuboid_h.setValue(float(current_data.get("height", 0)))
 
-        self.desc_input = QTextEdit()
-        desc = current_data.get("description", "") or current_data.get("note", "")
-        self.desc_input.setPlainText(desc)
-        self.desc_input.setMaximumHeight(60)
-        form_layout.addRow("试样描述:", self.desc_input)
+        # 【核心修改】合并配方和描述到同一个文本框
+        self.recipe_input = QTextEdit()
+        rec_text = current_data.get("recipe", "")
+        desc_text = current_data.get("description", "") or current_data.get("note", "")
+        combined_text = rec_text
+        if desc_text and desc_text not in rec_text:  # 简单去重避免重复拼接
+            combined_text += f"\n{desc_text}"
+        self.recipe_input.setPlainText(combined_text.strip())
+
+        self.recipe_input.setMaximumHeight(80)
+        form_layout.addRow("试样配方/描述:", self.recipe_input)
+
+        # 关键配方变量 (拆分为 名称 + 数值)
+        key_var_layout = QHBoxLayout()
+        self.key_var_name = QLineEdit()
+        self.key_var_name.setPlaceholderText("变量名 (如: 浓度)")
+        self.key_var_name.setText(current_data.get("key_variable_name", ""))
+        self.key_var_name.setFixedWidth(120)
+
+        self.key_var_input = QDoubleSpinBox()
+        self.key_var_input.setRange(-99999, 99999)
+        self.key_var_input.setDecimals(3)
+        self.key_var_input.setValue(float(current_data.get("key_variable", 0)))
+
+        key_var_layout.addWidget(self.key_var_name)
+        key_var_layout.addWidget(self.key_var_input)
+
+        form_layout.addRow("关键配方变量:", key_var_layout)
+
+        # 【已删除】删除了独立的 desc_input
 
         self.date_prep = create_datetime_edit(current_data.get("date_prep"))
         self.date_complete = create_datetime_edit(current_data.get("date_complete"))
@@ -1636,7 +3525,9 @@ class EditSampleDialog(QDialog):
         data = {
             "id": self.id_input.text().strip(),
             "initial_mass": self.mass_input.value(),
-            "description": self.desc_input.toPlainText(),
+            "recipe": self.recipe_input.toPlainText(),  # 统一存入 recipe
+            "key_variable": self.key_var_input.value(),
+            "key_variable_name": self.key_var_name.text().strip(),  # 新增字段
             "icon_emoji": self.icon_combo.currentText(),
             "date_prep": self.date_prep.text(),
             "date_complete": self.date_complete.text(),
@@ -1752,12 +3643,10 @@ class BatchCopyWeightDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(15)
 
-        # 提示
         lbl = QLabel(f"请选择要将 [{source_id}] 的质量记录应用到哪些试样？")
         lbl.setWordWrap(True)
         layout.addWidget(lbl)
 
-        # 列表
         self.list_widget = QListWidget()
         self.list_widget.setStyleSheet("""
             QListWidget { border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
@@ -1765,7 +3654,7 @@ class BatchCopyWeightDialog(QDialog):
             QListWidget::item:hover { background: #f0f2f5; }
         """)
         for s_id in all_samples:
-            if s_id == source_id: continue  # 跳过自己
+            if s_id == source_id: continue
             item = QListWidgetItem(s_id)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
@@ -1773,12 +3662,10 @@ class BatchCopyWeightDialog(QDialog):
 
         layout.addWidget(self.list_widget)
 
-        # 全选按钮
         btn_layout = QHBoxLayout()
         self.btn_all = QPushButton("全选")
         self.btn_none = QPushButton("全不选")
 
-        # 按钮样式微调 (小一点)
         mini_btn_style = "QPushButton { padding: 4px 10px; font-size: 12px; background: #eee; border: none; border-radius: 3px; } QPushButton:hover { background: #ddd; }"
         self.btn_all.setStyleSheet(mini_btn_style)
         self.btn_none.setStyleSheet(mini_btn_style)
@@ -1791,7 +3678,6 @@ class BatchCopyWeightDialog(QDialog):
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
-        # 选项：覆盖模式
         self.overwrite_cb = QCheckBox("⚠️ 完全覆盖 (清空目标原有的记录，完全替换为源记录)")
         self.overwrite_cb.setStyleSheet("color: #e74c3c; font-weight: bold;")
         self.overwrite_cb.setToolTip("如果不勾选，则为【合并模式】：保留目标已有记录，仅追加新日期的记录。")
@@ -1799,7 +3685,6 @@ class BatchCopyWeightDialog(QDialog):
 
         layout.addStretch()
 
-        # 底部按钮
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
@@ -1825,7 +3710,6 @@ class BatchCopyWeightDialog(QDialog):
         }
 
 
-# === 手动添加应力应变数据对话框 ===
 class AddStressDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1839,18 +3723,16 @@ class AddStressDialog(QDialog):
         form = QFormLayout()
         form.setVerticalSpacing(15)
 
-        # 应变输入 (Strain)
         self.strain_input = QDoubleSpinBox()
-        self.strain_input.setRange(0, 9999.99)  # 允许较大的应变范围
-        self.strain_input.setDecimals(3)  # 保留3位小数
+        self.strain_input.setRange(0, 9999.99)
+        self.strain_input.setDecimals(3)
         self.strain_input.setSuffix(" %")
         self.strain_input.setSingleStep(0.1)
 
-        # 应力输入 (Stress)
         self.stress_input = QDoubleSpinBox()
-        self.stress_input.setRange(0, 999999.99)  # 应力可能很大
+        self.stress_input.setRange(0, 999999.99)
         self.stress_input.setDecimals(3)
-        self.stress_input.setSuffix(" kPa")  # 默认单位，可视情况修改
+        self.stress_input.setSuffix(" kPa")
         self.stress_input.setSingleStep(10.0)
 
         form.addRow("应变 (Strain):", self.strain_input)
@@ -1884,7 +3766,7 @@ SAMPLE_ICONS = [
     "🌡️", "🔬", "🧊", "🏺", "📊", "📦"
 ]
 
-# === 基础弹窗样式 ===
+# === 基础弹窗样式 (新增了滚动条样式) ===
 DIALOG_STYLES = """
     QDialog { background-color: #ffffff; }
     QLabel { color: #2c3e50; font-size: 14px; font-weight: 600; font-family: "Microsoft YaHei"; }
@@ -1916,6 +3798,26 @@ DIALOG_STYLES = """
         selection-color: #3498db;
         outline: none;
         padding: 4px;
+    }
+
+    /* === 【修复】滚动条美化 (解决黑色阴影问题) === */
+    QScrollBar:vertical {
+        border: none;
+        background: #f9f9f9; /* 与输入框背景一致 */
+        width: 8px;
+        margin: 0px;
+        border-radius: 4px;
+    }
+    QScrollBar::handle:vertical {
+        background: #dcdfe6;
+        min-height: 20px;
+        border-radius: 4px;
+    }
+    QScrollBar::handle:vertical:hover {
+        background: #c0c4cc;
+    }
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+        height: 0px; /* 隐藏上下箭头 */
     }
 """
 
@@ -2012,21 +3914,26 @@ File: src\views\main_window.py
 import os
 import json
 import sys
-# 1. 引入所有必要的 Qt 组件 (包括你之前报错缺少的 QGuiApplication, QAbstractItemView)
-from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
+# 1. 基础组件导入
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QSplitter, QTreeWidget, QTreeWidgetItem,
-                               QToolBar, QMessageBox, QMenu, QInputDialog, QStyle, QFrame, QApplication,
-                               QAbstractItemView)
-from PySide6.QtGui import QAction, QIcon, QColor, QPalette, QDrag, QPixmap, QPainter, QFont, QGuiApplication
-from PySide6.QtCore import Qt, QSize, QMimeData
+                               QToolBar, QMessageBox, QMenu, QInputDialog, QStyle,
+                               QAbstractItemView, QLabel, QStackedWidget, QSizePolicy)
+from PySide6.QtGui import (QAction, QIcon, QColor, QPixmap, QPainter,
+                           QFont, QGuiApplication)
+from PySide6.QtCore import Qt, QSize, QRect
 
+# 2. 导入控制器和配置
 from src.controllers.file_manager import FileManager
 import config
+
+# 3. 导入视图
 from src.views.dialogs import NewProjectDialog, NewSampleDialog, BatchCopyWeightDialog
 from src.views.sample_view import SampleDetailView
+from src.views.comparison_view import ComparisonView
 
 
-# === 2. FileTreeWidget 类 (这段代码其实没变，保持原样即可) ===
+# === FileTreeWidget 类 ===
 class FileTreeWidget(QTreeWidget):
     def __init__(self, parent=None, file_manager=None):
         super().__init__(parent)
@@ -2055,19 +3962,15 @@ class FileTreeWidget(QTreeWidget):
             self.file_manager.update_structure_order(new_structure)
 
 
-# === 3. MainWindow 类 (这里是修复重点！) ===
+# === MainWindow 类 ===
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.file_manager = FileManager()
 
-        self.setWindowTitle(" 试样数据管理平台 v.1.2.0")
+        self.setWindowTitle(" 试样记录管理中心 v.2.1")
 
-        # --- 修复 2：屏幕自适应代码 (防止屏幕小导致显示不全) ---
-        # 方案：启动即最大化 (推荐)
-        # self.showMaximized()
-
-        # (备用方案：如果你不喜欢最大化，可以用下面的 80% 大小代码，二选一即可)
+        # --- 屏幕自适应 ---
         screen = QGuiApplication.primaryScreen()
         screen_geometry = screen.availableGeometry()
         new_width = int(screen_geometry.width() * 0.8)
@@ -2078,17 +3981,41 @@ class MainWindow(QMainWindow):
             screen_geometry.y() + (screen_geometry.height() - new_height) // 2
         )
 
-        # === 工具栏 ===
+        # === 1. 加载背景图片 ===
+        self.bg_pixmap = None
+        self.show_bg_image = True
+
+        bg_path = os.path.join(config.BASE_DIR, "assets", "background.jpg")
+        if os.path.exists(bg_path):
+            self.bg_pixmap = QPixmap(bg_path)
+
+        # === 2. 工具栏 ===
         toolbar = QToolBar("MainToolbar")
         toolbar.setIconSize(QSize(20, 20))
         toolbar.setMovable(False)
         toolbar.setStyleSheet("""
-            QToolBar { background: white; border-bottom: 1px solid #e0e0e0; padding: 5px; spacing: 10px; }
+            QToolBar { background: rgba(255, 255, 255, 0.95); border-bottom: 1px solid #e0e0e0; padding: 5px; spacing: 10px; }
             QToolButton { background: transparent; border-radius: 4px; padding: 5px 10px; font-weight: bold; color: #555; }
             QToolButton:hover { background-color: #f0f2f5; color: #3498db; }
+            QToolButton:checked { background-color: #e6f7ff; color: #1890ff; border: 1px solid #bae7ff; }
         """)
         self.addToolBar(toolbar)
 
+        # 切换视图的 Action Group
+        self.action_home = QAction("🏠 常规视图", self)
+        self.action_home.setCheckable(True)
+        self.action_home.setChecked(True)  # 默认选中
+        self.action_home.triggered.connect(self.switch_to_home)
+        toolbar.addAction(self.action_home)
+
+        self.action_compare = QAction("⚖️ 对比分析", self)
+        self.action_compare.setCheckable(True)
+        self.action_compare.triggered.connect(self.switch_to_compare)
+        toolbar.addAction(self.action_compare)
+
+        toolbar.addSeparator()
+
+        # 原有的功能按钮
         new_proj_action = QAction("📁 新建项目", self)
         new_proj_action.triggered.connect(self.on_new_project)
         toolbar.addAction(new_proj_action)
@@ -2097,18 +4024,41 @@ class MainWindow(QMainWindow):
         new_sample_action.triggered.connect(self.on_new_sample)
         toolbar.addAction(new_sample_action)
 
-        # === 主界面 ===
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        # === 弹簧 ===
+        # 这里保留弹簧，虽然右边没有东西了，但如果有后续扩展，可以让按钮保持在左侧
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        toolbar.addWidget(spacer)
 
-        splitter = QSplitter(Qt.Horizontal)
-        splitter.setHandleWidth(1)
-        splitter.setStyleSheet("QSplitter::handle { background-color: #dcdfe6; }")
+        # 【已删除】删除了这里的 profile_widget (右上角 Logo 和 签名) 代码
 
-        # === 左侧 ===
-        # 修复 3：因为上面修复 1 已经创建了 self.file_manager，这里就不会报错了
+        # === 3. 创建左下角签名 Label (保留) ===
+        self.signature_label = QLabel("@小白元宵", self)
+        self.signature_label.setStyleSheet("""
+            color: rgba(100, 100, 100, 180); 
+            font-family: "Microsoft YaHei";
+            font-size: 11px;
+            font-weight: bold;
+            background: transparent;
+        """)
+        self.signature_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.signature_label.adjustSize()
+
+        # === 主界面 (QStackedWidget) ===
+        self.stack = QStackedWidget()
+        self.stack.setAttribute(Qt.WA_TranslucentBackground)
+        self.setCentralWidget(self.stack)
+
+        # --- 页面 0: 常规视图 (Splitter) ---
+        self.page_home = QWidget()
+        self.page_home.setAttribute(Qt.WA_TranslucentBackground)
+        home_layout = QVBoxLayout(self.page_home)
+        home_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.setHandleWidth(1)
+        self.splitter.setStyleSheet("QSplitter::handle { background-color: #dcdfe6; }")
+
         self.project_tree = FileTreeWidget(file_manager=self.file_manager)
         self.project_tree.setHeaderHidden(True)
         self.project_tree.setMinimumWidth(220)
@@ -2117,7 +4067,6 @@ class MainWindow(QMainWindow):
         self.project_tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.project_tree.customContextMenuRequested.connect(self.show_tree_context_menu)
         self.project_tree.itemClicked.connect(self.on_item_selected)
-
         self.project_tree.setStyleSheet("""
             QTreeWidget { background-color: #2c3e50; color: #ecf0f1; border: none; padding-top: 10px; font-size: 13px; }
             QTreeWidget::item { height: 35px; padding-left: 5px; border-radius: 4px; margin: 2px 5px; }
@@ -2125,15 +4074,59 @@ class MainWindow(QMainWindow):
             QTreeWidget::item:selected { background-color: #3498db; color: white; }
         """)
 
-        # === 右侧 ===
         self.detail_view = SampleDetailView(self.file_manager)
         self.detail_view.require_refresh.connect(self.refresh_data)
 
-        splitter.addWidget(self.project_tree)
-        splitter.addWidget(self.detail_view)
-        splitter.setSizes([220, 980])
-        main_layout.addWidget(splitter)
+        self.splitter.addWidget(self.project_tree)
+        self.splitter.addWidget(self.detail_view)
+        self.splitter.setSizes([220, 980])
+
+        home_layout.addWidget(self.splitter)
+        self.stack.addWidget(self.page_home)  # Index 0
+
+        # --- 页面 1: 对比分析视图 (ComparisonView) ---
+        self.comparison_view = ComparisonView(self.file_manager)
+        self.comparison_view.setStyleSheet("background-color: #f4f6f9;")
+        self.stack.addWidget(self.comparison_view)  # Index 1
+
+        # 初始化数据
         self.refresh_data()
+
+    # === 切换视图逻辑 ===
+    def switch_to_home(self):
+        self.stack.setCurrentIndex(0)
+        self.action_home.setChecked(True)
+        self.action_compare.setChecked(False)
+        self.show_bg_image = True  # 回到主页显示背景（如果是欢迎状态）
+        self.update()
+
+    def switch_to_compare(self):
+        self.stack.setCurrentIndex(1)
+        self.action_home.setChecked(False)
+        self.action_compare.setChecked(True)
+        self.show_bg_image = False  # 对比页面不需要背景图
+        self.update()
+        self.comparison_view.refresh_tree()
+
+    # === 剩下的代码保持不变 ===
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, 'signature_label'):
+            self.signature_label.move(10, self.height() - self.signature_label.height() - 5)
+            self.signature_label.raise_()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor("#f4f6f9"))
+
+        if self.show_bg_image and self.bg_pixmap and not self.bg_pixmap.isNull():
+            painter.setOpacity(0.08)
+            scaled_pixmap = self.bg_pixmap.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
+            x = (self.width() - scaled_pixmap.width()) // 2
+            y = (self.height() - scaled_pixmap.height()) // 2
+            painter.drawPixmap(x, y, scaled_pixmap)
+
+        painter.setOpacity(1.0)
 
     def center_on_screen(self):
         screen = QApplication.primaryScreen()
@@ -2183,7 +4176,6 @@ class MainWindow(QMainWindow):
                 sample_item.setData(0, Qt.UserRole, "sample")
                 sample_item.setFlags(sample_item.flags() & ~Qt.ItemIsDropEnabled | Qt.ItemIsDragEnabled)
 
-                # 读取 JSON 获取 Emoji
                 emoji_icon = None
                 try:
                     json_path = os.path.join(config.DATA_ROOT, project_name, sample_name, "sample_info.json")
@@ -2205,11 +4197,18 @@ class MainWindow(QMainWindow):
     def on_item_selected(self, item, column):
         item_type = item.data(0, Qt.UserRole)
         name = item.text(0)
+
         if item_type == "sample":
             project_name = item.parent().text(0)
             self.detail_view.load_sample(project_name, name)
+            if self.show_bg_image:
+                self.show_bg_image = False
+                self.update()
         else:
             self.detail_view.show_welcome(name)
+            if not self.show_bg_image:
+                self.show_bg_image = True
+                self.update()
 
     def show_tree_context_menu(self, pos):
         item = self.project_tree.itemAt(pos)
@@ -2289,7 +4288,11 @@ class MainWindow(QMainWindow):
 
     def delete_project_ui(self, name):
         if QMessageBox.question(self, "确认", f"删除项目 {name}？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-            if self.file_manager.delete_project(name): self.refresh_data(); self.detail_view.show_welcome()
+            if self.file_manager.delete_project(name):
+                self.refresh_data()
+                self.detail_view.show_welcome()
+                self.show_bg_image = True
+                self.update()
 
     def rename_sample_ui(self, p_name, old_id):
         new_id, ok = QInputDialog.getText(self, "重命名试样", "新编号:", text=old_id)
@@ -2302,7 +4305,10 @@ class MainWindow(QMainWindow):
         if QMessageBox.question(self, "确认", f"删除试样 {s_id}？", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             if self.file_manager.delete_sample(p_name, s_id):
                 self.refresh_data()
-                if self.detail_view.current_sample == s_id: self.detail_view.show_welcome()
+                if self.detail_view.current_sample == s_id:
+                    self.detail_view.show_welcome()
+                    self.show_bg_image = True
+                    self.update()
 
     def on_new_project(self):
         dialog = NewProjectDialog(self)
@@ -2505,16 +4511,26 @@ class AttachmentCard(QFrame):
         self.icon_lbl.setStyleSheet("border: none; background: transparent;")
 
         if file_data['type'] == 'image':
-            pix = QPixmap(file_data['thumb']).scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.icon_lbl.setPixmap(pix)
+            pix = QPixmap(file_data['thumb'])
+            if pix.isNull():
+                self.icon_lbl.setText("🖼️")
+                self.icon_lbl.setStyleSheet("font-size: 28px; border: none; background: transparent;")
+            else:
+                # 【修改】放大缩略图尺寸 (40x40 -> 70x70)
+                pix = pix.scaled(70, 70, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.icon_lbl.setPixmap(pix)
         else:
             txt = "📄"
-            if "xls" in file_data['ext']:
+            ext = file_data['ext']
+            if "xls" in ext:
                 txt = "📊"
-            elif "pdf" in file_data['ext']:
+            elif "pdf" in ext:
                 txt = "📕"
-            elif "txt" in file_data['ext']:
+            elif "txt" in ext:
                 txt = "📝"
+            elif "doc" in ext:
+                txt = "📘"
+
             self.icon_lbl.setText(txt)
             self.icon_lbl.setStyleSheet("font-size: 28px; border: none; background: transparent;")
 
@@ -2567,7 +4583,7 @@ class SampleDetailView(QWidget):
         self._init_mass_section()
         self._init_stress_section()
         self._init_gallery_section()
-        self._init_welcome_section()  # 新增欢迎页初始化
+        self._init_welcome_section()
 
         # 布局放置
         self.main_grid.addWidget(self.header_card, 0, 0, 1, 2)
@@ -2581,7 +4597,6 @@ class SampleDetailView(QWidget):
         self.show_welcome()
 
     def _init_welcome_section(self):
-        """初始化空状态下的欢迎界面"""
         self.welcome_container = QWidget()
         self.welcome_container.setStyleSheet("background-color: transparent;")
 
@@ -2589,17 +4604,15 @@ class SampleDetailView(QWidget):
         layout.setAlignment(Qt.AlignCenter)
         layout.setSpacing(20)
 
-        # 1. 大图标
         icon_lbl = QLabel("🔬")
         icon_lbl.setAlignment(Qt.AlignCenter)
-        icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji';")
+        icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji'; background: transparent;")
 
-        # 2. 欢迎标题
-        title_lbl = QLabel("欢迎使用试样数据管理平台")
+        title_lbl = QLabel("欢迎使用试样记录管理中心")
         title_lbl.setAlignment(Qt.AlignCenter)
-        title_lbl.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei';")
+        title_lbl.setStyleSheet(
+            "font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; background: transparent;")
 
-        # 3. 操作指引
         guide_text = """
         <div style='color: #7f8c8d; font-size: 14px; line-height: 1.5;'>
             <p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p>
@@ -2610,12 +4623,12 @@ class SampleDetailView(QWidget):
         guide_lbl = QLabel(guide_text)
         guide_lbl.setAlignment(Qt.AlignCenter)
         guide_lbl.setTextFormat(Qt.RichText)
+        guide_lbl.setStyleSheet("background: transparent;")
 
         layout.addWidget(icon_lbl)
         layout.addWidget(title_lbl)
         layout.addWidget(guide_lbl)
 
-        # 添加到主 Grid 中，占据所有位置
         self.main_grid.addWidget(self.welcome_container, 0, 0, 3, 2)
 
     def _init_header_section(self):
@@ -2627,7 +4640,7 @@ class SampleDetailView(QWidget):
         self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px; font-family: 'Segoe UI Emoji';")
 
         info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
+        info_layout.setSpacing(4)
 
         title_line = QHBoxLayout()
         title_line.setSpacing(8)
@@ -2643,19 +4656,23 @@ class SampleDetailView(QWidget):
         title_line.addWidget(self.shape_label)
         title_line.addStretch()
 
-        self.desc_label = QLabel("暂无描述")
-        self.desc_label.setStyleSheet("color: #909399; font-size: 12px;")
+        self.recipe_label = QLabel("配方: -")
+        self.recipe_label.setStyleSheet("color: #606266; font-size: 12px;")
+        self.recipe_label.setWordWrap(True)
+
+        self.key_var_label = QLabel("关键变量: -")
+        self.key_var_label.setStyleSheet("color: #e67e22; font-size: 12px; font-weight: bold;")
 
         info_layout.addLayout(title_line)
-        info_layout.addWidget(self.desc_label)
+        info_layout.addWidget(self.recipe_label)
+        info_layout.addWidget(self.key_var_label)
 
         h_layout.addWidget(self.emoji_label)
-        h_layout.addLayout(info_layout)
-        h_layout.addStretch(1)
+        h_layout.addLayout(info_layout, 1)
 
         self.time_container = QWidget()
         time_layout = QHBoxLayout(self.time_container)
-        time_layout.setSpacing(6)
+        time_layout.setSpacing(2)
         time_layout.setContentsMargins(0, 0, 0, 0)
 
         self.lbl_prep = self._create_mini_time_box("制样", "#909399")
@@ -2687,10 +4704,11 @@ class SampleDetailView(QWidget):
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setStyleSheet(f"""
             QLabel {{
-                font-size: 11px; font-weight: bold; color: {color}; 
-                border: 1px solid {color}; border-radius: 6px; padding: 3px 8px;
+                font-size: 10px; font-weight: bold; color: {color}; 
+                border: 1px solid {color}; border-radius: 4px; padding: 2px 4px;
                 background-color: #ffffff;
                 font-family: "Segoe UI Emoji", "Microsoft YaHei";
+                min-width: 36px;
             }}
         """)
         return lbl
@@ -2703,6 +4721,7 @@ class SampleDetailView(QWidget):
     def _init_mass_section(self):
         self.mass_card = ModernCard("📊 质量监控")
         self.mass_card.setMinimumHeight(240)
+        self.mass_card.setMaximumHeight(450)
 
         self.mass_chart_type = QComboBox()
         self.mass_chart_type.addItems(["质量(g)", "变化率(%)"])
@@ -2736,7 +4755,8 @@ class SampleDetailView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(8)
 
-        self.mass_chart = MassTrendChart(self, width=5, height=3)
+        # 【修改】Height 改为 2.8，既不像 2.5 那么扁（容易切字），也不像 3.0 那么高
+        self.mass_chart = MassTrendChart(self, width=5, height=2.8)
         self.mass_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.mass_table = QTableWidget()
@@ -2760,7 +4780,8 @@ class SampleDetailView(QWidget):
 
     def _init_stress_section(self):
         self.stress_card = ModernCard("📈 应力应变 (UCS)")
-        self.stress_card.setMinimumHeight(320)
+        self.stress_card.setMinimumHeight(300)
+        self.stress_card.setMaximumHeight(450)
 
         self.add_stress_btn = QPushButton("➕ 记录点")
         self.add_stress_btn.setStyleSheet(BTN_GHOST_STYLE)
@@ -2775,11 +4796,14 @@ class SampleDetailView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(5)
 
-        self.stress_chart = StressStrainChart(self, width=5, height=3)
+        # 【修改】Height 改为 2.8
+        self.stress_chart = StressStrainChart(self, width=5, height=2.8)
         self.stress_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stress_chart.data_modified.connect(
             lambda data: self.file_manager.save_stress_data(self.current_project, self.current_sample, data)
         )
+
+        self.stress_chart.file_dropped.connect(self.process_imported_stress_file)
 
         self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件或手动添加破坏点。")
         self.stress_info_lbl.setStyleSheet("color: #909399; font-size: 10px; font-style: italic; margin-top: 2px;")
@@ -2846,7 +4870,16 @@ class SampleDetailView(QWidget):
 
         self.emoji_label.setText(info.get("icon_emoji", "🧪"))
         self.title_label.setText(info.get('id'))
-        self.desc_label.setText(info.get('description') or "暂无描述信息")
+
+        recipe_text = info.get('recipe', '').strip()
+        if not recipe_text:
+            recipe_text = "暂无配方信息"
+        self.recipe_label.setText(f"📋 {recipe_text}")
+
+        k_name = info.get('key_variable_name', '关键变量')
+        if not k_name: k_name = "关键变量"
+        k_val = info.get('key_variable', '-')
+        self.key_var_label.setText(f"🔑 {k_name}: {k_val}")
 
         shape = info.get("shape", "未指定")
         dims = []
@@ -2991,19 +5024,25 @@ class SampleDetailView(QWidget):
     def on_import_stress_click(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "选择数据文件", "", "Excel/CSV Files (*.xlsx *.xls *.csv)")
         if file_path:
-            data, msg = DataImporter.load_stress_strain_data(file_path)
-            if data:
-                if self.file_manager.save_stress_data(self.current_project, self.current_sample, data):
-                    self.stress_chart.update_chart(data)
-                    QMessageBox.information(self, "成功", msg)
-                    if QMessageBox.question(self, "备份", "是否将此原文件作为附件保存？",
-                                            QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-                        self.file_manager.add_file_to_sample(self.current_project, self.current_sample, file_path)
-                        self.refresh_gallery()
-                else:
-                    QMessageBox.warning(self, "错误", "数据保存失败")
+            self.process_imported_stress_file(file_path)
+
+    # === 处理拖拽或点击导入的文件 ===
+    def process_imported_stress_file(self, file_path):
+        data, msg = DataImporter.load_stress_strain_data(file_path)
+        if data:
+            if self.file_manager.save_stress_data(self.current_project, self.current_sample, data):
+                self.stress_chart.update_chart(data)
+                QMessageBox.information(self, "成功", msg)
+
+                # 询问是否备份源文件
+                if QMessageBox.question(self, "备份", "是否将此原文件作为附件保存？",
+                                        QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                    self.file_manager.add_file_to_sample(self.current_project, self.current_sample, file_path)
+                    self.refresh_gallery()
             else:
-                QMessageBox.warning(self, "解析失败", msg)
+                QMessageBox.warning(self, "错误", "数据保存失败")
+        else:
+            QMessageBox.warning(self, "解析失败", msg)
 
     def show_mass_menu(self, pos):
         item = self.mass_table.itemAt(pos)
@@ -3118,7 +5157,7 @@ class ModernSplashScreen(QSplashScreen):
         font_sub = QFont("Microsoft YaHei", 12)
         painter.setFont(font_sub)
         painter.setPen(QColor("#ecf0f1"))
-        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.1")
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v.2.1")
 
         painter.end()
 
@@ -3168,7 +5207,6 @@ rcParams['axes.unicode_minus'] = False
 rcParams['font.size'] = 9
 
 # === 样式定义 ===
-# 按钮样式
 BTN_STYLE = """
     QPushButton {
         background-color: white;
@@ -3185,7 +5223,6 @@ BTN_STYLE = """
     }
 """
 
-# 表格样式
 TABLE_STYLE = """
     QTableWidget {
         background-color: white;
@@ -3206,7 +5243,6 @@ TABLE_STYLE = """
     QTableWidget::item { padding: 4px; }
     QTableWidget::item:selected { background-color: #ecf5ff; color: #409eff; }
 
-    /* 滚动条美化 */
     QScrollBar:vertical {
         border: none;
         background: #f4f6f9;
@@ -3218,7 +5254,6 @@ TABLE_STYLE = """
     }
 """
 
-# 右键菜单样式 (保持风格统一)
 MENU_STYLE = """
     QMenu {
         background-color: #ffffff;
@@ -3246,12 +5281,17 @@ MENU_STYLE = """
 
 
 class StressStrainChart(QWidget):
-    # 定义一个信号，当数据被修改/删除时发出，携带最新的数据列表
+    # 定义信号
     data_modified = Signal(list)
+    # 【关键修复】补回这个信号
+    file_dropped = Signal(str)
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super().__init__(parent)
         self.current_data_points = []  # 存储原始数据
+
+        # 【关键修复】开启拖拽
+        self.setAcceptDrops(True)
 
         # 1. 主布局
         layout = QVBoxLayout(self)
@@ -3260,7 +5300,8 @@ class StressStrainChart(QWidget):
 
         # 2. 图表层
         self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
-        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
+        # 增大底部边距 (0.22) 防止坐标轴被切
+        self.fig.subplots_adjust(left=0.18, right=0.95, top=0.90, bottom=0.22)
 
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax = self.fig.add_subplot(111)
@@ -3304,6 +5345,25 @@ class StressStrainChart(QWidget):
         layout.addWidget(self.table, stretch=3)
 
         self.apply_style()
+
+    # === 【关键修复】补回拖拽逻辑 ===
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                # 检查文件后缀
+                filename = urls[0].toLocalFile().lower()
+                if filename.endswith(('.csv', '.xls', '.xlsx')):
+                    event.accept()
+                    return
+        event.ignore()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        if urls:
+            path = urls[0].toLocalFile()
+            # 发出信号，通知父组件处理文件
+            self.file_dropped.emit(path)
 
     def wheelEvent(self, event):
         if self.table.underMouse():

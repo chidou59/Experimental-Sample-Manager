@@ -38,7 +38,7 @@ class ModernSplashScreen(QSplashScreen):
         font_sub = QFont("Microsoft YaHei", 12)
         painter.setFont(font_sub)
         painter.setPen(QColor("#ecf0f1"))
-        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v1.2.1")
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v.2.1")
 
         painter.end()
 

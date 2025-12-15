@@ -13,7 +13,7 @@ from src.views.chart_widget import MassTrendChart
 from src.views.stress_chart import StressStrainChart
 from src.utils.data_importer import DataImporter
 
-# === 样式常量 (保持不变) ===
+# === 样式常量 ===
 CARD_STYLE = """
     QFrame#ModernCard {
         background-color: white;
@@ -172,16 +172,26 @@ class AttachmentCard(QFrame):
         self.icon_lbl.setStyleSheet("border: none; background: transparent;")
 
         if file_data['type'] == 'image':
-            pix = QPixmap(file_data['thumb']).scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            self.icon_lbl.setPixmap(pix)
+            pix = QPixmap(file_data['thumb'])
+            if pix.isNull():
+                self.icon_lbl.setText("🖼️")
+                self.icon_lbl.setStyleSheet("font-size: 28px; border: none; background: transparent;")
+            else:
+                # 【修改】放大缩略图尺寸 (40x40 -> 70x70)
+                pix = pix.scaled(70, 70, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.icon_lbl.setPixmap(pix)
         else:
             txt = "📄"
-            if "xls" in file_data['ext']:
+            ext = file_data['ext']
+            if "xls" in ext:
                 txt = "📊"
-            elif "pdf" in file_data['ext']:
+            elif "pdf" in ext:
                 txt = "📕"
-            elif "txt" in file_data['ext']:
+            elif "txt" in ext:
                 txt = "📝"
+            elif "doc" in ext:
+                txt = "📘"
+
             self.icon_lbl.setText(txt)
             self.icon_lbl.setStyleSheet("font-size: 28px; border: none; background: transparent;")
 
@@ -217,7 +227,7 @@ class SampleDetailView(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
-        self.scroll_area.setStyleSheet("QScrollArea { background-color: transparent; border: none; }")
+        self.scroll_area.setStyleSheet("QScrollArea { background-color: transparent; }")
 
         self.content_widget = QWidget()
         self.content_widget.setStyleSheet("background-color: transparent;")
@@ -259,13 +269,13 @@ class SampleDetailView(QWidget):
         icon_lbl.setAlignment(Qt.AlignCenter)
         icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji'; background: transparent;")
 
-        title_lbl = QLabel("欢迎使用试样数据管理平台")
+        title_lbl = QLabel("欢迎使用试样记录管理中心")
         title_lbl.setAlignment(Qt.AlignCenter)
         title_lbl.setStyleSheet(
             "font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; background: transparent;")
 
         guide_text = """
-        <div style='color: #555; font-size: 14px; line-height: 1.5; font-weight: 500;'>
+        <div style='color: #7f8c8d; font-size: 14px; line-height: 1.5;'>
             <p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p>
             <p>📊 <b>功能亮点：</b>支持 UCS 数据导入、质量变化追踪及附件管理。</p>
             <p>💡 <b>提示：</b>右键点击列表项可进行更多操作。</p>
@@ -291,7 +301,7 @@ class SampleDetailView(QWidget):
         self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px; font-family: 'Segoe UI Emoji';")
 
         info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
+        info_layout.setSpacing(4)
 
         title_line = QHBoxLayout()
         title_line.setSpacing(8)
@@ -307,19 +317,23 @@ class SampleDetailView(QWidget):
         title_line.addWidget(self.shape_label)
         title_line.addStretch()
 
-        self.desc_label = QLabel("暂无描述")
-        self.desc_label.setStyleSheet("color: #909399; font-size: 12px;")
+        self.recipe_label = QLabel("配方: -")
+        self.recipe_label.setStyleSheet("color: #606266; font-size: 12px;")
+        self.recipe_label.setWordWrap(True)
+
+        self.key_var_label = QLabel("关键变量: -")
+        self.key_var_label.setStyleSheet("color: #e67e22; font-size: 12px; font-weight: bold;")
 
         info_layout.addLayout(title_line)
-        info_layout.addWidget(self.desc_label)
+        info_layout.addWidget(self.recipe_label)
+        info_layout.addWidget(self.key_var_label)
 
         h_layout.addWidget(self.emoji_label)
-        h_layout.addLayout(info_layout)
-        h_layout.addStretch(1)
+        h_layout.addLayout(info_layout, 1)
 
         self.time_container = QWidget()
         time_layout = QHBoxLayout(self.time_container)
-        time_layout.setSpacing(6)
+        time_layout.setSpacing(2)
         time_layout.setContentsMargins(0, 0, 0, 0)
 
         self.lbl_prep = self._create_mini_time_box("制样", "#909399")
@@ -351,10 +365,11 @@ class SampleDetailView(QWidget):
         lbl.setAlignment(Qt.AlignCenter)
         lbl.setStyleSheet(f"""
             QLabel {{
-                font-size: 11px; font-weight: bold; color: {color}; 
-                border: 1px solid {color}; border-radius: 6px; padding: 3px 8px;
+                font-size: 10px; font-weight: bold; color: {color}; 
+                border: 1px solid {color}; border-radius: 4px; padding: 2px 4px;
                 background-color: #ffffff;
                 font-family: "Segoe UI Emoji", "Microsoft YaHei";
+                min-width: 36px;
             }}
         """)
         return lbl
@@ -367,6 +382,7 @@ class SampleDetailView(QWidget):
     def _init_mass_section(self):
         self.mass_card = ModernCard("📊 质量监控")
         self.mass_card.setMinimumHeight(240)
+        self.mass_card.setMaximumHeight(450)
 
         self.mass_chart_type = QComboBox()
         self.mass_chart_type.addItems(["质量(g)", "变化率(%)"])
@@ -400,7 +416,8 @@ class SampleDetailView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(8)
 
-        self.mass_chart = MassTrendChart(self, width=5, height=3)
+        # 【修改】Height 改为 2.8，既不像 2.5 那么扁（容易切字），也不像 3.0 那么高
+        self.mass_chart = MassTrendChart(self, width=5, height=2.8)
         self.mass_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.mass_table = QTableWidget()
@@ -424,7 +441,8 @@ class SampleDetailView(QWidget):
 
     def _init_stress_section(self):
         self.stress_card = ModernCard("📈 应力应变 (UCS)")
-        self.stress_card.setMinimumHeight(320)
+        self.stress_card.setMinimumHeight(300)
+        self.stress_card.setMaximumHeight(450)
 
         self.add_stress_btn = QPushButton("➕ 记录点")
         self.add_stress_btn.setStyleSheet(BTN_GHOST_STYLE)
@@ -439,16 +457,16 @@ class SampleDetailView(QWidget):
         layout = QVBoxLayout()
         layout.setSpacing(5)
 
-        self.stress_chart = StressStrainChart(self, width=5, height=3)
+        # 【修改】Height 改为 2.8
+        self.stress_chart = StressStrainChart(self, width=5, height=2.8)
         self.stress_chart.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stress_chart.data_modified.connect(
             lambda data: self.file_manager.save_stress_data(self.current_project, self.current_sample, data)
         )
 
-        # === 连接拖拽导入信号 ===
         self.stress_chart.file_dropped.connect(self.process_imported_stress_file)
 
-        self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件 (拖拽或点击导入)。")
+        self.stress_info_lbl = QLabel("💡 提示：支持导入 Excel/CSV 文件或手动添加破坏点。")
         self.stress_info_lbl.setStyleSheet("color: #909399; font-size: 10px; font-style: italic; margin-top: 2px;")
 
         layout.addWidget(self.stress_chart)
@@ -513,7 +531,16 @@ class SampleDetailView(QWidget):
 
         self.emoji_label.setText(info.get("icon_emoji", "🧪"))
         self.title_label.setText(info.get('id'))
-        self.desc_label.setText(info.get('description') or "暂无描述信息")
+
+        recipe_text = info.get('recipe', '').strip()
+        if not recipe_text:
+            recipe_text = "暂无配方信息"
+        self.recipe_label.setText(f"📋 {recipe_text}")
+
+        k_name = info.get('key_variable_name', '关键变量')
+        if not k_name: k_name = "关键变量"
+        k_val = info.get('key_variable', '-')
+        self.key_var_label.setText(f"🔑 {k_name}: {k_val}")
 
         shape = info.get("shape", "未指定")
         dims = []

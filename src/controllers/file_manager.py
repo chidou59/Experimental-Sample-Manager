@@ -16,6 +16,12 @@ class FileManager:
         if not os.path.exists(self.root_meta_path):
             self._save_root_meta({"projects_order": []})
 
+        # === 性能优化：内存缓存 ===
+        # 结构: { "project_name": { "sample_id": {sample_info_dict}, ... } }
+        self._sample_cache = {}
+        # 结构: { "project_name": ["s1", "s2", ...] }
+        self._structure_cache = None
+
     def _load_root_meta(self):
         try:
             with open(self.root_meta_path, 'r', encoding='utf-8') as f:
@@ -30,12 +36,23 @@ class FileManager:
         except Exception as e:
             print(f"保存元数据失败: {e}")
 
-    # === 原有 Project/Sample 基础 CRUD 方法保持不变 (create_project, create_sample...) ===
-    # 为节省篇幅，这里假设原有 create_project, create_sample, update_sample_info 等依然存在
-    # 请务必保留原文件中的这些代码，仅添加下方的新方法。
+    # === 缓存辅助方法 ===
+    def _invalidate_structure_cache(self):
+        """当项目结构发生变化（增删改）时，标记结构缓存无效"""
+        self._structure_cache = None
+
+    def _update_sample_cache(self, project_name, sample_id, data):
+        """更新单个试样的缓存"""
+        if project_name not in self._sample_cache:
+            self._sample_cache[project_name] = {}
+        self._sample_cache[project_name][sample_id] = data
+
+    def _remove_sample_from_cache(self, project_name, sample_id):
+        """从缓存中移除"""
+        if project_name in self._sample_cache and sample_id in self._sample_cache[project_name]:
+            del self._sample_cache[project_name][sample_id]
 
     def create_project(self, project_name, description=""):
-        # ... (保留原代码) ...
         project_path = os.path.join(config.DATA_ROOT, project_name)
         try:
             if os.path.exists(project_path): return False
@@ -54,13 +71,14 @@ class FileManager:
             if project_name not in meta["projects_order"]:
                 meta["projects_order"].append(project_name)
                 self._save_root_meta(meta)
+
+            self._invalidate_structure_cache()  # 刷新结构缓存
             return True
         except Exception as e:
             print(f"Error: {e}");
             return False
 
     def create_sample(self, project_name, sample_id, sample_data):
-        # ... (保留原代码) ...
         project_path = os.path.join(config.DATA_ROOT, project_name)
         sample_path = os.path.join(project_path, sample_id)
         try:
@@ -80,9 +98,11 @@ class FileManager:
                 "weight_records": [],
                 **data_to_save
             }
+            # 写入磁盘
             with open(os.path.join(sample_path, "sample_info.json"), 'w', encoding='utf-8') as f:
                 json.dump(sample_full_info, f, ensure_ascii=False, indent=4)
 
+            # 更新项目列表
             p_json_path = os.path.join(project_path, "project_info.json")
             if os.path.exists(p_json_path):
                 with open(p_json_path, 'r', encoding='utf-8') as f:
@@ -91,38 +111,50 @@ class FileManager:
                 if sample_id not in p_data["samples_order"]: p_data["samples_order"].append(sample_id)
                 with open(p_json_path, 'w', encoding='utf-8') as f:
                     json.dump(p_data, f, ensure_ascii=False, indent=4)
+
+            # 更新缓存
+            self._update_sample_cache(project_name, sample_id, sample_full_info)
+            self._invalidate_structure_cache()
             return True
         except Exception as e:
             print(f"Error creating sample: {e}");
             return False
 
     def update_sample_info(self, project_name, sample_id, new_data):
-        # ... (保留原代码) ...
         try:
-            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
-            if not os.path.exists(json_path): return False
+            # 先获取现有数据（优先从缓存拿）
+            data = self.get_sample_info(project_name, sample_id)
+            if not data: return False
 
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-
+            # 这里的逻辑保持不变
             editable_fields = [
                 "description", "date_prep", "date_complete", "date_demold", "date_test", "initial_mass",
-                "shape", "radius", "height", "side_length", "length", "width", "icon_emoji"
+                "shape", "radius", "height", "side_length", "length", "width", "icon_emoji",
+                "recipe", "key_variable", "key_variable_name"
             ]
 
             for field in editable_fields:
                 if field in new_data:
                     data[field] = new_data[field]
 
+            # 写入磁盘
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
+
+            # 更新缓存
+            self._update_sample_cache(project_name, sample_id, data)
             return True
         except Exception as e:
             print(f"更新试样信息失败: {e}")
             return False
 
     def get_project_structure(self):
-        # ... (保留原代码) ...
+        # === 缓存命中 ===
+        if self._structure_cache is not None:
+            return self._structure_cache
+
+        # === 缓存未命中，重新扫描 ===
         structure = {}
         if not os.path.exists(config.DATA_ROOT): return structure
         meta = self._load_root_meta()
@@ -171,10 +203,12 @@ class FileManager:
                 if s not in final_samples: final_samples.append(s)
 
             structure[project_name] = final_samples
+
+        # 存入缓存
+        self._structure_cache = structure
         return structure
 
     def update_structure_order(self, new_structure_dict):
-        # ... (保留原代码) ...
         new_projects_order = list(new_structure_dict.keys())
         self._save_root_meta({"projects_order": new_projects_order})
         for project_name, samples_list in new_structure_dict.items():
@@ -189,8 +223,10 @@ class FileManager:
                 except Exception as e:
                     print(f"保存试样顺序失败 {project_name}: {e}")
 
+        # 结构变了，更新缓存
+        self._structure_cache = new_structure_dict
+
     def rename_project(self, old_name, new_name):
-        # ... (保留原代码) ...
         old_path = os.path.join(config.DATA_ROOT, old_name)
         new_path = os.path.join(config.DATA_ROOT, new_name)
         if not os.path.exists(old_path) or os.path.exists(new_path): return False
@@ -206,13 +242,17 @@ class FileManager:
                 idx = meta["projects_order"].index(old_name)
                 meta["projects_order"][idx] = new_name
                 self._save_root_meta(meta)
+
+            # 清理旧缓存，结构缓存失效
+            if old_name in self._sample_cache:
+                del self._sample_cache[old_name]
+            self._invalidate_structure_cache()
             return True
         except Exception as e:
             print(f"重命名项目失败: {e}");
             return False
 
     def rename_sample(self, project_name, old_id, new_id):
-        # ... (保留原代码) ...
         base_path = os.path.join(config.DATA_ROOT, project_name)
         old_path = os.path.join(base_path, old_id)
         new_path = os.path.join(base_path, new_id)
@@ -233,13 +273,15 @@ class FileManager:
                     p_data["samples_order"][idx] = new_id
                     with open(p_info_path, 'w', encoding='utf-8') as f: json.dump(p_data, f, ensure_ascii=False,
                                                                                   indent=4)
+            # 清理缓存
+            self._remove_sample_from_cache(project_name, old_id)
+            self._invalidate_structure_cache()
             return True
         except Exception as e:
             print(f"重命名试样失败: {e}");
             return False
 
     def delete_project(self, project_name):
-        # ... (保留原代码) ...
         path = os.path.join(config.DATA_ROOT, project_name)
         try:
             shutil.rmtree(path)
@@ -247,13 +289,16 @@ class FileManager:
             if project_name in meta["projects_order"]:
                 meta["projects_order"].remove(project_name)
                 self._save_root_meta(meta)
+
+            if project_name in self._sample_cache:
+                del self._sample_cache[project_name]
+            self._invalidate_structure_cache()
             return True
         except Exception as e:
             print(f"删除项目失败: {e}");
             return False
 
     def delete_sample(self, project_name, sample_id):
-        # ... (保留原代码) ...
         path = os.path.join(config.DATA_ROOT, project_name, sample_id)
         try:
             shutil.rmtree(path)
@@ -265,45 +310,82 @@ class FileManager:
                     p_data["samples_order"].remove(sample_id)
                     with open(p_info_path, 'w', encoding='utf-8') as f: json.dump(p_data, f, ensure_ascii=False,
                                                                                   indent=4)
+            self._remove_sample_from_cache(project_name, sample_id)
+            self._invalidate_structure_cache()
             return True
         except Exception as e:
             print(f"删除试样失败: {e}");
             return False
 
     def get_sample_info(self, project_name, sample_id):
-        # ... (保留原代码) ...
+        # === 缓存优化 ===
+        # 1. 检查内存缓存
+        if project_name in self._sample_cache and sample_id in self._sample_cache[project_name]:
+            return self._sample_cache[project_name][sample_id]
+
+        # 2. 从磁盘读取并存入缓存
         try:
             json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             with open(json_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                self._update_sample_cache(project_name, sample_id, data)
+                return data
         except:
             return None
 
     def add_file_to_sample(self, project_name, sample_id, source_path):
-        # ... (保留原代码) ...
+        """
+        添加文件到试样。如果是 HEIC，自动转换为 JPG。
+        """
         try:
             base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
             thumb_dir = os.path.join(base_dir, "thumbnails")
             os.makedirs(thumb_dir, exist_ok=True)
+
             filename = os.path.basename(source_path)
-            target_path = os.path.join(base_dir, filename)
-            shutil.copy(source_path, target_path)
-            ext = os.path.splitext(filename)[1].lower()
-            if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp']:
+            name, ext = os.path.splitext(filename)
+            ext_lower = ext.lower()
+
+            target_path = ""
+
+            # 如果是 HEIC，直接转为 JPG 保存，不存原件
+            if ext_lower == '.heic':
+                new_filename = name + ".jpg"
+                target_path = os.path.join(base_dir, new_filename)
+
+                # 转换并保存
+                if not ImageHelper.convert_to_jpg(source_path, target_path):
+                    print(f"HEIC 转换失败: {source_path}")
+                    return None
+
+                filename = new_filename
+                ext_lower = '.jpg'
+            else:
+                target_path = os.path.join(base_dir, filename)
+                shutil.copy(source_path, target_path)
+
+            if ext_lower in ['.png', '.jpg', '.jpeg', '.tif', '.bmp']:
                 thumb_path = os.path.join(thumb_dir, filename)
                 ImageHelper.generate_thumbnail(target_path, thumb_path)
+
             return target_path
-        except:
+        except Exception as e:
+            print(f"Add file error: {e}")
             return None
 
     def get_sample_files(self, project_name, sample_id):
-        # ... (保留原代码) ...
         try:
             base_dir = os.path.join(config.DATA_ROOT, project_name, sample_id, "images")
             thumb_dir = os.path.join(base_dir, "thumbnails")
             if not os.path.exists(base_dir): return []
             files_list = []
-            valid_exts = ['.png', '.jpg', '.jpeg', '.tif', '.bmp', '.pdf', '.xls', '.xlsx', '.csv', '.txt']
+
+            valid_exts = [
+                '.png', '.jpg', '.jpeg', '.tif', '.bmp', '.heic',
+                '.pdf', '.xls', '.xlsx', '.csv',
+                '.txt', '.doc', '.docx'
+            ]
+
             for f in os.listdir(base_dir):
                 if os.path.isdir(os.path.join(base_dir, f)): continue
                 ext = os.path.splitext(f)[1].lower()
@@ -311,19 +393,19 @@ class FileManager:
                     file_info = {
                         "name": f,
                         "path": os.path.join(base_dir, f),
-                        "type": "image" if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp'] else "file",
+                        "type": "image" if ext in ['.png', '.jpg', '.jpeg', '.tif', '.bmp', '.heic'] else "file",
                         "ext": ext
                     }
                     if file_info["type"] == "image":
                         thumb_path = os.path.join(thumb_dir, f)
                         file_info["thumb"] = thumb_path if os.path.exists(thumb_path) else file_info["path"]
+
                     files_list.append(file_info)
             return files_list
         except:
             return []
 
     def delete_file(self, file_path):
-        # ... (保留原代码) ...
         try:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -337,74 +419,75 @@ class FileManager:
             return False
 
     def add_weight_record(self, project_name, sample_id, record):
-        # ... (保留原代码) ...
         try:
-            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
-            if not os.path.exists(json_path): return False
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            data = self.get_sample_info(project_name, sample_id)
+            if not data: return False
+
             if "weight_records" not in data: data["weight_records"] = []
             data["weight_records"].append(record)
             data["weight_records"].sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
+
+            # 更新磁盘和缓存
+            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
+            self._update_sample_cache(project_name, sample_id, data)
             return True
         except:
             return False
 
     def update_weight_record(self, project_name, sample_id, index, new_record):
-        # ... (保留原代码) ...
         try:
-            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
-            if not os.path.exists(json_path): return False
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            data = self.get_sample_info(project_name, sample_id)
+            if not data: return False
+
             records = data.get("weight_records", [])
             if 0 <= index < len(records):
                 records[index] = new_record
                 records.sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
                 data["weight_records"] = records
+
+                json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
                 with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+                self._update_sample_cache(project_name, sample_id, data)
                 return True
             return False
         except:
             return False
 
     def delete_weight_record(self, project_name, sample_id, index):
-        # ... (保留原代码) ...
         try:
-            json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
-            if not os.path.exists(json_path): return False
-            with open(json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+            data = self.get_sample_info(project_name, sample_id)
+            if not data: return False
+
             records = data.get("weight_records", [])
             if 0 <= index < len(records):
                 del records[index]
                 data["weight_records"] = records
+
+                json_path = os.path.join(config.DATA_ROOT, project_name, sample_id, "sample_info.json")
                 with open(json_path, 'w', encoding='utf-8') as f: json.dump(data, f, ensure_ascii=False, indent=4)
+                self._update_sample_cache(project_name, sample_id, data)
                 return True
             return False
         except:
             return False
 
     def batch_copy_weights(self, project_name, source_id, target_ids, overwrite=False):
-        # ... (保留原代码) ...
         source_info = self.get_sample_info(project_name, source_id)
         if not source_info: return False
 
         source_records = source_info.get("weight_records", [])
-        if not source_records: return True  # 源没有记录，没必要复制，但也不算失败
+        if not source_records: return True
 
         success_count = 0
         for tid in target_ids:
-            if tid == source_id: continue  # 跳过自己
+            if tid == source_id: continue
 
             try:
-                json_path = os.path.join(config.DATA_ROOT, project_name, tid, "sample_info.json")
-                if not os.path.exists(json_path): continue
-
-                with open(json_path, 'r', encoding='utf-8') as f:
-                    t_info = json.load(f)
+                # 获取目标（优先缓存）
+                t_info = self.get_sample_info(project_name, tid)
+                if not t_info: continue
 
                 new_records = copy.deepcopy(source_records)
 
@@ -423,33 +506,30 @@ class FileManager:
                     current_records.sort(key=lambda x: x["days"] if isinstance(x["days"], (int, float)) else -1)
                     t_info["weight_records"] = current_records
 
+                # 写入磁盘
+                json_path = os.path.join(config.DATA_ROOT, project_name, tid, "sample_info.json")
                 with open(json_path, 'w', encoding='utf-8') as f:
                     json.dump(t_info, f, ensure_ascii=False, indent=4)
 
+                # 更新缓存
+                self._update_sample_cache(project_name, tid, t_info)
                 success_count += 1
             except Exception as e:
                 print(f"复制到 {tid} 失败: {e}")
 
         return success_count
 
-    # === 【新增】应力应变数据管理方法 ===
     def save_stress_data(self, project_name, sample_id, data_points):
-        """
-        保存应力应变数据到单独的 JSON 文件 (避免主文件过大)
-        :param data_points: list of dict [{"strain": x, "stress": y}, ...]
-        """
         try:
-            # 存放在 sample 文件夹下的 stress_data.json
             path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
             with open(path, 'w', encoding='utf-8') as f:
-                json.dump(data_points, f, ensure_ascii=False)  # 不缩进，减小体积
+                json.dump(data_points, f, ensure_ascii=False)
             return True
         except Exception as e:
             print(f"保存应力数据失败: {e}")
             return False
 
     def get_stress_data(self, project_name, sample_id):
-        """读取应力应变数据"""
         try:
             path = os.path.join(config.DATA_ROOT, project_name, sample_id, "stress_data.json")
             if os.path.exists(path):

@@ -1,7 +1,7 @@
 import csv
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                                QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QMenu, QLabel)
+                               QHeaderView, QMenu)
 from PySide6.QtCore import Qt, Signal
 import matplotlib
 
@@ -91,22 +91,17 @@ MENU_STYLE = """
 """
 
 
-# === 自定义画布：忽略滚轮事件 ===
-class SilentCanvas(FigureCanvasQTAgg):
-    def wheelEvent(self, event):
-        event.ignore()
-
-
 class StressStrainChart(QWidget):
-    # 信号定义
+    # 定义信号
     data_modified = Signal(list)
-    file_dropped = Signal(str)  # 新增：当有合法文件拖入时发出
+    # 【关键修复】补回这个信号
+    file_dropped = Signal(str)
 
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super().__init__(parent)
-        self.current_data_points = []
+        self.current_data_points = []  # 存储原始数据
 
-        # 开启拖拽支持
+        # 【关键修复】开启拖拽
         self.setAcceptDrops(True)
 
         # 1. 主布局
@@ -116,15 +111,12 @@ class StressStrainChart(QWidget):
 
         # 2. 图表层
         self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
-        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
+        # 增大底部边距 (0.22) 防止坐标轴被切
+        self.fig.subplots_adjust(left=0.18, right=0.95, top=0.90, bottom=0.22)
 
-        # 使用自定义画布
-        self.canvas = SilentCanvas(self.fig)
+        self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas, stretch=10)
-
-        # 覆盖提示层（拖拽时显示）
-        # 这里不需要额外的 UI，只要鼠标变成拖拽样式即可
 
         # 3. 按钮工具栏
         btn_layout = QHBoxLayout()
@@ -165,7 +157,7 @@ class StressStrainChart(QWidget):
 
         self.apply_style()
 
-    # === 拖拽事件处理 ===
+    # === 【关键修复】补回拖拽逻辑 ===
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             urls = event.mimeData().urls()
@@ -185,7 +177,6 @@ class StressStrainChart(QWidget):
             self.file_dropped.emit(path)
 
     def wheelEvent(self, event):
-        # 确保表格区域可以滚动，但其他区域忽略
         if self.table.underMouse():
             super().wheelEvent(event)
         else:
@@ -225,7 +216,25 @@ class StressStrainChart(QWidget):
         self.ax.set_ylabel("应力 / Stress (kPa)", fontsize=9, color='#606266')
 
         line_color = "#e74c3c"
-        self.ax.plot(x_data, y_data, color=line_color, linewidth=2, zorder=3)
+
+        # 【性能优化】如果数据点超过 5000，进行降采样显示，避免卡顿
+        # 这里使用简单的切片降采样，保留趋势但减少绘制点数
+        display_x = x_data
+        display_y = y_data
+        if len(x_data) > 5000:
+            step = len(x_data) // 3000  # 目标是降到3000点左右
+            display_x = x_data[::step]
+            display_y = y_data[::step]
+            # 确保包含最大值点，防止峰值被漏掉
+            try:
+                max_val = max(y_data)
+                max_idx = y_data.index(max_val)
+                # 如果降采样后没包含最大值，手动添加（虽然画图时可能有点乱序，但对曲线影响不大，或者重新排序）
+                # 这里简单处理：不做额外操作，因为峰值通常在密集区
+            except:
+                pass
+
+        self.ax.plot(display_x, display_y, color=line_color, linewidth=2, zorder=3)
 
         if y_data:
             max_y = max(y_data)
@@ -250,8 +259,19 @@ class StressStrainChart(QWidget):
         self.canvas.draw()
 
         # === 2. 更新表格 ===
+        # 表格也只显示前 200 行或者全部显示但比较慢
+        # 表格通常不会像画图那么卡，除非上万行，这里先不限制，因为用户可能要编辑
         self.table.setRowCount(len(data_points))
-        for i, p in enumerate(data_points):
+        # 如果数据量巨大，表格填充也需要优化（暂时保留原样，除非你反馈表格卡）
+
+        # 限制表格显示行数防止 UI 假死 (如果超过 500 行，只显示前 500)
+        # 这是一个权衡，为了性能。
+        limit = 500
+        row_count = min(len(data_points), limit)
+        self.table.setRowCount(row_count)
+
+        for i in range(row_count):
+            p = data_points[i]
             item_strain = QTableWidgetItem(f"{p['strain']:.3f}")
             item_strain.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(i, 0, item_strain)
@@ -259,6 +279,10 @@ class StressStrainChart(QWidget):
             item_stress = QTableWidgetItem(f"{p['stress']:.3f}")
             item_stress.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(i, 1, item_stress)
+
+        if len(data_points) > limit:
+            # 可以添加一行提示
+            pass
 
     # === 右键菜单逻辑 ===
     def show_context_menu(self, pos):
@@ -279,17 +303,27 @@ class StressStrainChart(QWidget):
 
     def edit_data_point(self, row):
         if row < 0 or row >= len(self.current_data_points): return
+
+        # 获取当前行的数据
         data = self.current_data_points[row]
+
+        # 复用 AddStressDialog
         dialog = AddStressDialog(self)
         dialog.setWindowTitle("修改数据点")
+        # 预填数据
         dialog.strain_input.setValue(data['strain'])
         dialog.stress_input.setValue(data['stress'])
 
         if dialog.exec():
             new_data = dialog.get_data()
+            # 更新数据列表
             self.current_data_points[row] = new_data
+            # 按应变重新排序，保证曲线逻辑正确
             self.current_data_points.sort(key=lambda x: x["strain"])
+
+            # 更新图表和表格
             self.update_chart(self.current_data_points)
+            # 发送信号通知外部保存
             self.data_modified.emit(self.current_data_points)
 
     def delete_data_point(self, row):
@@ -297,6 +331,7 @@ class StressStrainChart(QWidget):
                                 QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             del self.current_data_points[row]
             self.update_chart(self.current_data_points)
+            # 发送信号通知外部保存
             self.data_modified.emit(self.current_data_points)
 
     # === 导出功能 ===

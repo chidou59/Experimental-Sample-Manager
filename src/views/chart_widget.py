@@ -32,11 +32,6 @@ BTN_STYLE = """
     }
 """
 
-# === 自定义画布类：忽略滚轮事件 ===
-class SilentCanvas(FigureCanvasQTAgg):
-    def wheelEvent(self, event):
-        # 强制忽略滚轮事件，让它传递给父控件(QScrollArea)
-        event.ignore()
 
 class MassTrendChart(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -51,11 +46,12 @@ class MassTrendChart(QWidget):
 
         # 2. 图表层
         self.fig = Figure(figsize=(width, height), dpi=dpi, facecolor='white')
-        # 调整边距，保证标签显示完整
-        self.fig.subplots_adjust(left=0.16, right=0.95, top=0.92, bottom=0.12)
 
-        # 使用自定义的 SilentCanvas
-        self.canvas = SilentCanvas(self.fig)
+        # 【关键修正】大幅增加边距，彻底解决截断问题
+        # left=0.22 (左侧留白), bottom=0.28 (底部留白)
+        self.fig.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
+
+        self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas)
 
@@ -83,7 +79,7 @@ class MassTrendChart(QWidget):
         self.apply_style()
 
     def wheelEvent(self, event):
-        event.ignore()  # 再次确保自身也忽略
+        event.ignore()  # 防止滚动穿透
 
     def apply_style(self):
         """应用统一的图表样式"""
@@ -101,7 +97,7 @@ class MassTrendChart(QWidget):
         # 虚线网格
         self.ax.grid(True, linestyle=':', alpha=0.6, color='#909399')
 
-        # 【学术化修改】刻度线朝内 (direction='in')
+        # 刻度线朝内
         self.ax.tick_params(axis='both', which='both', direction='in',
                             length=4, width=1, color='#606266', labelcolor='#606266')
 

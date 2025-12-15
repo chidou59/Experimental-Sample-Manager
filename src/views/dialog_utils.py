@@ -7,7 +7,7 @@ SAMPLE_ICONS = [
     "🌡️", "🔬", "🧊", "🏺", "📊", "📦"
 ]
 
-# === 基础弹窗样式 ===
+# === 基础弹窗样式 (新增了滚动条样式) ===
 DIALOG_STYLES = """
     QDialog { background-color: #ffffff; }
     QLabel { color: #2c3e50; font-size: 14px; font-weight: 600; font-family: "Microsoft YaHei"; }
@@ -39,6 +39,26 @@ DIALOG_STYLES = """
         selection-color: #3498db;
         outline: none;
         padding: 4px;
+    }
+
+    /* === 【修复】滚动条美化 (解决黑色阴影问题) === */
+    QScrollBar:vertical {
+        border: none;
+        background: #f9f9f9; /* 与输入框背景一致 */
+        width: 8px;
+        margin: 0px;
+        border-radius: 4px;
+    }
+    QScrollBar::handle:vertical {
+        background: #dcdfe6;
+        min-height: 20px;
+        border-radius: 4px;
+    }
+    QScrollBar::handle:vertical:hover {
+        background: #c0c4cc;
+    }
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+        height: 0px; /* 隐藏上下箭头 */
     }
 """
 
