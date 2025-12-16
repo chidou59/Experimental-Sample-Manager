@@ -4,14 +4,16 @@ import sys
 
 # 1. 基础路径 (智能判断是 源代码环境 还是 EXE环境)
 if getattr(sys, 'frozen', False):
-    BASE_DIR = os.path.dirname(sys.executable)
+    # 【核心修改】
+    # 如果是打包后的 EXE，PyInstaller 会把资源解压到 sys._MEIPASS 指向的临时目录
+    # 我们必须把 BASE_DIR 指向这里，才能找到 assets 文件夹
+    BASE_DIR = sys._MEIPASS
 else:
+    # 如果是源代码运行，就指向当前文件所在的目录
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # -------------------------------------------------------------
-# 【核心修改】将配置文件的存储位置改为“用户主目录”，而不是EXE旁边
-# 这样无论 EXE 搬到哪里，配置都不会丢！
-# Windows 路径示例: C:\Users\YourName\.sample_manager_config\app_settings.json
+# 用户的个人配置数据（不随代码变动，存在用户主目录）
 # -------------------------------------------------------------
 USER_HOME = os.path.expanduser("~")
 CONFIG_DIR = os.path.join(USER_HOME, ".sample_manager_config")

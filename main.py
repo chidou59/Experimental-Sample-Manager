@@ -8,6 +8,8 @@ from PySide6.QtCore import Qt
 import config
 from src.views.main_window import MainWindow
 from src.views.splash_screen import ModernSplashScreen
+# 引入 FileManager 以便生成数据
+from src.controllers.file_manager import FileManager
 
 # === 全局样式表 (QSS) ===
 GLOBAL_STYLES = """
@@ -16,6 +18,15 @@ QWidget {
     font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
     font-size: 14px;
     color: #333;
+}
+
+/* 修复弹窗字体看不清的问题：强制背景为白色，标签字体为深色 */
+QMessageBox {
+    background-color: #ffffff;
+}
+QMessageBox QLabel {
+    color: #333333;
+    background-color: transparent;
 }
 
 /* 主窗口背景 */
@@ -139,6 +150,18 @@ def main():
 
         if selected_path:
             config.save_settings(selected_path)
+
+            # --- ✨ 新增逻辑：第一次设置路径后，生成演示数据 ---
+            try:
+                # 此时 config.DATA_ROOT 已经被 save_settings 更新了，可以初始化 FileManager
+                manager = FileManager()
+                if manager.generate_demo_data():
+                    QMessageBox.information(None, "准备就绪",
+                                            "🎉 已为您自动生成了一个[示例项目]！\n\n包含了典型的 MICP 实验数据（质量记录、应力应变曲线）。\n快去看看吧！")
+            except Exception as e:
+                print(f"生成演示数据失败: {e}")
+            # --- 结束新增逻辑 ---
+
             splash.show()
         else:
             sys.exit(0)

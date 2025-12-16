@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import copy
+import random  # 新增引用，用于生成随机演示数据
 from datetime import datetime
 import config
 from src.utils.image_helper import ImageHelper
@@ -538,3 +539,123 @@ class FileManager:
             return []
         except:
             return []
+
+    # =========================================================================
+    # ✨✨✨ 新增：生成演示数据功能 ✨✨✨
+    # =========================================================================
+    def generate_demo_data(self):
+        """
+        在当前数据根目录下生成一个示例项目，包含几个典型的 MICP 实验试样。
+        方便用户首次安装后快速理解软件功能。
+        """
+        demo_project_name = "示例项目_MICP固化实验"
+
+        # 如果示例项目已存在，则不再生成，防止重复覆盖用户数据
+        if os.path.exists(os.path.join(config.DATA_ROOT, demo_project_name)):
+            return False
+
+        print("🚀 正在生成示例数据...")
+
+        # 1. 创建项目
+        self.create_project(demo_project_name,
+                            "本示例展示了不同钙源浓度对砂柱固化效果的影响 (0M, 0.5M, 1.0M)。请尝试勾选这三个试样进行[对比分析]。")
+
+        # 2. 定义三组对比数据
+        # 基础配置：圆柱体砂柱，直径50mm，高100mm，初始干重约300g
+        base_info = {
+            "initial_mass": 300.0,
+            "shape": "圆柱体 (Cylinder)",
+            "radius": 25, "height": 100,
+            "date_prep": "2024-05-01-09:00",
+            "date_complete": "2024-05-14-18:00",
+            "date_demold": "2024-05-15-10:00",
+            "date_test": "2024-05-16-14:00"
+        }
+
+        # --- 试样 A (Control): 0M 浓度 (无处理) ---
+        self._create_demo_sample(
+            demo_project_name, "A-Control-0M",
+            base_info,
+            conc=0.0,
+            mass_gain_ratio=0.005,  # 几乎无增长
+            peak_stress=50.0,  # 强度极低 (松散砂)
+            icon="🧱"
+        )
+
+        # --- 试样 B (0.5M): 中等浓度 ---
+        self._create_demo_sample(
+            demo_project_name, "B-Treated-0.5M",
+            base_info,
+            conc=0.5,
+            mass_gain_ratio=0.045,  # 增长 4.5%
+            peak_stress=850.0,  # 强度中等
+            icon="🧪"
+        )
+
+        # --- 试样 C (1.0M): 高浓度 ---
+        self._create_demo_sample(
+            demo_project_name, "C-Treated-1.0M",
+            base_info,
+            conc=1.0,
+            mass_gain_ratio=0.082,  # 增长 8.2%
+            peak_stress=1600.0,  # 强度高
+            icon="💎"
+        )
+
+        return True
+
+    def _create_demo_sample(self, p_name, s_id, base_info, conc, mass_gain_ratio, peak_stress, icon):
+        """辅助函数：生成单个演示试样的所有数据"""
+        info = base_info.copy()
+        info["recipe"] = f"胶结液浓度: {conc} M, 菌液OD600=1.0, 灌注轮数=14"
+        info["key_variable_name"] = "浓度(M)"
+        info["key_variable"] = conc
+        info["icon_emoji"] = icon
+
+        # 1. 创建试样
+        self.create_sample(p_name, s_id, info)
+
+        # 2. 生成质量记录 (模拟14天的增长)
+        init_m = info["initial_mass"]
+        final_m = init_m * (1 + mass_gain_ratio)
+
+        # 模拟 7 次称重 (每2天一次)
+        for day in range(0, 15, 2):
+            # 使用 S 型曲线模拟增长 (Sigmoid-like) 或简单的线性+随机波动
+            # 这里简单用线性插值 + 一点点随机
+            progress = day / 14.0
+            current_mass = init_m + (final_m - init_m) * progress
+            # 加一点随机噪点 (+/- 0.2g)
+            current_mass += random.uniform(-0.1, 0.1)
+
+            # 日期字符串模拟
+            date_str = f"2024-05-{1 + day:02d}-10:00"
+            self.add_weight_record(p_name, s_id, {"date": date_str, "mass": round(current_mass, 2), "days": day})
+
+        # 3. 生成应力应变曲线 (模拟 UCS 曲线)
+        # 使用简单的抛物线/软化模型模拟
+        stress_data = []
+        peak_strain = 1.5 + conc * 0.5  # 浓度越高，峰值应变稍微延后一点
+
+        # 生成 0 ~ 4% 应变的数据点
+        for i in range(41):
+            strain = i * 0.1
+            if strain <= 0:
+                stress = 0
+            else:
+                # 简易模型: y = peak * (2*(x/x0) - (x/x0)^2)  (抛物线直到峰值)
+                # 峰值后软化
+                rel_x = strain / peak_strain
+                if rel_x <= 1:
+                    stress = peak_stress * (2 * rel_x - rel_x ** 2)
+                else:
+                    # 软化阶段
+                    stress = peak_stress * (1 - 0.3 * (rel_x - 1))  # 缓慢下降
+
+            # 加一点随机噪音
+            stress += random.uniform(-5, 5)
+            if stress < 0: stress = 0
+
+            stress_data.append({"strain": round(strain, 2), "stress": round(stress, 2)})
+
+        self.save_stress_data(p_name, s_id, stress_data)
