@@ -4467,7 +4467,7 @@ class MainWindow(QMainWindow):
         # 缓存图标，避免重复生成 QIcon 导致卡顿
         self.icon_cache = {}
 
-        self.setWindowTitle(" 试样记录管理中心 v.2.1")
+        self.setWindowTitle(" 试样记录管理中心 v.2.4")
 
         # --- 屏幕自适应 ---
         screen = QGuiApplication.primaryScreen()
@@ -5670,7 +5670,7 @@ class ModernSplashScreen(QSplashScreen):
         font_sub = QFont("Microsoft YaHei", 12)
         painter.setFont(font_sub)
         painter.setPen(QColor("#ecf0f1"))
-        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v.2.1")
+        painter.drawText(QRect(0, 210, 600, 30), Qt.AlignCenter, "Experimental Sample Manager v.2.4")
 
         painter.end()
 

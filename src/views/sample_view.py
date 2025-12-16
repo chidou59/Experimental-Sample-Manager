@@ -12,7 +12,6 @@ from src.views.dialogs import AddWeightDialog, EditSampleDialog, AddStressDialog
 from src.views.chart_widget import MassTrendChart
 from src.views.stress_chart import StressStrainChart
 from src.utils.data_importer import DataImporter
-from src.utils.template_manager import TemplateManager
 
 # === 样式常量 ===
 CARD_STYLE = """
@@ -202,16 +201,14 @@ class SampleDetailView(QWidget):
         self.main_layout = QGridLayout(self.content_widget)
         self.main_layout.setContentsMargins(10, 10, 10, 10)
         self.main_layout.setSpacing(15)
-        # 列宽均分 (两列)
         self.main_layout.setColumnStretch(0, 1)
         self.main_layout.setColumnStretch(1, 1)
-        # 顶部对齐
         self.main_layout.setAlignment(Qt.AlignTop)
 
         self.scroll_area.setWidget(self.content_widget)
         self.outer_layout.addWidget(self.scroll_area)
 
-        # 初始化模块
+        # 初始化各个模块
         self._init_header_section()
         self._init_mass_section()
         self._init_stress_section()
@@ -219,7 +216,6 @@ class SampleDetailView(QWidget):
         self._init_welcome_section()
 
         self.outer_layout.addWidget(self.welcome_container)
-
         self.show_welcome()
 
     def _init_header_section(self):
@@ -229,11 +225,8 @@ class SampleDetailView(QWidget):
         self.emoji_label = QLabel("🧪");
         self.emoji_label.setStyleSheet("font-size: 32px; margin-right: 10px;")
 
-        # 1. 信息区：标题 + 尺寸 + 动态属性 + 备注
         info_layout = QVBoxLayout();
         info_layout.setSpacing(4)
-
-        # 第一行：标题 + 形状/尺寸 Label
         title_line = QHBoxLayout();
         title_line.setSpacing(8)
         self.title_label = QLabel("未选择");
@@ -244,44 +237,38 @@ class SampleDetailView(QWidget):
         title_line.addWidget(self.title_label);
         title_line.addWidget(self.shape_label);
         title_line.addStretch()
+
+        self.recipe_label = QLabel("配方: -");
+        self.recipe_label.setStyleSheet("color: #606266; font-size: 12px;")
+        self.key_var_label = QLabel("关键变量: -");
+        self.key_var_label.setStyleSheet("color: #e67e22; font-size: 12px; font-weight: bold;")
+        self.desc_label = QLabel("备注: -");
+        self.desc_label.setStyleSheet("color: #909399; font-size: 11px; font-style: italic;")
+
         info_layout.addLayout(title_line)
-
-        # 动态属性容器
-        self.dynamic_attr_container = QWidget()
-        self.dynamic_attr_layout = QVBoxLayout(self.dynamic_attr_container)
-        self.dynamic_attr_layout.setContentsMargins(0, 0, 0, 0);
-        self.dynamic_attr_layout.setSpacing(2)
-        info_layout.addWidget(self.dynamic_attr_container)
-
-        # 备注显示
-        self.desc_label = QLabel("备注: -")
-        self.desc_label.setStyleSheet("color: #909399; font-size: 11px; font-style: italic; margin-top: 4px;")
-        self.desc_label.setWordWrap(True)
+        info_layout.addWidget(self.recipe_label)
+        info_layout.addWidget(self.key_var_label)
         info_layout.addWidget(self.desc_label)
 
         h_layout.addWidget(self.emoji_label)
-        h_layout.addLayout(info_layout, 1)  # 左侧信息占 1 份
+        h_layout.addLayout(info_layout, 1)
 
-        # 2. 右侧：时间生命周期图 (恢复功能)
+        # 全生命周期图
         self.time_container = QWidget()
         time_layout = QHBoxLayout(self.time_container)
-        time_layout.setSpacing(2)
-        time_layout.setContentsMargins(10, 0, 0, 0)  # 左边留点空隙
-
+        time_layout.setSpacing(2);
+        time_layout.setContentsMargins(10, 0, 0, 0)
         self.lbl_prep = self._create_mini_time_box("制样", "#909399")
         self.lbl_comp = self._create_mini_time_box("完成", "#3498db")
         self.lbl_demold = self._create_mini_time_box("拆模", "#9b59b6")
         self.lbl_test = self._create_mini_time_box("测试", "#67c23a")
-
-        time_layout.addWidget(self.lbl_prep)
+        time_layout.addWidget(self.lbl_prep);
         time_layout.addWidget(self._create_arrow())
-        time_layout.addWidget(self.lbl_comp)
+        time_layout.addWidget(self.lbl_comp);
         time_layout.addWidget(self._create_arrow())
-        time_layout.addWidget(self.lbl_demold)
+        time_layout.addWidget(self.lbl_demold);
         time_layout.addWidget(self._create_arrow())
         time_layout.addWidget(self.lbl_test)
-
-        # 让时间容器靠右对齐
         h_layout.addWidget(self.time_container, 0, Qt.AlignRight | Qt.AlignTop)
 
         self.edit_btn = QPushButton("✎ 修改")
@@ -293,23 +280,15 @@ class SampleDetailView(QWidget):
         container.setLayout(h_layout)
         self.header_card.content_layout.addWidget(container)
 
-    # === 辅助方法：创建时间盒子 ===
     def _create_mini_time_box(self, title, color):
         lbl = QLabel(f"{title}\n-")
         lbl.setAlignment(Qt.AlignCenter)
-        lbl.setStyleSheet(f"""
-            QLabel {{
-                font-size: 10px; font-weight: bold; color: {color}; 
-                border: 1px solid {color}; border-radius: 4px; padding: 2px 4px;
-                background-color: #ffffff;
-                font-family: "Microsoft YaHei";
-                min-width: 36px;
-            }}
-        """)
+        lbl.setStyleSheet(
+            f"QLabel {{ font-size: 10px; font-weight: bold; color: {color}; border: 1px solid {color}; border-radius: 4px; padding: 2px 4px; background-color: #ffffff; font-family: 'Microsoft YaHei'; min-width: 36px; }}")
         return lbl
 
     def _create_arrow(self):
-        l = QLabel("›")
+        l = QLabel("›");
         l.setStyleSheet("color: #dcdfe6; font-size: 16px; font-weight: bold; margin-bottom: 2px;")
         return l
 
@@ -389,33 +368,22 @@ class SampleDetailView(QWidget):
         l = QVBoxLayout(self.welcome_container)
         l.setAlignment(Qt.AlignCenter)
         l.setSpacing(20)
-
         l.addStretch()
-
-        icon_lbl = QLabel("🔬")
-        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_lbl = QLabel("🔬");
+        icon_lbl.setAlignment(Qt.AlignCenter);
         icon_lbl.setStyleSheet("font-size: 80px; font-family: 'Segoe UI Emoji'; background: transparent;")
         l.addWidget(icon_lbl)
-
-        title_lbl = QLabel("欢迎使用试样记录管理中心")
-        title_lbl.setAlignment(Qt.AlignCenter)
+        title_lbl = QLabel("欢迎使用试样记录管理中心");
+        title_lbl.setAlignment(Qt.AlignCenter);
         title_lbl.setStyleSheet(
             "font-size: 24px; font-weight: bold; color: #2c3e50; font-family: 'Microsoft YaHei'; background: transparent;")
         l.addWidget(title_lbl)
-
-        guide_text = """
-        <div style='color: #7f8c8d; font-size: 14px; line-height: 1.5;'>
-            <p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p>
-            <p>📊 <b>功能亮点：</b>支持 UCS 数据导入、质量变化追踪及附件管理。</p>
-            <p>💡 <b>提示：</b>右键点击列表项可进行更多操作。</p>
-        </div>
-        """
-        guide_lbl = QLabel(guide_text)
-        guide_lbl.setAlignment(Qt.AlignCenter)
-        guide_lbl.setTextFormat(Qt.RichText)
+        guide_text = """<div style='color: #7f8c8d; font-size: 14px; line-height: 1.5;'><p>👈 <b>开始工作：</b>请在左侧点击“新建项目”或选择已有试样。</p><p>📊 <b>功能亮点：</b>支持 UCS 数据导入、质量变化追踪及附件管理。</p><p>💡 <b>提示：</b>右键点击列表项可进行更多操作。</p></div>"""
+        guide_lbl = QLabel(guide_text);
+        guide_lbl.setAlignment(Qt.AlignCenter);
+        guide_lbl.setTextFormat(Qt.RichText);
         guide_lbl.setStyleSheet("background: transparent;")
         l.addWidget(guide_lbl)
-
         l.addStretch()
 
     def show_welcome(self, message=None):
@@ -426,7 +394,6 @@ class SampleDetailView(QWidget):
     def load_sample(self, project_name, sample_id):
         self.welcome_container.hide()
         self.scroll_area.show()
-
         self.current_project = project_name
         self.current_sample = sample_id
 
@@ -434,50 +401,43 @@ class SampleDetailView(QWidget):
         self.current_info = info
         if not info: return
 
-        template_id = info.get("template_id", "micp_sand")
-        template_config = TemplateManager.get_template(template_id)
-
+        # 重新布局
         while self.main_layout.count():
             item = self.main_layout.takeAt(0)
-            if item.widget():
-                item.widget().setParent(None)
+            if item.widget(): item.widget().setParent(None)
 
+        # Header (Row 0, Col 0, 1x2)
         self.main_layout.addWidget(self.header_card, 0, 0, 1, 2)
         self.header_card.show()
 
-        cards_to_show = template_config.get("cards", [])
+        # Mass (Row 1, Col 0)
+        self.main_layout.addWidget(self.mass_card, 1, 0)
+        self.mass_card.show()
+        self._update_mass_content(info)
 
-        active_cards = []
-        if "mass_card" in cards_to_show:
-            self._update_mass_content(info)
-            self.mass_card.show()
-            active_cards.append(self.mass_card)
-        if "stress_card" in cards_to_show:
-            self._update_stress_content(info)
-            self.stress_card.show()
-            active_cards.append(self.stress_card)
+        # Stress (Row 1, Col 1)
+        self.main_layout.addWidget(self.stress_card, 1, 1)
+        self.stress_card.show()
+        self._update_stress_content(info)
 
-        curr_row = 1
-        curr_col = 0
-        for card in active_cards:
-            self.main_layout.addWidget(card, curr_row, curr_col)
-            curr_col += 1
-            if curr_col > 1:
-                curr_col = 0
-                curr_row += 1
+        # Gallery (Row 2, Col 0, 1x2)
+        self.main_layout.addWidget(self.gallery_card, 2, 0, 1, 2)
+        self.gallery_card.show()
+        self.refresh_gallery()
 
-        if curr_col == 1:
-            curr_row += 1
-
-        if "gallery_card" in cards_to_show:
-            self.main_layout.addWidget(self.gallery_card, curr_row, 0, 1, 2)
-            self.gallery_card.show()
-            self.refresh_gallery()
-
+        # 填充 Header
         self.emoji_label.setText(info.get("icon_emoji", "🧪"))
         self.title_label.setText(info.get('id'))
+        self.recipe_label.setText(f"配方: {info.get('recipe', '-')}")
 
-        # 1. 恢复尺寸显示
+        k_name = info.get("key_variable_name", "关键变量")
+        k_val = info.get("key_variable", "-")
+        self.key_var_label.setText(f"🔑 {k_name}: {k_val}")
+
+        desc = info.get("description", "")
+        self.desc_label.setText(f"备注: {desc}")
+
+        # 尺寸
         shape = info.get("shape", "未指定")
         dims = []
         if "圆柱" in shape:
@@ -489,57 +449,19 @@ class SampleDetailView(QWidget):
 
         if dims:
             self.shape_label.setText(f"{shape} | {', '.join(dims)}")
-            self.shape_label.show()
         else:
             self.shape_label.setText(shape)
-            self.shape_label.show()
 
-        # 2. 恢复备注显示
-        desc = info.get("description", "")
-        if desc:
-            self.desc_label.setText(f"备注: {desc}")
-            self.desc_label.show()
-        else:
-            self.desc_label.hide()
+        # 时间轴
+        def set_t(lbl, v):
+            s = v.replace("-", "/").split(" ")[0] if (v and v != "-") else "-"
+            t = lbl.text().splitlines()[0]
+            lbl.setText(f"{t}\n{s}")
 
-        # 3. 恢复全生命周期时间图
-        def set_time_box(lbl, val):
-            short = val.replace("-", "/").split(" ")[0] if (val and val != "-") else "-"
-            title = lbl.text().splitlines()[0]
-            lbl.setText(f"{title}\n{short}")
-
-        set_time_box(self.lbl_prep, info.get('date_prep', '-'))
-        set_time_box(self.lbl_comp, info.get('date_complete', '-'))  # 完成字段在 dialog 中删了，如果旧数据有就显示，没有就 -
-        # 注意：现在 dialog 只有 prep 和 test，所以 comp 和 demold 可能没数据，正常显示 "-" 即可
-        set_time_box(self.lbl_demold, info.get('date_demold', '-'))
-        set_time_box(self.lbl_test, info.get('date_test', '-'))
-
-        # 动态属性显示
-        while self.dynamic_attr_layout.count():
-            item = self.dynamic_attr_layout.takeAt(0)
-            if item.widget(): item.widget().deleteLater()
-
-        attributes = info.get("attributes", {})
-        config_attrs = template_config.get("attributes", [])
-
-        for attr_def in config_attrs:
-            key = attr_def["key"]
-            label = attr_def["label"]
-            val = attributes.get(key, "-")
-            unit = attr_def.get("unit", "")
-
-            row_widget = QWidget()
-            row_l = QHBoxLayout(row_widget);
-            row_l.setContentsMargins(0, 0, 0, 0);
-            row_l.setSpacing(5)
-            name_lbl = QLabel(f"{label}:")
-            name_lbl.setStyleSheet("color: #909399; font-size: 12px;")
-            val_lbl = QLabel(f"{val} {unit}")
-            val_lbl.setStyleSheet("color: #303133; font-size: 12px; font-weight: bold;")
-            row_l.addWidget(name_lbl);
-            row_l.addWidget(val_lbl);
-            row_l.addStretch()
-            self.dynamic_attr_layout.addWidget(row_widget)
+        set_t(self.lbl_prep, info.get('date_prep', '-'))
+        set_t(self.lbl_comp, info.get('date_complete', '-'))
+        set_t(self.lbl_demold, info.get('date_demold', '-'))
+        set_t(self.lbl_test, info.get('date_test', '-'))
 
     def _update_mass_content(self, info):
         init_mass = float(info.get("initial_mass", 0))

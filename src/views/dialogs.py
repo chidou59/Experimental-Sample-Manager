@@ -8,38 +8,29 @@ from PySide6.QtGui import QFont
 import json
 
 from src.views.dialog_utils import (SAMPLE_ICONS, apply_dialog_theme, create_datetime_edit)
-from src.utils.template_manager import TemplateManager
 
 
 class NewSampleDialog(QDialog):
-    def __init__(self, parent=None, template_id="micp_sand", template_data=None):
-        """
-        :param template_id: 从项目继承来的模板ID
-        :param template_data: 如果是"复制新建"，这里传入源数据
-        """
+    def __init__(self, parent=None, template_data=None):
         super().__init__(parent)
         self.setWindowTitle("新建试样")
         if template_data:
             self.setWindowTitle("新建试样 (复制自 " + str(template_data.get('id', '')) + ")")
 
-        # 调整窗口大小
         self.resize(550, 750)
-        self.template_id = template_id
 
         # === 主布局 (垂直) ===
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        # === 1. 滚动区域 (Scroll Area) ===
+        # === 1. 滚动区域 ===
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        # 滚动区的内容容器
         self.content_widget = QWidget()
-        # 强制白色背景，圆角，防止黑色背景问题
         self.content_widget.setStyleSheet("""
             QWidget { background-color: #ffffff; }
             QGroupBox { 
@@ -57,26 +48,18 @@ class NewSampleDialog(QDialog):
         self.scroll_area.setWidget(self.content_widget)
         self.main_layout.addWidget(self.scroll_area)
 
-        # === 2. 填充内容 ===
+        # === 2. 内容填充 ===
 
-        # --- Group 1: 基础信息 ---
+        # --- 基础信息 ---
         self.base_group = QGroupBox("基础信息")
         base_layout = QFormLayout(self.base_group)
         base_layout.setVerticalSpacing(12)
 
-        # 模板名称
-        t_config = TemplateManager.get_template(self.template_id)
-        t_name_lbl = QLabel(t_config.get("name", "未知模板"))
-        t_name_lbl.setStyleSheet("color: #409eff; font-weight: bold; font-size: 13px;")
-        base_layout.addRow("所属模板:", t_name_lbl)
-
-        # 编号
         self.id_input = QLineEdit()
-        self.id_input.setPlaceholderText("例如: A1-Group1 (必填)")
+        self.id_input.setPlaceholderText("例如: A1-Ca0.5 (必填)")
         self.id_input.setStyleSheet("padding: 6px; border: 1px solid #ccc; border-radius: 4px;")
         base_layout.addRow("试样编号*:", self.id_input)
 
-        # 图标
         self.icon_combo = QComboBox()
         self.icon_combo.setView(QListView())
         self.icon_combo.addItems(SAMPLE_ICONS)
@@ -88,16 +71,7 @@ class NewSampleDialog(QDialog):
 
         self.form_layout.addWidget(self.base_group)
 
-        # --- Group 2: 动态属性 (根据模板) ---
-        self.attr_group = QGroupBox("材料属性")
-        self.attr_layout = QFormLayout(self.attr_group)
-        self.attr_layout.setVerticalSpacing(12)
-        self.form_layout.addWidget(self.attr_group)
-
-        self.dynamic_widgets = {}
-        self._init_attributes_ui()  # 动态生成输入框
-
-        # --- Group 3: 几何与质量 ---
+        # --- 几何与质量 ---
         self.geom_group = QGroupBox("几何与质量")
         geom_layout = QFormLayout(self.geom_group)
         geom_layout.setVerticalSpacing(12)
@@ -114,11 +88,9 @@ class NewSampleDialog(QDialog):
         self.shape_combo.setStyleSheet("padding: 4px;")
         geom_layout.addRow("形状:", self.shape_combo)
 
-        # 尺寸堆栈 (QStackedWidget)
         self.dim_stack = QStackedWidget()
-        self.dim_stack.addWidget(QWidget())  # Index 0: 空
+        self.dim_stack.addWidget(QWidget())
 
-        # Index 1: 圆柱
         page_cyl = QWidget();
         l_cyl = QFormLayout(page_cyl);
         l_cyl.setContentsMargins(0, 0, 0, 0)
@@ -132,7 +104,6 @@ class NewSampleDialog(QDialog):
         l_cyl.addRow("高度 (h):", self.cyl_h)
         self.dim_stack.addWidget(page_cyl)
 
-        # Index 2: 正方体
         page_cube = QWidget();
         l_cube = QFormLayout(page_cube);
         l_cube.setContentsMargins(0, 0, 0, 0)
@@ -142,7 +113,6 @@ class NewSampleDialog(QDialog):
         l_cube.addRow("边长 (a):", self.cube_a)
         self.dim_stack.addWidget(page_cube)
 
-        # Index 3: 长方体
         page_rect = QWidget();
         l_rect = QFormLayout(page_rect);
         l_rect.setContentsMargins(0, 0, 0, 0)
@@ -165,29 +135,55 @@ class NewSampleDialog(QDialog):
 
         self.form_layout.addWidget(self.geom_group)
 
-        # --- Group 4: 时间信息 ---
-        self.time_group = QGroupBox("时间轴")
+        # --- 实验详情 (恢复) ---
+        self.detail_group = QGroupBox("配方与变量")
+        detail_layout = QFormLayout(self.detail_group)
+        detail_layout.setVerticalSpacing(12)
+
+        self.recipe_input = QTextEdit()
+        self.recipe_input.setPlaceholderText("试样的配方...")
+        self.recipe_input.setMaximumHeight(60)
+        self.recipe_input.setStyleSheet("border: 1px solid #ccc; border-radius: 4px; padding: 5px;")
+        detail_layout.addRow("配方:", self.recipe_input)
+
+        # 关键变量
+        key_var_layout = QHBoxLayout()
+        self.key_var_name = QLineEdit()
+        self.key_var_name.setPlaceholderText("变量名(如:浓度)")
+        self.key_var_name.setFixedWidth(100)
+        self.key_var_input = QDoubleSpinBox()
+        self.key_var_input.setRange(-99999, 99999);
+        self.key_var_input.setDecimals(3)
+        key_var_layout.addWidget(self.key_var_name)
+        key_var_layout.addWidget(self.key_var_input)
+        detail_layout.addRow("关键变量:", key_var_layout)
+
+        self.form_layout.addWidget(self.detail_group)
+
+        # --- 时间与备注 ---
+        self.time_group = QGroupBox("时间与备注")
         time_layout = QFormLayout(self.time_group)
         time_layout.setVerticalSpacing(12)
 
         self.date_prep = create_datetime_edit()
+        self.date_complete = create_datetime_edit()
+        self.date_demold = create_datetime_edit()
         self.date_test = create_datetime_edit()
 
         time_layout.addRow("制样时间:", self.date_prep)
+        time_layout.addRow("完成时间:", self.date_complete)
+        time_layout.addRow("拆模时间:", self.date_demold)
         time_layout.addRow("测试时间:", self.date_test)
+
+        self.desc_input = QTextEdit()
+        self.desc_input.setPlaceholderText("实验笔记/备注...")
+        self.desc_input.setMaximumHeight(60)
+        self.desc_input.setStyleSheet("border: 1px solid #ccc; border-radius: 4px; padding: 5px;")
+        time_layout.addRow("备注:", self.desc_input)
+
         self.form_layout.addWidget(self.time_group)
 
-        # --- Group 5: 备注 (新增) ---
-        self.note_group = QGroupBox("备注 / Description")
-        note_layout = QVBoxLayout(self.note_group)
-        self.desc_input = QTextEdit()
-        self.desc_input.setPlaceholderText("在此填写配方详情、实验现象或其他备注...")
-        self.desc_input.setMaximumHeight(80)
-        self.desc_input.setStyleSheet("border: 1px solid #ccc; border-radius: 4px; padding: 5px;")
-        note_layout.addWidget(self.desc_input)
-        self.form_layout.addWidget(self.note_group)
-
-        # === 3. 底部按钮 (固定不滚动) ===
+        # === 3. 底部按钮 ===
         btn_container = QWidget()
         btn_container.setStyleSheet("background-color: #f5f5f5; border-top: 1px solid #ddd;")
         btn_layout = QHBoxLayout(btn_container)
@@ -196,9 +192,7 @@ class NewSampleDialog(QDialog):
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
-
-        # 美化按钮
-        self.buttons.button(QDialogButtonBox.Ok).setText("确定创建")
+        self.buttons.button(QDialogButtonBox.Ok).setText("确定")
         self.buttons.button(QDialogButtonBox.Cancel).setText("取消")
         apply_dialog_theme(self, self.buttons)
 
@@ -207,66 +201,24 @@ class NewSampleDialog(QDialog):
 
         self.main_layout.addWidget(btn_container)
 
-        # 如果是复制新建，回填数据
         if template_data:
             self.fill_from_template(template_data)
 
-    def _init_attributes_ui(self):
-        """根据传入的 template_id 初始化属性输入框"""
-        config = TemplateManager.get_template(self.template_id)
-        attrs = config.get("attributes", [])
-
-        if not attrs:
-            self.attr_group.hide()
-            return
-
-        for attr in attrs:
-            key = attr["key"]
-            label_text = attr["label"]
-            w_type = attr["type"]
-            unit = attr.get("unit", "")
-            default_val = attr.get("default")
-
-            widget = None
-            if w_type == "float" or w_type == "int":
-                widget = QDoubleSpinBox()
-                widget.setRange(-99999, 99999)
-                widget.setStyleSheet("padding: 4px;")
-                if w_type == "int":
-                    widget.setDecimals(0)
-                else:
-                    widget.setDecimals(2)
-                if unit: widget.setSuffix(f" {unit}")
-                if default_val is not None: widget.setValue(float(default_val))
-            else:
-                widget = QLineEdit()
-                widget.setStyleSheet("padding: 4px;")
-                if default_val: widget.setText(str(default_val))
-
-            self.attr_layout.addRow(f"{label_text}:", widget)
-            self.dynamic_widgets[key] = widget
-
     def get_data(self):
-        custom_attributes = {}
-        for key, widget in self.dynamic_widgets.items():
-            if isinstance(widget, QDoubleSpinBox):
-                custom_attributes[key] = widget.value()
-            elif isinstance(widget, QLineEdit):
-                custom_attributes[key] = widget.text().strip()
-
         data = {
             "id": self.id_input.text().strip(),
-            "template_id": self.template_id,
-            "attributes": custom_attributes,
             "initial_mass": self.mass_input.value(),
-            "shape": self.shape_combo.currentText(),
+            "recipe": self.recipe_input.toPlainText().strip(),
+            "key_variable": self.key_var_input.value(),
+            "key_variable_name": self.key_var_name.text().strip(),
             "icon_emoji": self.icon_combo.currentText(),
             "date_prep": self.date_prep.text(),
+            "date_complete": self.date_complete.text(),
+            "date_demold": self.date_demold.text(),
             "date_test": self.date_test.text(),
-            "description": self.desc_input.toPlainText().strip(),  # 保存备注
-            "recipe": json.dumps(custom_attributes, ensure_ascii=False)
+            "description": self.desc_input.toPlainText().strip(),
+            "shape": self.shape_combo.currentText()
         }
-
         s_idx = self.shape_combo.currentIndex()
         if s_idx == 1:
             data.update({"radius": self.cyl_r.value(), "height": self.cyl_h.value()})
@@ -274,32 +226,15 @@ class NewSampleDialog(QDialog):
             data.update({"side_length": self.cube_a.value()})
         elif s_idx == 3:
             data.update({"length": self.rect_l.value(), "width": self.rect_w.value(), "height": self.rect_h.value()})
-
         return data
 
     def fill_from_template(self, data):
-        """安全回填数据，防止崩溃"""
         try:
-            # 1. 基础
             self.id_input.setText(f"{data.get('id', '')}_copy")
             emoji = data.get("icon_emoji", "🧪")
             idx = self.icon_combo.findText(emoji)
             if idx >= 0: self.icon_combo.setCurrentIndex(idx)
 
-            # 2. 动态属性
-            attrs = data.get("attributes", {})
-            for key, val in attrs.items():
-                if key in self.dynamic_widgets:
-                    w = self.dynamic_widgets[key]
-                    if isinstance(w, QDoubleSpinBox):
-                        try:
-                            w.setValue(float(val))
-                        except:
-                            pass
-                    elif isinstance(w, QLineEdit):
-                        w.setText(str(val))
-
-            # 3. 质量与几何
             try:
                 self.mass_input.setValue(float(data.get("initial_mass", 0)))
             except:
@@ -334,16 +269,23 @@ class NewSampleDialog(QDialog):
             except:
                 pass
 
-            # 4. 时间
+            self.recipe_input.setPlainText(data.get("recipe", ""))
+            self.key_var_name.setText(data.get("key_variable_name", ""))
+            try:
+                self.key_var_input.setValue(float(data.get("key_variable", 0)))
+            except:
+                pass
+
             def set_time(w, t_str):
                 if not t_str or t_str == "-": return
                 dt = QDateTime.fromString(t_str, "yyyy-MM-dd-HH:00")
                 if dt.isValid(): w.setDateTime(dt)
 
             set_time(self.date_prep, data.get("date_prep"))
+            set_time(self.date_complete, data.get("date_complete"))
+            set_time(self.date_demold, data.get("date_demold"))
             set_time(self.date_test, data.get("date_test"))
 
-            # 5. 备注 (回填)
             self.desc_input.setPlainText(data.get("description", ""))
 
         except Exception as e:
@@ -352,67 +294,43 @@ class NewSampleDialog(QDialog):
 
 class EditSampleDialog(NewSampleDialog):
     def __init__(self, current_data, parent=None):
-        t_id = current_data.get("template_id", "micp_sand")
-        super().__init__(parent, template_id=t_id, template_data=current_data)
+        super().__init__(parent, template_data=current_data)
         self.setWindowTitle("编辑试样信息")
         self.id_input.setText(current_data.get("id"))
         self.buttons.button(QDialogButtonBox.Ok).setText("保存修改")
 
 
-# === 新建项目弹窗 ===
+# === NewProjectDialog (回退版，无模板) ===
 class NewProjectDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("新建项目")
-        self.resize(450, 350)
-
+        self.resize(400, 250)
+        self.setStyleSheet("background-color: white;")
         layout = QVBoxLayout(self)
-        layout.setSpacing(20)
+        layout.setSpacing(15);
         layout.setContentsMargins(30, 30, 30, 30)
-        layout.addWidget(QLabel("创建新实验项目"))
 
-        form = QFormLayout()
+        form = QFormLayout();
         form.setVerticalSpacing(15)
-
-        self.name_input = QLineEdit()
+        self.name_input = QLineEdit();
         self.name_input.setPlaceholderText("例如: 2025_砂柱实验")
-        self.name_input.setStyleSheet("padding: 6px;")
-
-        self.desc_input = QLineEdit()
+        self.desc_input = QLineEdit();
         self.desc_input.setPlaceholderText("简单描述实验目的...")
-        self.desc_input.setStyleSheet("padding: 6px;")
-
-        self.template_combo = QComboBox()
-        self.template_combo.setStyleSheet("padding: 6px;")
-        for t_id, t_name in TemplateManager.get_template_names():
-            self.template_combo.addItem(t_name, t_id)
-
-        self.hint_lbl = QLabel("提示: 该项目下的所有试样将默认使用此模板。")
-        self.hint_lbl.setStyleSheet("color: #909399; font-size: 11px;")
 
         form.addRow("项目名称:", self.name_input)
         form.addRow("项目描述:", self.desc_input)
-        form.addRow("材料模板:", self.template_combo)
-        form.addRow("", self.hint_lbl)
-
         layout.addLayout(form)
-        layout.addStretch()
 
+        layout.addStretch()
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
-        self.buttons.button(QDialogButtonBox.Ok).setText("创建项目")
-        self.buttons.button(QDialogButtonBox.Cancel).setText("取消")
         layout.addWidget(self.buttons)
-
         apply_dialog_theme(self, self.buttons)
 
     def get_data(self):
-        return {
-            "name": self.name_input.text().strip(),
-            "description": self.desc_input.text().strip(),
-            "template_id": self.template_combo.currentData()
-        }
+        return {"name": self.name_input.text().strip(), "description": self.desc_input.text().strip()}
 
 
 # === 简单的录入弹窗保持不变，但增加背景设置 ===
