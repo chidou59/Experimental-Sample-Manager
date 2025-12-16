@@ -3,9 +3,11 @@ import json
 import shutil
 import copy
 import random
+import pandas as pd
 from datetime import datetime
 import config
 from src.utils.image_helper import ImageHelper
+from src.utils.mechanical_analysis import MechanicalAnalyzer
 
 
 class FileManager:
@@ -21,17 +23,12 @@ class FileManager:
         self._sample_cache = {}
         self._structure_cache = None
 
-    # === [优化] 原子写入：防止写入过程中断导致文件损坏 ===
+    # === [优化] 原子写入 ===
     def _atomic_write_json(self, path, data):
-        """
-        原子写入 JSON 文件。
-        先写入 .tmp 临时文件，确保写入完整后，再重命名覆盖原文件。
-        """
         tmp_path = path + ".tmp"
         try:
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=4)
-            # os.replace 是原子操作 (Atomic)
             os.replace(tmp_path, path)
             return True
         except Exception as e:
@@ -65,7 +62,8 @@ class FileManager:
         if project_name in self._sample_cache and sample_id in self._sample_cache[project_name]:
             del self._sample_cache[project_name][sample_id]
 
-    def create_project(self, project_name, description=""):
+    # === 修改：支持 template_id ===
+    def create_project(self, project_name, description="", template_id="micp_sand"):
         project_path = os.path.join(config.DATA_ROOT, project_name)
         try:
             if os.path.exists(project_path): return False
@@ -73,11 +71,11 @@ class FileManager:
             project_info = {
                 "name": project_name,
                 "description": description,
+                "template_id": template_id,  # 保存项目模板
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "type": "project",
                 "samples_order": []
             }
-            # 使用原子写入
             self._atomic_write_json(os.path.join(project_path, "project_info.json"), project_info)
 
             meta = self._load_root_meta()
@@ -90,6 +88,17 @@ class FileManager:
         except Exception as e:
             print(f"Error: {e}")
             return False
+
+    # === 新增：获取项目信息 ===
+    def get_project_info(self, project_name):
+        try:
+            p_path = os.path.join(config.DATA_ROOT, project_name, "project_info.json")
+            if os.path.exists(p_path):
+                with open(p_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except:
+            pass
+        return None
 
     def create_sample(self, project_name, sample_id, sample_data):
         project_path = os.path.join(config.DATA_ROOT, project_name)
@@ -112,10 +121,8 @@ class FileManager:
                 **data_to_save
             }
 
-            # 使用原子写入
             self._atomic_write_json(os.path.join(sample_path, "sample_info.json"), sample_full_info)
 
-            # 更新项目列表
             p_json_path = os.path.join(project_path, "project_info.json")
             if os.path.exists(p_json_path):
                 try:
@@ -140,10 +147,11 @@ class FileManager:
             data = self.get_sample_info(project_name, sample_id)
             if not data: return False
 
+            # 允许更新 attributes
             editable_fields = [
                 "description", "date_prep", "date_complete", "date_demold", "date_test", "initial_mass",
                 "shape", "radius", "height", "side_length", "length", "width", "icon_emoji",
-                "recipe", "key_variable", "key_variable_name"
+                "recipe", "attributes"  # 确保 attributes 可被更新
             ]
 
             for field in editable_fields:
@@ -160,7 +168,6 @@ class FileManager:
             return False
 
     def get_project_structure(self):
-        # 缓存命中
         if self._structure_cache is not None:
             return self._structure_cache
 
@@ -171,19 +178,14 @@ class FileManager:
         saved_order = meta.get("projects_order", [])
         existing_projects = []
 
-        # === [优化] 使用 os.scandir 替代 os.listdir ===
-        # scandir 返回迭代器，包含文件属性，不需要再次调用 os.path.isdir，速度更快
         try:
             with os.scandir(config.DATA_ROOT) as entries:
                 for entry in entries:
-                    if entry.is_dir():
-                        # 检查是否包含 project_info.json，确定是有效项目文件夹
-                        if os.path.exists(os.path.join(entry.path, "project_info.json")):
-                            existing_projects.append(entry.name)
+                    if entry.is_dir() and os.path.exists(os.path.join(entry.path, "project_info.json")):
+                        existing_projects.append(entry.name)
         except Exception as e:
             print(f"Scan dir error: {e}")
 
-        # 排序逻辑
         final_projects = []
         for p in saved_order:
             if p in existing_projects: final_projects.append(p)
@@ -194,7 +196,6 @@ class FileManager:
             structure[project_name] = []
             project_path = os.path.join(config.DATA_ROOT, project_name)
 
-            # 读取项目里的试样顺序
             p_info_path = os.path.join(project_path, "project_info.json")
             saved_sample_order = []
             try:
@@ -389,7 +390,6 @@ class FileManager:
             }
             image_exts = {'.png', '.jpg', '.jpeg', '.tif', '.bmp', '.heic'}
 
-            # [优化] 同样使用 scandir 提升文件列表获取速度
             with os.scandir(base_dir) as entries:
                 for entry in entries:
                     if entry.is_file():
@@ -528,14 +528,84 @@ class FileManager:
         except:
             return []
 
+    def export_project_summary(self, project_name, output_path):
+        try:
+            structure = self.get_project_structure()
+            if project_name not in structure:
+                return False, "项目不存在"
+
+            sample_list = structure[project_name]
+            if not sample_list:
+                return False, "项目为空"
+
+            data_rows = []
+
+            for s_id in sample_list:
+                info = self.get_sample_info(project_name, s_id)
+                if not info: continue
+
+                row = {
+                    "Sample ID": s_id,
+                    "Recipe/Description": info.get("recipe", ""),
+                    "Shape": info.get("shape", ""),
+                    "Date Prep": info.get("date_prep", ""),
+                    "Date Test": info.get("date_test", "")
+                }
+
+                # 展开 attributes
+                attrs = info.get("attributes", {})
+                if attrs:
+                    for k, v in attrs.items():
+                        row[k] = v
+
+                # 质量
+                init_mass = float(info.get("initial_mass", 0))
+                row["Initial Mass (g)"] = init_mass
+                records = info.get("weight_records", [])
+                final_mass = init_mass
+                if records:
+                    try:
+                        final_mass = float(records[-1].get("mass", init_mass))
+                    except:
+                        pass
+                row["Final Mass (g)"] = final_mass
+                mass_change_pct = 0.0
+                if init_mass > 0:
+                    mass_change_pct = ((final_mass - init_mass) / init_mass) * 100
+                row["Mass Change (%)"] = round(mass_change_pct, 2)
+
+                # 力学
+                stress_data = self.get_stress_data(project_name, s_id)
+                row["Peak Stress (kPa)"] = "-"
+                row["Peak Strain (%)"] = "-"
+                row["Elastic Modulus (MPa)"] = "-"
+                row["Toughness (kJ/m³)"] = "-"
+
+                if stress_data and len(stress_data) > 5:
+                    analysis_res = MechanicalAnalyzer.analyze(stress_data)
+                    if analysis_res["success"]:
+                        row["Peak Stress (kPa)"] = round(analysis_res["peak_stress"], 2)
+                        row["Peak Strain (%)"] = round(analysis_res["peak_strain"], 2)
+                        row["Elastic Modulus (MPa)"] = round(analysis_res["elastic_modulus"], 2)
+                        row["Toughness (kJ/m³)"] = round(analysis_res["toughness"], 2)
+
+                data_rows.append(row)
+
+            df = pd.DataFrame(data_rows)
+            df.to_excel(output_path, index=False)
+            return True, f"成功导出 {len(data_rows)} 个试样的数据"
+
+        except Exception as e:
+            return False, f"导出失败: {str(e)}"
+
     def generate_demo_data(self):
         demo_project_name = "示例项目_MICP固化实验"
         if os.path.exists(os.path.join(config.DATA_ROOT, demo_project_name)):
             return False
 
         print("🚀 正在生成示例数据...")
-        self.create_project(demo_project_name,
-                            "本示例展示了不同钙源浓度对砂柱固化效果的影响 (0M, 0.5M, 1.0M)。请尝试勾选这三个试样进行[对比分析]。")
+        # 示例项目默认用 micp_sand 模板
+        self.create_project(demo_project_name, "不同浓度对比", template_id="micp_sand")
 
         base_info = {
             "initial_mass": 300.0,
@@ -557,10 +627,23 @@ class FileManager:
 
     def _create_demo_sample(self, p_name, s_id, base_info, conc, mass_gain_ratio, peak_stress, icon):
         info = base_info.copy()
-        info["recipe"] = f"胶结液浓度: {conc} M, 菌液OD600=1.0, 灌注轮数=14"
-        info["key_variable_name"] = "浓度(M)"
-        info["key_variable"] = conc
+
+        # 构造 attributes
+        attrs = {
+            "concentration": conc,
+            "rounds": 14,
+            "od600": 1.0,
+            "curing_method": "浸泡"
+        }
+
+        info["template_id"] = "micp_sand"
+        info["attributes"] = attrs
         info["icon_emoji"] = icon
+
+        # 旧字段兼容（让旧的对比分析逻辑也能跑）
+        info["recipe"] = f"浓度{conc}M"
+        info["key_variable_name"] = "concentration"
+        info["key_variable"] = conc
 
         self.create_sample(p_name, s_id, info)
 

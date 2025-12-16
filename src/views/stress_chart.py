@@ -1,8 +1,9 @@
 import csv
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                                QFileDialog, QMessageBox, QTableWidget, QTableWidgetItem,
-                               QHeaderView, QMenu)
+                               QHeaderView, QMenu, QDialog, QLabel, QGridLayout)
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont
 import matplotlib
 
 matplotlib.use('QtAgg')
@@ -11,6 +12,8 @@ from matplotlib.figure import Figure
 from matplotlib import rcParams
 
 from src.views.dialogs import AddStressDialog
+# 引入新写的分析模块
+from src.utils.mechanical_analysis import MechanicalAnalyzer
 
 rcParams['font.family'] = 'Microsoft YaHei'
 rcParams['axes.unicode_minus'] = False
@@ -30,6 +33,37 @@ BTN_STYLE = """
         border-color: #409eff;
         color: #409eff;
         background-color: #ecf5ff;
+    }
+"""
+
+BTN_ANALYZE_STYLE = """
+    QPushButton {
+        background-color: #e6f7ff;
+        border: 1px solid #91d5ff;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #1890ff;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #1890ff;
+        color: white;
+    }
+"""
+
+BTN_RESET_STYLE = """
+    QPushButton {
+        background-color: #fff0f0;
+        border: 1px solid #ffccc7;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #ff4d4f;
+    }
+    QPushButton:hover {
+        background-color: #ff4d4f;
+        color: white;
     }
 """
 
@@ -90,6 +124,65 @@ MENU_STYLE = """
 """
 
 
+class AnalysisResultDialog(QDialog):
+    """显示分析结果的漂亮弹窗"""
+
+    def __init__(self, results, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("📊 力学性能智能分析报告")
+        self.resize(350, 300)
+        self.setStyleSheet("background-color: white;")
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(25, 25, 25, 25)
+
+        title = QLabel("特征参数计算结果")
+        title.setStyleSheet(
+            "font-size: 16px; font-weight: bold; color: #303133; border-bottom: 2px solid #3498db; padding-bottom: 5px;")
+        layout.addWidget(title)
+
+        grid = QGridLayout()
+        grid.setVerticalSpacing(10)
+        grid.setHorizontalSpacing(15)
+
+        def add_row(row, label_text, value_text, unit_text, desc_text=""):
+            lbl = QLabel(label_text)
+            lbl.setStyleSheet("color: #606266; font-weight: bold;")
+            val = QLabel(value_text)
+            val.setStyleSheet("color: #303133; font-size: 14px; font-weight: bold;")
+            unit = QLabel(unit_text)
+            unit.setStyleSheet("color: #909399; font-size: 12px;")
+
+            grid.addWidget(lbl, row, 0)
+            grid.addWidget(val, row, 1)
+            grid.addWidget(unit, row, 2)
+
+            if desc_text:
+                desc = QLabel(desc_text)
+                desc.setStyleSheet("color: #909399; font-size: 10px; font-style: italic;")
+                grid.addWidget(desc, row + 1, 0, 1, 3)
+                return row + 2
+            return row + 1
+
+        r = 0
+        r = add_row(r, "弹性模量 (E):", f"{results['elastic_modulus']:.2f}", "MPa", "基于峰值前30%-70%线性拟合")
+        r = add_row(r, "峰值强度 (UCS):", f"{results['peak_stress']:.2f}", "kPa", "")
+        r = add_row(r, "峰值应变:", f"{results['peak_strain']:.2f}", "%", "")
+        r = add_row(r, "残余强度:", f"{results['residual_stress']:.2f}", "kPa", "")
+        r = add_row(r, "韧性 (Toughness):", f"{results['toughness']:.2f}", "kJ/m³", "应力-应变曲线下的能量积分")
+
+        layout.addLayout(grid)
+        layout.addStretch()
+
+        btn_ok = QPushButton("确定")
+        btn_ok.setCursor(Qt.PointingHandCursor)
+        btn_ok.setStyleSheet(
+            "background-color: #3498db; color: white; border-radius: 5px; padding: 6px 15px; font-weight: bold;")
+        btn_ok.clicked.connect(self.accept)
+        layout.addWidget(btn_ok, alignment=Qt.AlignRight)
+
+
 class StressStrainChart(QWidget):
     data_modified = Signal(list)
     file_dropped = Signal(str)
@@ -97,6 +190,9 @@ class StressStrainChart(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super().__init__(parent)
         self.current_data_points = []
+        # 用于存储分析后的拟合线，以便在重绘时画出来
+        self.current_fit_line = None
+
         self.setAcceptDrops(True)
 
         layout = QVBoxLayout(self)
@@ -110,8 +206,29 @@ class StressStrainChart(QWidget):
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas, stretch=10)
 
+        # 按钮区
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 10, 0)
+
+        # 新增分析按钮放在左侧
+        self.btn_analyze = QPushButton("🧠 智能分析")
+        self.btn_analyze.setStyleSheet(BTN_ANALYZE_STYLE)
+        self.btn_analyze.setCursor(Qt.PointingHandCursor)
+        self.btn_analyze.setToolTip("自动计算弹性模量、韧性及特征强度")
+        self.btn_analyze.clicked.connect(self.run_mechanical_analysis)
+        btn_layout.addWidget(self.btn_analyze)
+
+        # === 新增：重置按钮 ===
+        self.btn_reset_analysis = QPushButton("↺")
+        self.btn_reset_analysis.setToolTip("清除分析结果 (拟合线)")
+        self.btn_reset_analysis.setStyleSheet(BTN_RESET_STYLE)
+        self.btn_reset_analysis.setCursor(Qt.PointingHandCursor)
+        self.btn_reset_analysis.setFixedWidth(30)
+        self.btn_reset_analysis.clicked.connect(self.clear_analysis_line)
+        # 默认隐藏，有分析结果才显示
+        self.btn_reset_analysis.hide()
+        btn_layout.addWidget(self.btn_reset_analysis)
+
         btn_layout.addStretch()
 
         self.btn_export_data = QPushButton("📊 导出数据")
@@ -183,12 +300,26 @@ class StressStrainChart(QWidget):
         self.ax.set_xlabel("应变 (%)", color='#606266')
         self.ax.set_ylabel("应力 (kPa)", color='#606266')
         self.current_data_points = []
+        self.current_fit_line = None  # 清空拟合线
+        self.btn_reset_analysis.hide()  # 隐藏重置按钮
         self.canvas.draw()
         self.table.setRowCount(0)
 
-    def update_chart(self, data_points):
+    # === 关键修改：增加 keep_analysis 参数 ===
+    def update_chart(self, data_points, keep_analysis=False):
+        """
+        更新图表。
+        :param data_points: 新的数据点列表
+        :param keep_analysis: 是否保留当前的分析拟合线。
+                              默认为 False，即每次更新数据（如切换试样）都会自动清除旧的分析结果。
+        """
         self.apply_style()
         self.current_data_points = data_points
+
+        # 如果不保留分析，则清除拟合线并隐藏按钮
+        if not keep_analysis:
+            self.current_fit_line = None
+            self.btn_reset_analysis.hide()
 
         x_data = [p["strain"] for p in data_points]
         y_data = [p["stress"] for p in data_points]
@@ -199,37 +330,19 @@ class StressStrainChart(QWidget):
 
         line_color = "#e74c3c"
 
-        # === [优化] 智能降采样 (Downsampling) ===
-        # 当数据点过多时，Matplotlib 渲染会变慢。
-        # 我们保留整体趋势和极值，减少中间冗余点。
+        # 降采样逻辑
         MAX_POINTS = 3000
         display_x = x_data
         display_y = y_data
 
         if len(x_data) > MAX_POINTS:
-            # 简单的步长切片，虽然简单但对平滑曲线非常有效且极快
             step = len(x_data) // MAX_POINTS
             display_x = x_data[::step]
             display_y = y_data[::step]
 
-            # 必须确保峰值点包含在内，防止降采样把峰值"切"掉了
-            if y_data:
-                true_max_y = max(y_data)
-                # 检查显示数据中的最大值是否接近真实最大值
-                if display_y and max(display_y) < true_max_y:
-                    # 如果漏了，手动补上
-                    max_idx = y_data.index(true_max_y)
-                    display_x = list(display_x)
-                    display_y = list(display_y)
-                    # 简单追加到末尾，虽然顺序不对，但 plot 会按点连线。
-                    # 为了更完美，最好插入到正确位置，但对于曲线绘制，
-                    # 只要点在，就能体现出峰值高度，这对粗略观察足够了。
-                    # 或者我们可以不追加，直接相信概率（3000点大概率能覆盖到峰值附近）。
-                    # 这里为了代码简洁和速度，暂不执行复杂插入。
-                    pass
+        self.ax.plot(display_x, display_y, color=line_color, linewidth=2, zorder=3, label="试验曲线")
 
-        self.ax.plot(display_x, display_y, color=line_color, linewidth=2, zorder=3)
-
+        # === 绘制峰值点 ===
         if y_data:
             max_y = max(y_data)
             max_index = y_data.index(max_y)
@@ -249,14 +362,21 @@ class StressStrainChart(QWidget):
                          color='#303133',
                          bbox=dict(boxstyle="round,pad=0.5", facecolor='white', edgecolor='#dcdfe6', alpha=0.9))
 
+        # === 绘制拟合直线 (如果存在) ===
+        if self.current_fit_line:
+            fit_x = [p[0] for p in self.current_fit_line]
+            fit_y = [p[1] for p in self.current_fit_line]
+            self.ax.plot(fit_x, fit_y, color='#1890ff', linestyle='--', linewidth=1.5, zorder=3, label="弹性阶段拟合")
+            self.ax.legend(loc='upper right', frameon=False, fontsize=8)
+            # 有分析结果时，显示重置按钮
+            self.btn_reset_analysis.show()
+
         self.canvas.draw()
 
         # === 更新表格 ===
-        # [优化] 表格行数过多也会导致界面卡顿，限制显示行数
         TABLE_LIMIT = 500
         row_count = min(len(data_points), TABLE_LIMIT)
 
-        # 暂时关闭排序，提升插入速度
         self.table.setSortingEnabled(False)
         self.table.setRowCount(row_count)
 
@@ -271,6 +391,35 @@ class StressStrainChart(QWidget):
             self.table.setItem(i, 1, item_stress)
 
         self.table.setSortingEnabled(True)
+
+    def run_mechanical_analysis(self):
+        """执行智能分析逻辑"""
+        if not self.current_data_points:
+            QMessageBox.warning(self, "无数据", "请先导入或录入应力应变数据。")
+            return
+
+        # 调用分析工具
+        result = MechanicalAnalyzer.analyze(self.current_data_points)
+
+        if not result["success"]:
+            QMessageBox.warning(self, "分析失败", result["msg"])
+            return
+
+        # 保存拟合线以便绘图
+        self.current_fit_line = result["fit_line"]
+
+        # 刷新图表 (强制保留分析结果)
+        self.update_chart(self.current_data_points, keep_analysis=True)
+
+        # 弹窗显示详细结果
+        dialog = AnalysisResultDialog(result, self)
+        dialog.exec()
+
+    def clear_analysis_line(self):
+        """手动清除分析结果"""
+        self.current_fit_line = None
+        # 刷新图表 (keep_analysis默认为False，会自动隐藏按钮)
+        self.update_chart(self.current_data_points)
 
     def show_context_menu(self, pos):
         item = self.table.itemAt(pos)
@@ -294,6 +443,8 @@ class StressStrainChart(QWidget):
             new_data = dialog.get_data()
             self.current_data_points[row] = new_data
             self.current_data_points.sort(key=lambda x: x["strain"])
+
+            # 修改数据后，数据变了，旧分析失效，所以默认 update_chart 就会清除它
             self.update_chart(self.current_data_points)
             self.data_modified.emit(self.current_data_points)
 
@@ -301,6 +452,7 @@ class StressStrainChart(QWidget):
         if QMessageBox.question(self, "确认", "确定删除该数据点吗？",
                                 QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             del self.current_data_points[row]
+            # 数据变了，旧分析失效
             self.update_chart(self.current_data_points)
             self.data_modified.emit(self.current_data_points)
 

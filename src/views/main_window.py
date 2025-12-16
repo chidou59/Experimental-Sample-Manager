@@ -5,7 +5,7 @@ import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QSplitter, QTreeWidget, QTreeWidgetItem,
                                QToolBar, QMessageBox, QMenu, QInputDialog, QStyle,
-                               QAbstractItemView, QLabel, QStackedWidget, QSizePolicy)
+                               QAbstractItemView, QLabel, QStackedWidget, QSizePolicy, QFileDialog)
 from PySide6.QtGui import (QAction, QIcon, QColor, QPixmap, QPainter,
                            QFont, QGuiApplication)
 from PySide6.QtCore import Qt, QSize, QRect
@@ -20,7 +20,6 @@ from src.views.sample_view import SampleDetailView
 from src.views.comparison_view import ComparisonView
 
 
-# === FileTreeWidget 类 ===
 class FileTreeWidget(QTreeWidget):
     def __init__(self, parent=None, file_manager=None):
         super().__init__(parent)
@@ -49,18 +48,14 @@ class FileTreeWidget(QTreeWidget):
             self.file_manager.update_structure_order(new_structure)
 
 
-# === MainWindow 类 ===
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.file_manager = FileManager()
-
-        # 缓存图标，避免重复生成 QIcon 导致卡顿
         self.icon_cache = {}
 
         self.setWindowTitle(" 试样记录管理中心 v.2.1")
 
-        # --- 屏幕自适应 ---
         screen = QGuiApplication.primaryScreen()
         screen_geometry = screen.availableGeometry()
         new_width = int(screen_geometry.width() * 0.8)
@@ -71,7 +66,6 @@ class MainWindow(QMainWindow):
             screen_geometry.y() + (screen_geometry.height() - new_height) // 2
         )
 
-        # === 1. 加载背景图片 ===
         self.bg_pixmap = None
         self.show_bg_image = True
 
@@ -79,7 +73,6 @@ class MainWindow(QMainWindow):
         if os.path.exists(bg_path):
             self.bg_pixmap = QPixmap(bg_path)
 
-        # === 2. 工具栏 ===
         toolbar = QToolBar("MainToolbar")
         toolbar.setIconSize(QSize(20, 20))
         toolbar.setMovable(False)
@@ -91,10 +84,9 @@ class MainWindow(QMainWindow):
         """)
         self.addToolBar(toolbar)
 
-        # 切换视图的 Action Group
         self.action_home = QAction("🏠 常规视图", self)
         self.action_home.setCheckable(True)
-        self.action_home.setChecked(True)  # 默认选中
+        self.action_home.setChecked(True)
         self.action_home.triggered.connect(self.switch_to_home)
         toolbar.addAction(self.action_home)
 
@@ -105,7 +97,6 @@ class MainWindow(QMainWindow):
 
         toolbar.addSeparator()
 
-        # 原有的功能按钮
         new_proj_action = QAction("📁 新建项目", self)
         new_proj_action.triggered.connect(self.on_new_project)
         toolbar.addAction(new_proj_action)
@@ -114,15 +105,10 @@ class MainWindow(QMainWindow):
         new_sample_action.triggered.connect(self.on_new_sample)
         toolbar.addAction(new_sample_action)
 
-        # === 弹簧 ===
-        # 这里保留弹簧，虽然右边没有东西了，但如果有后续扩展，可以让按钮保持在左侧
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         toolbar.addWidget(spacer)
 
-        # 【已删除】删除了这里的 profile_widget (右上角 Logo 和 签名) 代码
-
-        # === 3. 创建左下角签名 Label (保留) ===
         self.signature_label = QLabel("@小白元宵", self)
         self.signature_label.setStyleSheet("""
             color: rgba(100, 100, 100, 180); 
@@ -134,12 +120,10 @@ class MainWindow(QMainWindow):
         self.signature_label.setAttribute(Qt.WA_TransparentForMouseEvents)
         self.signature_label.adjustSize()
 
-        # === 主界面 (QStackedWidget) ===
         self.stack = QStackedWidget()
         self.stack.setAttribute(Qt.WA_TranslucentBackground)
         self.setCentralWidget(self.stack)
 
-        # --- 页面 0: 常规视图 (Splitter) ---
         self.page_home = QWidget()
         self.page_home.setAttribute(Qt.WA_TranslucentBackground)
         home_layout = QVBoxLayout(self.page_home)
@@ -172,33 +156,29 @@ class MainWindow(QMainWindow):
         self.splitter.setSizes([220, 980])
 
         home_layout.addWidget(self.splitter)
-        self.stack.addWidget(self.page_home)  # Index 0
+        self.stack.addWidget(self.page_home)
 
-        # --- 页面 1: 对比分析视图 (ComparisonView) ---
         self.comparison_view = ComparisonView(self.file_manager)
         self.comparison_view.setStyleSheet("background-color: #f4f6f9;")
-        self.stack.addWidget(self.comparison_view)  # Index 1
+        self.stack.addWidget(self.comparison_view)
 
-        # 初始化数据
         self.refresh_data()
 
-    # === 切换视图逻辑 ===
     def switch_to_home(self):
         self.stack.setCurrentIndex(0)
         self.action_home.setChecked(True)
         self.action_compare.setChecked(False)
-        self.show_bg_image = True  # 回到主页显示背景（如果是欢迎状态）
+        self.show_bg_image = True
         self.update()
 
     def switch_to_compare(self):
         self.stack.setCurrentIndex(1)
         self.action_home.setChecked(False)
         self.action_compare.setChecked(True)
-        self.show_bg_image = False  # 对比页面不需要背景图
+        self.show_bg_image = False
         self.update()
         self.comparison_view.refresh_tree()
 
-    # === 剩下的代码保持不变 ===
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, 'signature_label'):
@@ -227,7 +207,6 @@ class MainWindow(QMainWindow):
         self.move(window_geometry.topLeft())
 
     def _create_emoji_icon(self, emoji_char):
-        """生成并缓存图标，性能优化"""
         if emoji_char in self.icon_cache:
             return self.icon_cache[emoji_char]
 
@@ -245,12 +224,9 @@ class MainWindow(QMainWindow):
         return icon
 
     def refresh_data(self):
-        """优化后的数据刷新逻辑"""
-        # 1. 暂停更新，防止界面闪烁
         self.project_tree.setUpdatesEnabled(False)
         self.project_tree.blockSignals(True)
 
-        # 记录当前展开的节点，以便刷新后恢复
         expanded_items = set()
         root = self.project_tree.invisibleRootItem()
         for i in range(root.childCount()):
@@ -260,7 +236,6 @@ class MainWindow(QMainWindow):
 
         self.project_tree.clear()
 
-        # 2. 从 FileManager 获取结构（利用缓存）
         data = self.file_manager.get_project_structure()
 
         for project_name, samples in data.items():
@@ -280,7 +255,6 @@ class MainWindow(QMainWindow):
                 sample_item.setData(0, Qt.UserRole, "sample")
                 sample_item.setFlags(sample_item.flags() & ~Qt.ItemIsDropEnabled | Qt.ItemIsDragEnabled)
 
-                # 3. 关键优化：不再自己 open file，而是调用 file_manager 的缓存接口
                 emoji_icon = None
                 info = self.file_manager.get_sample_info(project_name, sample_name)
                 if info:
@@ -294,7 +268,6 @@ class MainWindow(QMainWindow):
 
             project_item.setExpanded(True)
 
-        # 4. 恢复更新
         self.project_tree.blockSignals(False)
         self.project_tree.setUpdatesEnabled(True)
 
@@ -324,6 +297,12 @@ class MainWindow(QMainWindow):
             "QMenu { background: white; border: 1px solid #ddd; } QMenu::item { padding: 5px 20px; } QMenu::item:selected { background: #3498db; color: white; }")
 
         if item_type == "project":
+            export_action = QAction("📊 导出项目汇总表 (Excel)", self)
+            export_action.triggered.connect(lambda: self.export_project_summary_ui(name))
+            menu.addAction(export_action)
+
+            menu.addSeparator()
+
             rename = QAction("✏️ 重命名项目", self);
             rename.triggered.connect(lambda: self.rename_project_ui(name));
             menu.addAction(rename)
@@ -352,10 +331,25 @@ class MainWindow(QMainWindow):
 
         menu.exec(self.project_tree.mapToGlobal(pos))
 
+    def export_project_summary_ui(self, project_name):
+        default_name = f"{project_name}_汇总表_{os.path.basename(config.DATA_ROOT)}.xlsx"
+        file_path, _ = QFileDialog.getSaveFileName(self, "导出项目汇总表", default_name, "Excel Files (*.xlsx)")
+
+        if file_path:
+            success, msg = self.file_manager.export_project_summary(project_name, file_path)
+            if success:
+                QMessageBox.information(self, "导出成功", f"{msg}\n\n文件已保存至:\n{file_path}")
+                try:
+                    os.startfile(file_path)
+                except:
+                    pass
+            else:
+                QMessageBox.critical(self, "导出失败", msg)
+
     def copy_sample_ui(self, project_name, sample_id):
         source_data = self.file_manager.get_sample_info(project_name, sample_id)
         if not source_data: return
-        dialog = NewSampleDialog(self, template_data=source_data)
+        dialog = NewSampleDialog(self, template_id=source_data.get("template_id"), template_data=source_data)
         if dialog.exec():
             d = dialog.get_data()
             if d["id"]:
@@ -418,15 +412,25 @@ class MainWindow(QMainWindow):
         dialog = NewProjectDialog(self)
         if dialog.exec():
             d = dialog.get_data()
-            if d["name"] and self.file_manager.create_project(d["name"], d["description"]):
+            # 传递 template_id 到 create_project
+            if d["name"] and self.file_manager.create_project(d["name"], d["description"], d["template_id"]):
                 self.refresh_data()
                 self.statusBar().showMessage(f"项目 {d['name']} 创建成功")
 
     def on_new_sample(self):
         item = self.project_tree.currentItem()
         if not item: return
+
+        # 确定项目名称
         p_name = item.parent().text(0) if item.data(0, Qt.UserRole) == "sample" else item.text(0)
-        dialog = NewSampleDialog(self)
+
+        # === 关键修复：从项目信息中获取模板 ID ===
+        p_info = self.file_manager.get_project_info(p_name)
+        t_id = "micp_sand"  # 默认
+        if p_info:
+            t_id = p_info.get("template_id", "micp_sand")
+
+        dialog = NewSampleDialog(self, template_id=t_id)
         if dialog.exec():
             d = dialog.get_data()
             if d["id"] and self.file_manager.create_sample(p_name, d["id"], d):
