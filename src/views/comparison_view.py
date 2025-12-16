@@ -135,6 +135,7 @@ class ComparisonView(QWidget):
         self.mass_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
 
         self.mass_canvas = FigureCanvasQTAgg(self.mass_fig)
+        self.mass_canvas.wheelEvent = lambda event: event.ignore()  # ✨ 修复滚动
         self.mass_ax = self.mass_fig.add_subplot(111)
         self.mass_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.mass_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)
@@ -157,6 +158,7 @@ class ComparisonView(QWidget):
         self.stress_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
 
         self.stress_canvas = FigureCanvasQTAgg(self.stress_fig)
+        self.stress_canvas.wheelEvent = lambda event: event.ignore()  # ✨ 修复滚动
         self.stress_ax = self.stress_fig.add_subplot(111)
         self.stress_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.stress_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)
@@ -180,6 +182,7 @@ class ComparisonView(QWidget):
         self.var_fig.subplots_adjust(left=0.15, right=0.95, top=0.9, bottom=0.20)
 
         self.var_canvas = FigureCanvasQTAgg(self.var_fig)
+        self.var_canvas.wheelEvent = lambda event: event.ignore()  # ✨ 修复滚动
         self.var_ax = self.var_fig.add_subplot(111)
         self.var_canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.var_canvas.setMinimumHeight(UNIFIED_MIN_HEIGHT)

@@ -52,6 +52,11 @@ class MassTrendChart(QWidget):
         self.fig.subplots_adjust(left=0.15, right=0.95, top=0.85, bottom=0.15)
 
         self.canvas = FigureCanvasQTAgg(self.fig)
+
+        # === ✨ 修复滚动问题 ✨ ===
+        # 强制画布忽略滚轮事件，让其传递给外层的 ScrollArea
+        self.canvas.wheelEvent = lambda event: event.ignore()
+
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas)
 

@@ -203,6 +203,11 @@ class StressStrainChart(QWidget):
         self.fig.subplots_adjust(left=0.18, right=0.95, top=0.90, bottom=0.22)
 
         self.canvas = FigureCanvasQTAgg(self.fig)
+
+        # === ✨ 修复滚动问题 ✨ ===
+        # 强制画布忽略滚轮事件
+        self.canvas.wheelEvent = lambda event: event.ignore()
+
         self.ax = self.fig.add_subplot(111)
         layout.addWidget(self.canvas, stretch=10)
 
@@ -278,6 +283,7 @@ class StressStrainChart(QWidget):
             self.file_dropped.emit(path)
 
     def wheelEvent(self, event):
+        # 即使有这个逻辑，canvas 也会优先捕获，所以上面对 canvas 的修复很关键
         if self.table.underMouse():
             super().wheelEvent(event)
         else:
@@ -436,8 +442,8 @@ class StressStrainChart(QWidget):
         data = self.current_data_points[row]
         dialog = AddStressDialog(self)
         dialog.setWindowTitle("修改数据点")
-        dialog.strain_input.setValue(data['strain'])
-        dialog.stress_input.setValue(data['stress'])
+        dialog.strain.setValue(data['strain'])
+        dialog.stress.setValue(data['stress'])
 
         if dialog.exec():
             new_data = dialog.get_data()
