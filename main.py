@@ -5,11 +5,10 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication, QMessageBox, QFileDialog
 from PySide6.QtCore import Qt
 
+# 【优化 1】只在顶部导入轻量级模块 (config)，重型模块移到后面
 import config
-from src.views.main_window import MainWindow
-from src.views.splash_screen import ModernSplashScreen
-# 引入 FileManager 以便生成数据
-from src.controllers.file_manager import FileManager
+
+# 注意：这里不再顶部导入 MainWindow 和 FileManager，防止阻塞启动
 
 # === 全局样式表 (QSS) ===
 GLOBAL_STYLES = """
@@ -19,93 +18,22 @@ QWidget {
     font-size: 14px;
     color: #333;
 }
-
-/* 修复弹窗字体看不清的问题：强制背景为白色，标签字体为深色 */
-QMessageBox {
-    background-color: #ffffff;
-}
-QMessageBox QLabel {
-    color: #333333;
-    background-color: transparent;
-}
-
-/* 主窗口背景 */
-QMainWindow {
-    background-color: #f4f6f9; /* 浅灰背景，护眼 */
-}
-
-/* 按钮通用样式 */
-QPushButton {
-    background-color: #ffffff;
-    border: 1px solid #dcdfe6;
-    border-radius: 6px;
-    padding: 6px 16px;
-    color: #606266;
-    font-weight: 500;
-}
-QPushButton:hover {
-    background-color: #ecf5ff;
-    color: #409eff;
-    border-color: #c6e2ff;
-}
-QPushButton:pressed {
-    background-color: #d9ecff;
-}
-
-/* 蓝色主按钮 (Primary Button) */
-QPushButton[class="primary"] {
-    background-color: #3498db; /* 实验室蓝 */
-    color: white;
-    border: none;
-}
-QPushButton[class="primary"]:hover {
-    background-color: #2980b9;
-}
-
-/* 输入框样式 */
-QLineEdit, QTextEdit, QDoubleSpinBox, QDateEdit, QDateTimeEdit {
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    padding: 5px;
-    background: white;
-    selection-background-color: #3498db;
-}
-QLineEdit:focus, QTextEdit:focus {
-    border: 1px solid #3498db;
-}
-
-/* 表格样式 */
-QTableWidget {
-    background-color: white;
-    border: 1px solid #ebeef5;
-    border-radius: 4px;
-    gridline-color: #ebeef5;
-    selection-background-color: #ecf5ff;
-    selection-color: #606266;
-}
-QHeaderView::section {
-    background-color: #f5f7fa;
-    padding: 8px;
-    border: none;
-    border-bottom: 1px solid #ebeef5;
-    font-weight: bold;
-    color: #909399;
-}
-
-/* 滚动条美化 */
-QScrollBar:vertical {
-    border: none;
-    background: #f4f6f9;
-    width: 8px;
-    margin: 0px;
-}
-QScrollBar::handle:vertical {
-    background: #c0c4cc;
-    border-radius: 4px;
-}
-QScrollBar::handle:vertical:hover {
-    background: #909399;
-}
+/* ... (样式保持不变，为了节省篇幅，这里引用您原本的样式) ... */
+QMessageBox { background-color: #ffffff; }
+QMessageBox QLabel { color: #333333; background-color: transparent; }
+QMainWindow { background-color: #f4f6f9; }
+QPushButton { background-color: #ffffff; border: 1px solid #dcdfe6; border-radius: 6px; padding: 6px 16px; color: #606266; font-weight: 500; }
+QPushButton:hover { background-color: #ecf5ff; color: #409eff; border-color: #c6e2ff; }
+QPushButton:pressed { background-color: #d9ecff; }
+QPushButton[class="primary"] { background-color: #3498db; color: white; border: none; }
+QPushButton[class="primary"]:hover { background-color: #2980b9; }
+QLineEdit, QTextEdit, QDoubleSpinBox, QDateEdit, QDateTimeEdit { border: 1px solid #dcdfe6; border-radius: 4px; padding: 5px; background: white; selection-background-color: #3498db; }
+QLineEdit:focus, QTextEdit:focus { border: 1px solid #3498db; }
+QTableWidget { background-color: white; border: 1px solid #ebeef5; border-radius: 4px; gridline-color: #ebeef5; selection-background-color: #ecf5ff; selection-color: #606266; }
+QHeaderView::section { background-color: #f5f7fa; padding: 8px; border: none; border-bottom: 1px solid #ebeef5; font-weight: bold; color: #909399; }
+QScrollBar:vertical { border: none; background: #f4f6f9; width: 8px; margin: 0px; }
+QScrollBar::handle:vertical { background: #c0c4cc; border-radius: 4px; }
+QScrollBar::handle:vertical:hover { background: #909399; }
 """
 
 
@@ -122,27 +50,47 @@ def main():
     app.setFont(font)
     app.setStyleSheet(GLOBAL_STYLES)
 
-    # === 2. 显示启动动画 ===
+    # === 【优化 2】先显示启动页，再加载重型库 ===
+    # 必须先导入 Splash，因为它只依赖 PySide6 (比较快)
+    from src.views.splash_screen import ModernSplashScreen
     splash = ModernSplashScreen()
     splash.show()
 
-    # 模拟加载过程
-    loading_steps = [
-        (10, "正在初始化核心组件..."),
-        (30, "加载用户配置文件..."),
-        (60, "校验数据完整性..."),
-        (80, "准备用户界面..."),
-        (100, "启动完成")
-    ]
+    # 强制刷新界面，确保启动图立刻显示出来，而不是白板
+    app.processEvents()
 
-    for progress, msg in loading_steps:
-        splash.update_progress(progress)
-        splash.showMessage(f"\n\n\n\n\n\n\n\n\n\n{msg}", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
-        t_end = time.time() + 0.3
-        while time.time() < t_end:
-            app.processEvents()
+    # === 【优化 3】在进度条更新过程中，进行真正的“懒加载” ===
+    # 以前这里是假的 time.sleep，现在我们用来做真正的 import
 
-    # === 3. 路径检查逻辑 ===
+    # 阶段 1: 加载基础配置
+    splash.update_progress(10)
+    splash.showMessage("\n\n\n\n\n\n\n\n\n\n正在初始化核心组件...", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
+    app.processEvents()
+
+    # 阶段 2: 加载数据管理器 (这里会导入 pandas, scipy，最耗时！)
+    splash.update_progress(30)
+    splash.showMessage("\n\n\n\n\n\n\n\n\n\n正在加载数据引擎 (Pandas/Scipy)...", int(Qt.AlignBottom | Qt.AlignCenter),
+                       Qt.white)
+    app.processEvents()
+
+    # --- 核心修改：在这里 Import ---
+    from src.controllers.file_manager import FileManager
+    # -----------------------------
+
+    # 阶段 3: 加载主界面 (这里会导入 matplotlib)
+    splash.update_progress(70)
+    splash.showMessage("\n\n\n\n\n\n\n\n\n\n正在构建用户界面...", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
+    app.processEvents()
+
+    # --- 核心修改：在这里 Import ---
+    from src.views.main_window import MainWindow
+    # -----------------------------
+
+    splash.update_progress(90)
+    splash.showMessage("\n\n\n\n\n\n\n\n\n\n准备就绪...", int(Qt.AlignBottom | Qt.AlignCenter), Qt.white)
+    app.processEvents()
+
+    # === 3. 路径检查逻辑 (保持原有逻辑) ===
     if config.DATA_ROOT is None:
         splash.hide()
         QMessageBox.information(None, "欢迎", "欢迎使用试样管理器！\n请先选择一个文件夹作为您的数据仓库。")
@@ -150,18 +98,14 @@ def main():
 
         if selected_path:
             config.save_settings(selected_path)
-
-            # --- ✨ 新增逻辑：第一次设置路径后，生成演示数据 ---
             try:
-                # 此时 config.DATA_ROOT 已经被 save_settings 更新了，可以初始化 FileManager
+                # 此时 FileManager 已经加载完毕，可以使用了
                 manager = FileManager()
                 if manager.generate_demo_data():
                     QMessageBox.information(None, "准备就绪",
                                             "🎉 已为您自动生成了一个[示例项目]！\n\n包含了典型的 MICP 实验数据（质量记录、应力应变曲线）。\n快去看看吧！")
             except Exception as e:
                 print(f"生成演示数据失败: {e}")
-            # --- 结束新增逻辑 ---
-
             splash.show()
         else:
             sys.exit(0)
@@ -169,10 +113,10 @@ def main():
     # === 4. 启动主窗口 ===
     window = MainWindow()
 
-    # 动画结束，切换到主窗口
+    splash.update_progress(100)
+    app.processEvents()
+
     splash.finish(window)
-    # 根据 main_window.py 中的设置，这里可以直接 show
-    # (如果 main_window.py 中用了 showMaximized，这里也生效)
     window.show()
 
     sys.exit(app.exec())
